@@ -1,0 +1,1 @@
+# yamayamaru-storage-place
