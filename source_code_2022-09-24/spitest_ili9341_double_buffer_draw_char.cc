@@ -2135,7 +2135,7 @@ void canvas16_word_print(FT_Face *ft_face01, std::string text) {
                         }
                         ch01[ch_copy_byte_count] = '\0';
                         word_width01_next += get_font_ch_char_w(ft_face01, ch01);
-                        if ((curx + word_width01_next) > _width) {
+                        if ((curx + word_width01_next) > canvas16_width) {
                             over_flag01 = true;
                             break;
                         }  
