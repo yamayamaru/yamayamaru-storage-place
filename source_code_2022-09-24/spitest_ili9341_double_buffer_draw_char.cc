@@ -16,7 +16,7 @@
  * 
  * 
  * このプログラムではfonts-takaoを使っているのでaptでインストールするか、
- * 334行目のset_fontの部分で使いたいフォントを指定してください。
+ * 338行目のset_fontの部分で使いたいフォントを指定してください。
  * sudo apt install fonts-takao
  *
  * また、libfreetype-devもインストールしてください。
@@ -24,6 +24,9 @@
  * 
  * コンパイル方法
  * $ g++ -O2 -I/usr/local/include -L/usr/local/lib -I/usr/include/freetype2 -o spitest_ili9341_double_buffer_draw_char spitest_ili9341_double_buffer_draw_char.cc -lgpiod -lfreetype
+ *
+ *  (undefined reference to `gpiod_chip_unref(gpiod_chip*)'というエラーが出る場合は
+ *   749行目あたりのgpiod_chip_unref()をgpiod_chip_close()に変更してください。)
  * 
  * 
  * 実行方法
@@ -51,7 +54,6 @@
  *
  * (下記のように実行するとピンの利用状況が表示されるようです。)
  * $ sudo cat /sys/kernel/debug/pinctrl/2000000.pinctrl/pinmux-pins
- * 
  */
 
 #include <cstdint>
@@ -83,6 +85,8 @@
 #define     SPI_DC       144    //ピンヘッダのピン番号28(pin 144 PE16): UNCLAIMED
 #define     SPI_CS       145    //ピンヘッダのピン番号27(pin 145 PE17): UNCLAIMED
 #define     SPI_RESET     65    //ピンヘッダのピン番号22(pin  65 PC1) : UNCLAIMED
+#define     SPIDEV_DEVICE "/dev/spidev1.0"
+
 
 #define SPI_MODE01_0        (0)
 #define SPI_MODE01_1        (0 | SPI_CPHA)
@@ -189,7 +193,7 @@ int gpiod_value01;
 void gpiod_close();
 void gpiod_set_out(struct gpiod_line *pin, int num);
 
-void spi_open();
+int  spi_open();
 void spi_close();
 int  spidev_fd01 = 0;
 void spi_write(uint8_t spi_send_byte);
@@ -359,14 +363,16 @@ void main_end() {
 
 void draw_func01(int32_t num);
 
+
+
+// bitmapデータ 320x240 16bit RGB565(Little Endian)
+extern const uint8_t bitmap01[];
+// bitmapデータ 320x240 16bit RGB565(Little Endian)
+extern const uint8_t bitmap02[];
+
 void loop(){
 
     canvas16_set_rotation(0);
-
-    // bitmapデータ 320x240 16bit RGB565(Little Endian) 
-    extern const uint8_t bitmap01[];
-    // bitmapデータ 320x240 16bit RGB565(Little Endian)
-    extern const uint8_t bitmap02[];
 
 
     canvas16_fillRect(0, 0, canvas16_width, canvas16_height, ILI9341_BLACK);
@@ -708,7 +714,12 @@ void init(){
     delay(200);
 
 
-    spi_open();
+    // SPIのオープン
+    if((spi_open() < 0)) {
+        perror("spi_open");
+        gpiod_close();
+        exit(-1);
+    }
 
     int ret;
     uint32_t mode;
@@ -732,10 +743,13 @@ void init(){
         ret = ioctl(spidev_fd01, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
 }
 
-
 void gpiod_close() {
     if (gpiod_chip01 != 0) {
+        void gpiod_chip_unref(struct gpiod_chip *chip);
         gpiod_chip_unref(gpiod_chip01);
+        //void gpiod_chip_close(struct gpiod_chip *chip);
+        //gpiod_chip_close(gpiod_chip01);
+        return ;
     }
 }
 
@@ -745,10 +759,13 @@ void gpiod_set_out(struct gpiod_line *pin, int num) {
     }
 }
 
-void spi_open() {
+int spi_open() {
 
-    spidev_fd01 = open("/dev/spidev1.0", O_RDWR);
-
+    if ((spidev_fd01 = open(SPIDEV_DEVICE, O_RDWR)) < 0) {
+        perror("spi_open open");
+        return spidev_fd01;
+    }
+    return spidev_fd01;
 }
 
 void spi_close() {
@@ -1985,16 +2002,16 @@ int32_t get_font_word_w(FT_Face *ft_face01, std::string word) {
 int32_t freetype_check_leading_spaces(std::string str1) {
     int i;
     for (i = 0; i < str1.size(); i++) {
-        if ((char)str1[i] != u8' ') break;
+        if ((char)str1[i] != ' ') break;
     }
 
     return i;
 }
 
 std::string freetype_spaces(int32_t number) {
-    std::string spaces01 = u8"";
+    std::string spaces01 = "";
     for (int i = 0; i < number; i++) {
-        spaces01.push_back(u8' ');
+        spaces01.push_back(' ');
     }
 
     return spaces01;
