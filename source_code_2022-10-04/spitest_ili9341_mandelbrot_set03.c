@@ -4,32 +4,56 @@
  * また、libgpiodとspidevを使います。
  * 他のLinuxのSBCでも実行しやすいように少し修正しました。
  *
- * libgpiodのインストール方法やspidevを有効にする方法は下記を参照してください
- * (RISC-VのUbuntu Server 22.04.1のAllwinner Nezhaイメージでは
- * aptで入れられるlibgpiodでは正常に動作しないようです。
- * また、デフォルトの状態ではspidevが有効になってません。)
+ * libgpiodのインストールはaptで入ります
+ * $ sudo apt install libgpiod2 libgpiod-dev gpiod
+ *
+ * ただし、Linuxの中ではパッケージで入るlibgpiod2に対応してないものもあります。
+ * (LinuxのカーネルコンフィグでCONFIG_GPIO_CDEV_V1がyになっておらず、
+ * コンパイルしたプログラムやgpiodのコマンドを実行するとInvalid argumentとエラーが
+ * 出ることがあります。
+ * その場合は最新のlibgpiodをソースコードから入れる必要があります。
+ * やり方はこちらを参照してください。)
  *
  * Ubuntu Server 22.04.1のmangp pi mq proでlibgpiodでGPIOを使う
  * https://pastebin.com/yJxcTwp9
+ * (現在のUbuntu Server 22.04.1は最新版にすればCONFIG_GPIO_CDEV_V1がyになってます。)
+ *
+ *
+ * 下記をを実行してみてspidevのデバイスファイルができてない場合はspidevを有効にする必要があります。
+ * $ ls /dev/spidev*
+ * 
+ * Ubuntu Server 22.04.1でのspidevを有効にする方法は下記を参照してください。
+ * (ただし、Linuxカーネルが5.19以降の場合はこの方法ではできません。
+ *  現在のUbuntu Server 22.04.1のLinuxカーネルは5.15.0です。
+ * また、Linuxによっては専用のspidevを有効にする方法があるようです。
+ * Raspberry Pi OSならraspi-config、Armbianならarmbian-configなど)
  *
  * RISC-VのUbuntu Server 22.04.1のmango pi mq proでspidevを有効にする
  * https://pastebin.com/MfFf6MHA
  *
  *
  * コンパイル方法
- * $ gcc -O2 -I/usr/local/include -L/usr/local/lib -o spitest_ili9341_mandelbrot_set02 spitest_ili9341_mandelbrot_set02.c -lgpiod
  *
- *  (undefined reference to `gpiod_chip_unref(gpiod_chip*)'というエラーが出る場合は
- *   644行目あたりのgpiod_chip_unref()をgpiod_chip_close()に変更してください。)
+ * $ gcc -O2 -o spitest_ili9341_mandelbrot_set03 spitest_ili9341_mandelbrot_set03.c -lgpiod
+ *
+ * libgpiodをソースコードから入れた人は下のようになります。
+ * $ gcc -O2 -I/usr/local/include -L/usr/local/lib -o spitest_ili9341_mandelbrot_set03 spitest_ili9341_mandelbrot_set03.c -lgpiod
+ *
+ *  (undefined reference to `gpiod_chip_close(gpiod_chip*)'というエラーが出る場合は
+ *   670行目あたりのgpiod_chip_close()をgpiod_chip_unref()に変更してください。)
  *
  * 実行方法
  *
+ * $ sudo chmod o+rw /dev/gpiochip0
+ * $ sudo chmod o+rw /dev/spidev1.0
+ * $ ./spitest_ili9341_mandelbrot_set03
+ *
+ * libgpiodをソースコードから入れた人は下のようになります。
  * $ export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/lib
  * $ export PATH=/usr/local/bin:$PATH
  * $ sudo chmod o+rw /dev/gpiochip0
  * $ sudo chmod o+rw /dev/spidev1.0
- * $ ./spitest_ili9341_mandelbrot_set
- *
+ * $ ./spitest_ili9341_mandelbrot_set03
  * (LD_LIBRARY_PATHとPATHのexportは~/.profileに追記した方が便利です。)
  *
  * mango pi mq priとLCDの接続はこんな感じです
@@ -46,6 +70,9 @@
  * 
  * (下記のように実行するとピンの利用状況が表示されるようです。)
  * $ sudo cat /sys/kernel/debug/pinctrl/2000000.pinctrl/pinmux-pins
+ *
+ * 機種によって違います、Raspberry Pi 4の場合は下記のようになるようです。
+ * $ sudo cat /sys/kernel/debug/pinctrl/fe200000.gpio-pinctrl-bcm2711/pinmux-pins
  *
  */
 
@@ -637,13 +664,12 @@ void init(){
 
 }
 
-
 void gpiod_close() {
     if (gpiod_chip01 != 0) {
-        void gpiod_chip_unref(struct gpiod_chip *chip);
-        gpiod_chip_unref(gpiod_chip01);
-        //void gpiod_chip_close(struct gpiod_chip *chip);
-        //gpiod_chip_close(gpiod_chip01);
+        void gpiod_chip_close(struct gpiod_chip *chip);
+        gpiod_chip_close(gpiod_chip01);
+        //void gpiod_chip_unref(struct gpiod_chip *chip);
+        //gpiod_chip_unref(gpiod_chip01);
         return ;
     }
 }
