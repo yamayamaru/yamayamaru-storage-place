@@ -2,41 +2,65 @@
  * このプログラムはUbuntu Server 22.04.1のmango pi mq proのSPIテスト用に作ったものです。
  * LCDにILI9341のLCDを使います。
  * また、libgpiodとspidev、libfreetypeを使います。
+ * 他のLinuxのSBCでも実行しやすいように少し修正しました。
  * 
- * libgpiodのインストール方法やspidevを有効にする方法は下記を参照してください
- * (RISC-VのUbuntu Server 22.04.1のAllwinner Nezhaイメージでは
- * aptで入れられるlibgpiodでは正常に動作しないようです。
- * また、デフォルトの状態ではspidevが有効になってません。)
- * 
+ * libgpiodのインストールはaptで入ります
+ * $ sudo apt install libgpiod2 libgpiod-dev gpiod
+ *
+ * ただし、Linuxの中ではパッケージで入るlibgpiod2に対応してないものもあります。
+ * (LinuxのカーネルコンフィグでCONFIG_GPIO_CDEV_V1がyになっておらず、
+ * コンパイルしたプログラムやgpiodのコマンドを実行するとInvalid argumentとエラーが
+ * 出ることがあります。
+ * その場合は最新のlibgpiodをソースコードから入れる必要があります。
+ * やり方はこちらを参照してください。)
+ *
  * Ubuntu Server 22.04.1のmangp pi mq proでlibgpiodでGPIOを使う
  * https://pastebin.com/yJxcTwp9
+ * (現在のUbuntu Server 22.04.1は最新版にすればCONFIG_GPIO_CDEV_V1がyになってます。)
+ *
+ *
+ * 下記をを実行してみてspidevのデバイスファイルができてない場合はspidevを有効にする必要があります。
+ * $ ls /dev/spidev*
  * 
+ * Ubuntu Server 22.04.1でのspidevを有効にする方法は下記を参照してください。
+ * (ただし、Linuxカーネルが5.19以降の場合はこの方法ではできません。
+ *  現在のUbuntu Server 22.04.1のLinuxカーネルは5.15.0です。
+ * また、Linuxによっては専用のspidevを有効にする方法があるようです。
+ * Raspberry Pi OSならraspi-config、Armbianならarmbian-configなど)
+ *
  * RISC-VのUbuntu Server 22.04.1のmango pi mq proでspidevを有効にする
  * https://pastebin.com/MfFf6MHA
  * 
  * 
  * このプログラムではfonts-takaoを使っているのでaptでインストールするか、
- * 338行目のset_fontの部分で使いたいフォントを指定してください。
+ * 378行目のset_fontの部分で使いたいフォントを指定してください。
  * sudo apt install fonts-takao
  *
  * また、libfreetype-devもインストールしてください。
  * sudo apt install libfreetype-dev
  * 
  * コンパイル方法
+ * $ g++ -O2 -I/usr/include/freetype2 -o spitest_ili9341_double_buffer_draw_char spitest_ili9341_double_buffer_draw_char.cc -lgpiod -lfreetype
+ *
+ * libgpiodをソースコードから入れた人は下のようになります
  * $ g++ -O2 -I/usr/local/include -L/usr/local/lib -I/usr/include/freetype2 -o spitest_ili9341_double_buffer_draw_char spitest_ili9341_double_buffer_draw_char.cc -lgpiod -lfreetype
  *
- *  (undefined reference to `gpiod_chip_unref(gpiod_chip*)'というエラーが出る場合は
- *   749行目あたりのgpiod_chip_unref()をgpiod_chip_close()に変更してください。)
+ *  (undefined reference to `gpiod_chip_close(gpiod_chip*)'というエラーが出る場合は
+ *   789行目あたりのgpiod_chip_close()をgpiod_chip_unref()に変更してください。)
  * 
  * 
  * 実行方法
- * 
+ *
+ * $ sudo chmod o+rw /dev/gpiochip0
+ * $ sudo chmod o+rw /dev/spidev1.0
+ * $ ./spitest_ili9341_double_buffer_draw_char
+ *
+ * libgpiodをソースコードから入れた人は下のようになります。
  * $ export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/lib
  * $ export PATH=/usr/local/bin:$PATH
  * $ sudo chmod o+rw /dev/gpiochip0
  * $ sudo chmod o+rw /dev/spidev1.0
  * $ ./spitest_ili9341_double_buffer_draw_char
- *
  * (LD_LIBRARY_PATHとPATHのexportは~/.profileに追記した方が便利です。)
  * 
  * 
@@ -54,6 +78,10 @@
  *
  * (下記のように実行するとピンの利用状況が表示されるようです。)
  * $ sudo cat /sys/kernel/debug/pinctrl/2000000.pinctrl/pinmux-pins
+ *
+ * 機種によって違います、Raspberry Pi 4の場合は下記のようになるようです。
+ * $ sudo cat /sys/kernel/debug/pinctrl/fe200000.gpio-pinctrl-bcm2711/pinmux-pins
+ *
  */
 
 #include <cstdint>
@@ -82,10 +110,22 @@
 #include FT_FREETYPE_H
 
 
+// mangopi mq proのピン設定
 #define     SPI_DC       144    //ピンヘッダのピン番号28(pin 144 PE16): UNCLAIMED
 #define     SPI_CS       145    //ピンヘッダのピン番号27(pin 145 PE17): UNCLAIMED
 #define     SPI_RESET     65    //ピンヘッダのピン番号22(pin  65 PC1) : UNCLAIMED
 #define     SPIDEV_DEVICE "/dev/spidev1.0"
+#define     GPIOD_DEVICE  "/dev/gpiochip0"
+
+// Raspberry Pi 4のピン設定
+// MOSI  ピンヘッダーの19番ピン(GPIO10)
+// MISO  ピンヘッダーの21番ピン(GPIO9)
+// SCLK  ピンヘッダーの23番ピン(GPIO11)
+//#define     SPI_DC        25    //ピンヘッダのピン番号22(pin 25 GPIO25): UNCLAIMED
+//#define     SPI_CS         0    //ピンヘッダのピン番号27(pin  0 GPIO0) : UNCLAIMED
+//#define     SPI_RESET     24    //ピンヘッダのピン番号18(pin 24 GPIO24): UNCLAIMED
+//#define     SPIDEV_DEVICE "/dev/spidev0.0"
+//#define     GPIOD_DEVICE  "/dev/gpiochip0"
 
 
 #define SPI_MODE01_0        (0)
@@ -649,7 +689,7 @@ void sigint_handler(int sig) {
 
 void init(){
     // GPIOデバイスを開く
-    if ((gpiod_chip01=gpiod_chip_open("/dev/gpiochip0")) == NULL) {
+    if ((gpiod_chip01=gpiod_chip_open(GPIOD_DEVICE)) == NULL) {
         perror("gpiod_chip_open");
         exit(-1);
     }
@@ -745,10 +785,10 @@ void init(){
 
 void gpiod_close() {
     if (gpiod_chip01 != 0) {
-        void gpiod_chip_unref(struct gpiod_chip *chip);
-        gpiod_chip_unref(gpiod_chip01);
-        //void gpiod_chip_close(struct gpiod_chip *chip);
-        //gpiod_chip_close(gpiod_chip01);
+        void gpiod_chip_close(struct gpiod_chip *chip);
+        gpiod_chip_close(gpiod_chip01);
+        //void gpiod_chip_unref(struct gpiod_chip *chip);
+        //gpiod_chip_unref(gpiod_chip01);
         return ;
     }
 }
