@@ -143,6 +143,47 @@ wlan0は有効にならなかったです。
 
 
 
+
+
+無線LANの接続
+WiFiのUSBアダプタをつけた場合は下記設定をすることでWiFiが使えるようになります。
+
+
+$ cd /etc/netplan
+$ sudo nano 99-custom-wifi-dhcp.yaml
+
+network:
+  version: 2
+  wifis:
+    wlx3476c5xxxxxx:
+      dhcp4: true
+      access-points:
+        "SSID":
+          password: "YOUR_PASSWORD"
+
+ここでssidにWiFiのSSIDを、YOUR_PASSWORDの部分にパスワードを入れます。
+wlx3476c5xxxxxxの部分はWiFiのインターフェースの名前です。
+$ ip addrでWiFiのインターフェースの名前は確認できます。
+
+
+
+作成したら即時反映させます。
+
+$ sudo netplan apply
+
+
+$ ip addr
+を実行して無線LANアダプタにIPアドレスが振られてるかを確認してください
+
+
+
+
+
+
+
+
+
+
 ブリッジインターフェースを作成したい場合は下記を設定
 (よくわからない人は飛ばしていいです)
 
@@ -190,18 +231,26 @@ $ sudo netplan apply
 
 
 
-ここからは有線のUSB-Ethernetアダプタでネットワークが使えることを前提として説明します。
+
+
+
+ここからは有線のUSB-EthernetアダプタもしくはWiFiのUSBアダプタでネットワークが使えることを前提として説明します。
+
+
+
+
+
 
 
 
 日本語化の設定
 
 $ sudo apt update
-$ sudo apt install language-pack-ja-base language-pack-ja 
+$ sudo apt install language-pack-ja-base language-pack-ja
 
-$ sudo localectl set-locale LANG=ja_JP.UTF-8 LANGUAGE="ja_JP:ja" 
+$ sudo localectl set-locale LANG=ja_JP.UTF-8 LANGUAGE="ja_JP:ja"
 
-$ source /etc/default/locale 
+$ source /etc/default/locale
 
 
 
@@ -209,7 +258,7 @@ $ source /etc/default/locale
 
 タイムゾーンをAsia/Tokyoにする
 
-$ sudo timedatectl set-timezone Asia/Tokyo 
+$ sudo timedatectl set-timezone Asia/Tokyo
 
 
 
