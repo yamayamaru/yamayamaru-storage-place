@@ -263,6 +263,45 @@ $ sudo timedatectl set-timezone Asia/Tokyo
 
 
 
+
+
+
+スワップの作成(メモリが512MBだとlubuntu-desktopを使うにはメモリが足りないのでスワップを作成します)
+
+$ sudo fallocate -l 2G /swapfile
+
+作成されたスワップファイルの確認
+$ ls -lh /swapfile
+
+-rw-r--r-- 1 root root 2.0G 10月 22 12:53 /swapfile
+
+
+$ sudo chmod 600 /swapfile
+$ sudo mkswap /swapfile
+
+スワップを使用
+$ sudo swapon /swapfile
+
+スワップが使用可能であるか確認
+$ free -h
+
+
+
+スワップファイル使用の永続化
+
+sudo nano /etc/fstab
+
+下記を追記する
+
+/swapfile       none            swap    sw         0  0
+
+
+
+
+
+
+
+
 Lubuntu-desktopのインストール
 
 $ sudo apt update
@@ -350,7 +389,7 @@ AdminIdentities=unix-user:ubuntu;unix-user:0
 
 
 
-再起動後、後はLubuntu Desktopのメニューから設定→Advanced Network ConfigurationでWiFiの設定をしてください。
+再起動後、必要があればLubuntu Desktopのメニューから設定→Advanced Network ConfigurationでWiFiの設定をしてください。
 または画面右下のネットワークのアイコンをクリックして接続したいSSIDをクリックすると
 パスワードを聞いてくるのでパスワードを入力すると接続動作に入ります。
 
@@ -358,8 +397,28 @@ AdminIdentities=unix-user:ubuntu;unix-user:0
 
 
 
+
+
+
 再起動して、lightdmのログイン画面が起動したらパスワード入力欄の右側の丸い印を押してLubuntuを選択します。
 その後、パスワードを入力してEnterキーを押します
+
+
+
+
+
+lubuntu-desktopを使わずにGUIを立ち上げないようにするには下記のコマンドを実行して再起動します。
+
+$ sudo systemctl set-default multi-user.target
+
+
+
+
+lubuntu-desktopを使う場合は下記コマンドを実行して再起動します。
+
+$ sudo systemctl set-default graphical.target
+
+
 
 
 
