@@ -1,0 +1,459 @@
+RISC-VのUbuntu Server 22.10が出たようです
+
+http://cdimage.ubuntu.com/releases/22.10/release/
+
+
+メモリ512MB版のSipeed Lichee RVで試しましたがLichee RV用のイメージの
+ubuntu-22.10-preinstalled-server-riscv64+licheerv.img.xzで起動しました
+
+LinuxマシンからSDカードにUbuntu Serverのイメージを書き込むのはこんな感じです。
+
+$ xz -d -k ubuntu-22.10-preinstalled-server-riscv64+licheerv.img.xz
+$ sudo dd if=ubuntu-22.10-preinstalled-server-riscv64+licheerv.img of=/dev/YOUR_SDCARD_BLOCK_DEVICE
+
+
+ここで
+/dev/YOUR_SDCARD_BLOCK_DEVICEは/dev/sdbや/dev/sdcなどです
+$ ls -l /dev
+で追加された書き込みたいSDカードのデバイス名を確認してください
+(これを間違えると別のSDカードやSSD、HDDなどのデータが消えますので要注意です)
+
+書き込んだらLichee RVにUbuntuを書き込んだSDカードを挿して起動します。
+初回起動時はHDMIとUSBキーボードを接続しておきます。
+
+
+
+
+
+USB-Ethernetアダプタも自動的に認識するようです。
+(IOデータのUSB3.0 1000Base-T 有線LANアダプタのETG5-US3が認識されました)
+
+[   18.514387] usb 2-1.2: new high-speed USB device number 3 using ehci-platform
+[   18.653839] usb 2-1.2: New USB device found, idVendor=0b95, idProduct=1790, bcdDevice= 1.00
+[   18.653871] usb 2-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[   18.653888] usb 2-1.2: Product: AX88179
+[   18.653903] usb 2-1.2: Manufacturer: ASIX Elec. Corp.
+[   18.653917] usb 2-1.2: SerialNumber: xxxxxxxxxxxxxx
+[   21.629274] ax88179_178a 2-1.2:1.0 eth0: register 'ax88179_178a' at usb-4200000.usb-1.2, ASIX AX88179 USB 3.0 Gigabit Ethernet, xx:xx:xx:xx:xx:xx
+[   21.640296] usbcore: registered new interface driver ax88179_178a
+
+
+
+
+
+
+HDMIディスプレイに
+login:
+と出るのでユーザ名にubuntu
+パスワードにubuntuを入力
+現在のパスワードを聞かれるのでまたubuntuと入力
+新しいパスワードを聞かれるので任意のパスワードを設定
+確認のため再度パスワードを聞かれるのでパスワードを再度入力
+
+ユーザID:ubuntu、パスワード:ubuntuでログインできない場合はしばらく待ってから再度試します。
+
+
+
+
+sshdの有効化
+
+$ sudo systemctl enable ssh
+$ sudo systemctl start ssh
+
+
+
+ip addressの確認
+
+$ ip addr
+
+
+
+今のところ、オンボードのWiFiには対応してないようです。
+wlan0が立ち上がらないのとrtl3723ds用のドライバが入ってないようです。
+
+
+$ cat /boot/config-5.17.0-1003-allwinner | grep 8723
+CONFIG_RTL8723AE=m
+CONFIG_RTL8723BE=m
+CONFIG_RTL8723_COMMON=m
+CONFIG_RTW88_8723D=m
+CONFIG_RTW88_8723DE=m
+CONFIG_RTL8723BS=m
+
+
+$ find /usr/lib/modules -name *8723*.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/net/wireless/realtek/rtlwifi/rtl8723be/rtl8723be.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/net/wireless/realtek/rtlwifi/rtl8723com/rtl8723-common.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/net/wireless/realtek/rtlwifi/rtl8723ae/rtl8723ae.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/net/wireless/realtek/rtw88/rtw88_8723d.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/net/wireless/realtek/rtw88/rtw88_8723de.ko
+/usr/lib/modules/5.17.0-1003-allwinner/kernel/drivers/staging/rtl8723bs/r8723bs.ko
+
+modprobeでrtl8723be、rtl8723ae、rtw88_8723d、rtw88_8723de、r8723bsを試しに入れてみたのですが
+wlan0は有効にならなかったです。
+
+
+
+
+
+
+
+オンボードのWiFiが認識しないのでrtl8192cuを使ったUSBのWiFiドングルのIO-DATAのWN-G150UMをUSBに挿してみたらあっさり認識しました。
+
+[  787.442308] usb 2-1.2: new high-speed USB device number 7 using ehci-platform
+[  787.600775] usb 2-1.2: New USB device found, idVendor=04bb, idProduct=094c, bcdDevice= 2.00
+[  787.600808] usb 2-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[  787.600825] usb 2-1.2: Product: WN-G150UM
+[  787.600839] usb 2-1.2: Manufacturer: I-O DATA DEVICE, INC.
+[  787.600853] usb 2-1.2: SerialNumber: 00e04cxxxxxxxx
+[  789.205169] usb 2-1.2: This Realtek USB WiFi dongle (0x04bb:0x094c) is untested!
+[  789.205204] usb 2-1.2: Please report results to Jes.Sorensen@gmail.com
+[  789.628397] usb 2-1.2: Vendor: I-O DAT
+[  789.628424] usb 2-1.2: Product: EVICE, INC.
+                                              \x03WN-G150
+[  789.628437] usb 2-1.2: rtl8192cu_parse_efuse: dumping efuse (0x80 bytes):
+[  789.628452] usb 2-1.2: 00: 29 81 00 74 cd 00 00 00
+[  789.628466] usb 2-1.2: 08: ff 00 bb 04 4c 09 01 41
+[  789.628480] usb 2-1.2: 10: 32 00 85 62 9e ad 34 76
+[  789.628492] usb 2-1.2: 18: c5 dd 80 a7 17 03 49 2d
+[  789.628505] usb 2-1.2: 20: 4f 20 44 41 54 41 20 44
+[  789.628518] usb 2-1.2: 28: 45 56 49 43 45 2c 20 49
+[  789.628531] usb 2-1.2: 30: 4e 43 2e 0b 03 57 4e 2d
+[  789.628544] usb 2-1.2: 38: 47 31 35 30 55 4d 00 00
+[  789.628558] usb 2-1.2: 40: 00 00 00 00 00 00 00 00
+[  789.628571] usb 2-1.2: 48: 00 00 00 00 00 00 00 00
+[  789.628583] usb 2-1.2: 50: 00 00 00 00 00 00 00 00
+[  789.628598] usb 2-1.2: 58: 06 00 28 28 28 00 00 00
+[  789.628610] usb 2-1.2: 60: 2a 2a 2a 00 00 00 00 00
+[  789.628623] usb 2-1.2: 68: 00 00 00 00 11 11 33 00
+[  789.628636] usb 2-1.2: 70: 00 00 00 00 00 02 00 00
+[  789.628649] usb 2-1.2: 78: 10 00 00 00 36 00 00 00
+[  789.628663] usb 2-1.2: RTL8188CU rev A (TSMC) 1T1R, TX queues 2, WiFi=1, BT=0, GPS=0, HI PA=0
+[  789.628685] usb 2-1.2: RTL8188CU MAC: 34:76:c5:xx:xx:xx
+[  789.628701] usb 2-1.2: rtl8xxxu: Loading firmware rtlwifi/rtl8192cufw_TMSC.bin
+[  789.655754] usb 2-1.2: Firmware revision 88.2 (signature 0x88c1)
+[  790.392398] usb 2-1.2: rtl8xxxu_iqk_path_a: Path A RX IQK failed!
+[  790.400412] usb 2-1.2: rtl8xxxu_iqk_path_a: Path A RX IQK failed!
+[  790.425652] usb 2-1.2: rtl8xxxu_iqk_path_a: Path A RX IQK failed!
+[  790.511132] usbcore: registered new interface driver rtl8xxxu
+[  790.727635] rtl8xxxu 2-1.2:1.0 wlx3476c5xxxxxx: renamed from wlan0
+[ 1018.033349] wlx3476c5xxxxxx: authenticate with 12:4b:46:e7:60:37
+[ 1018.033413] wlx3476c5xxxxxx: bad VHT capabilities, disabling VHT
+[ 1018.053723] wlx3476c5xxxxxx: send auth to 12:4b:46:e7:60:37 (try 1/3)
+[ 1018.056471] wlx3476c5xxxxxx: authenticated
+[ 1018.064296] wlx3476c5xxxxxx: associate with 12:4b:46:e7:60:37 (try 1/3)
+[ 1018.069486] wlx3476c5xxxxxx: RX AssocResp from 12:4b:46:e7:60:37 (capab=0x431 status=0 aid=1)
+[ 1018.073190] usb 2-1.2: rtl8xxxu_bss_info_changed: HT supported
+[ 1018.077074] wlx3476c5xxxxxx: associated
+[ 1018.459287] IPv6: ADDRCONF(NETDEV_CHANGE): wlx3476c5xxxxxx: link becomes ready
+
+
+
+
+
+
+
+
+無線LANの接続
+WiFiのUSBアダプタをつけた場合は下記設定をすることでWiFiが使えるようになります。
+
+
+$ cd /etc/netplan
+$ sudo nano 99-custom-wifi-dhcp.yaml
+
+network:
+  version: 2
+  wifis:
+    wlx3476c5xxxxxx:
+      dhcp4: true
+      access-points:
+        "SSID":
+          password: "YOUR_PASSWORD"
+
+ここでssidにWiFiのSSIDを、YOUR_PASSWORDの部分にパスワードを入れます。
+
+wlx3476c5xxxxxxの部分はWiFiのインターフェースの名前です。
+$ ip addrでWiFiのインターフェースの名前は確認できます。
+
+
+
+作成したら即時反映させます。
+
+$ sudo netplan apply
+
+
+$ ip addr
+を実行して無線LANアダプタにIPアドレスが振られてるかを確認してください
+
+
+
+
+
+
+
+
+
+
+ブリッジインターフェースを作成したい場合は下記を設定
+(よくわからない人は飛ばしていいです)
+
+
+ブリッジインターフェースの作成(固定IPの設定)
+
+$ sudo apt update
+$ sudo apt install bridge-utils uml-utilities
+
+$ cd /etc/netplan
+
+$ sudo nano 99-manual-bridge-static-ip.yaml
+
+99-manual-bridge-static-ip.yaml
+
+network:
+    ethernets:
+        enx3476c5xxxxxx:
+            dhcp4: no
+            #optional: true
+            dhcp6: no
+    version: 2
+    # ブリッジインターフェース設定追記
+    bridges:
+        br0:
+            interfaces: [enx3476c5xxxxxx]
+            dhcp4: no
+            addresses: [192.168.1.10/24]
+            gateway4: 192.168.1.1
+            nameservers:
+                addresses: [192.168.1.1]
+            parameters:
+                stp: false
+            dhcp6: no
+
+
+
+ここでインターフェース名のenx3476c5xxxxxxはMACアドレスによって変わるので適宜変更する
+
+
+即時反映させる
+$ sudo netplan apply
+
+
+
+
+
+
+
+
+ここからは有線のUSB-EthernetアダプタもしくはWiFiのUSBアダプタでネットワークが使えることを前提として説明します。
+
+
+
+
+
+
+
+
+日本語化の設定
+
+$ sudo apt update
+$ sudo apt install language-pack-ja-base language-pack-ja
+
+$ sudo localectl set-locale LANG=ja_JP.UTF-8 LANGUAGE="ja_JP:ja"
+
+$ source /etc/default/locale
+
+
+
+
+
+
+タイムゾーンをAsia/Tokyoにする
+
+$ sudo timedatectl set-timezone Asia/Tokyo
+
+
+
+
+
+
+スワップの作成(メモリが512MBだとlubuntu-desktopを使うにはメモリが足りないのでスワップを作成します)
+
+$ sudo fallocate -l 2G /swapfile
+
+作成されたスワップファイルの確認
+$ ls -lh /swapfile
+
+-rw-r--r-- 1 root root 2.0G 10月 22 12:53 /swapfile
+
+
+$ sudo chmod 600 /swapfile
+$ sudo mkswap /swapfile
+
+スワップを使用
+$ sudo swapon /swapfile
+
+スワップが使用可能であるか確認
+$ free -h
+
+
+
+スワップファイル使用の永続化
+
+sudo nano /etc/fstab
+
+下記を追記する
+
+/swapfile       none            swap    sw         0  0
+
+
+
+
+
+
+
+
+Lubuntu-desktopのインストール
+
+$ sudo apt update
+$ sudo apt install lubuntu-desktop
+
+
+
+Lubuntu Desktop標準のディスプレイマネージャのsddmよりもlightdmの方が軽いのでlightdmを入れます。
+
+$ sudo apt install lightdm
+
+
+Default display manager:
+と聞いてくるのでlightdmを選択して了解を選択します。
+
+
+
+
+デスクトップの日本語用パッケージのインストール
+
+$ sudo apt install task-japanese-desktop task-japanese-gnome-desktop language-pack-gnome-ja-base language-pack-gnome-ja gnome-user-docs-ja fonts-noto-cjk-extra gimp-help-ja ibus-mozc
+
+
+
+
+
+HDMIディスプレイの表示の設定を行います。
+/etc/X11/xorg.conf.d/の下に下記設定ファイルを作成します。
+ 
+$ sudo nano /etc/X11/xorg.conf.d/10-hdmi.conf
+ 
+Section "Device"
+    Identifier  "Default Device"
+    Driver      "modesetting"
+    Option      "AccelMethod"    "none"     ### "glamor" to enable 3D acceleration, "none" to disable.
+EndSection
+Section "ServerFlags"
+        Option  "AutoAddGPU" "off"
+        Option "Debug" "dmabuf_capable"
+EndSection
+
+
+
+
+
+WiFiの設定
+
+WiFiの設定画面のAdvanced Network Configurationを使えるようにpolkitの設定をします。
+(設定例ではユーザ名をubuntuとしてますが
+違うユーザ名で使っている場合は任意のユーザ名に変更して設定してください。)
+
+
+/etc/polkit-1/localauthority/10-vendor.dに下記ファイルを作成
+
+$ sudo su -
+# cd /etc/polkit-1/localauthority/10-vendor.d
+# nano org.freedesktop.NetworkManager.pkla
+
+
+[nm-applet]
+Identity=unix-user:ubuntu
+Action=org.freedesktop.NetworkManager.*
+ResultAny=yes
+ResultInactive=no
+ResultActive=yes
+
+
+
+# cd /etc/polkit-1/localauthority.conf.d
+
+51-ubuntu-admin.confを下記のように変更
+
+# nano 51-ubuntu-admin.conf
+
+[Configuration]
+AdminIdentities=unix-group:sudo;unix-group:admin;unix-user:ubuntu;
+
+
+# nano 60-desktop-policy.conf
+
+60-desktop-policy.confを下記の内容で作成
+
+[Configuration]
+AdminIdentities=unix-user:ubuntu;unix-user:0
+
+
+
+再起動後、必要があればLubuntu Desktopのメニューから設定→Advanced Network ConfigurationでWiFiの設定をしてください。
+または画面右下のネットワークのアイコンをクリックして接続したいSSIDをクリックすると
+パスワードを聞いてくるのでパスワードを入力すると接続動作に入ります。
+
+
+
+
+
+
+
+
+再起動して、lightdmのログイン画面が起動したらユーザ名の右側の丸い印を押してLubuntuを選択します。
+その後、パスワードを入力してEnterキーを押します
+
+
+
+
+
+lubuntu-desktopを使わずにGUIを立ち上げないようにするには下記のコマンドを実行して再起動します。
+
+$ sudo systemctl set-default multi-user.target
+
+
+lubuntu-desktopを使う場合は下記コマンドを実行して再起動します。
+
+$ sudo systemctl set-default graphical.target
+
+
+
+
+
+
+Windowsからリモートデスクトップで接続できるようにする設定
+
+HDMIディスプレイからではなくてWindowsからリモートデスクトップで接続する場合はxrdpを入れます
+HDMIディスプレイでの表示とxrdpは両方同時には使えないようです。
+(xrdpを使う場合は上記の/etc/X11/xorg.conf.d/10-hdmi.confは削除する必要があります)
+
+$ sudo apt install xrdp
+
+xrdpで起動するには
+CLIログインにしてGUI操作はxrdpから接続します。
+(HDMIからログインする人は設定しないでください)
+
+$ sudo systemctl set-default multi-user.target
+
+
+再起動
+sudo reboot
+
+
+
+
+HDMIディスプレイのGUIログインに戻すには先ほどの
+/etc/X11/xorg.conf.d/10-hdmi.conf
+を作成してから下記を実行してGUIログインにします
+
+$ sudo systemctl set-default graphical.target
