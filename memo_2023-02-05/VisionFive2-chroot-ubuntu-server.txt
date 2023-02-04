@@ -1,0 +1,309 @@
+VisionFive2でUbuntu Server 22.04.01のイメージにchrootする方法
+
+
+VisionFive2でHDMI表示でもxrdpでのリモートデスクトップでも日本語化ができないようなので
+VisionFive2のDebianからUbuntu Server 22.04.1のイメージにchrootして使ってみました。
+SSDや外付けのUSBメモリやSDカードなど外付けのストレージがないとこの作業はきついです。
+私はRaspberry Pi 4BをファイルサーバにしてるのでネットワークドライブとしてNFSでマウントしました。
+
+
+VisionFive2は普段はCLIログインにして使って
+Ubuntu Server 22.04.1にchrootした状態でxrdpを立ち上げてリモートデスクトップで接続することにしました
+Webブラウザや動画再生は重いですがそれ以外のデスクトップ操作はかなり快適になりました。
+
+
+CLIログインにするには下記のようにします。
+$ sudo systemctl set-default multi-user.target
+
+
+GUIログインに戻すにはこうします。
+$ sudo systemctl set-default graphical.target
+
+
+
+
+まず、Ubuntu Server 22.04.1のQEMUイメージをダウンロードします
+ダウンロードするイメージはSiFive UnmatchedおよびQEMU用のイメージです。
+https://ubuntu.com/download/risc-v
+
+https://cdimage.ubuntu.com/releases/22.04.1/release/ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img.xz
+
+解凍は下記のようにできます。
+$ xz -d -k ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img.xz
+
+
+Ubuntu Server22.04.1のイメージのファイルをコピーするのですが
+Ubuntu Server22.04.1を一度、Qemuで起動させてからコピーした方がよさそうなのでそうします。
+この作業はPCなどの別のLinuxマシンでやってもいいです。
+u-boot-qemuはDebianにはありますが、Ubuntuにはないようなので
+Debianからやると楽です。
+
+
+QEMU起動の準備をします。
+
+$ sudo apt-get install qemu-system-misc opensbi u-boot-qemu
+
+qemu-img resize -f raw ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img +8G
+(NFS上でやるときはNFSでマウントするときに-o nolockオプションをつける
+(+8Gはイメージを8GB拡張するという意味です、ファイルを抜き出すだけなら大きな値は必要ありません。)
+
+
+
+QEMUを起動します。
+
+$ qemu-system-riscv64 \
+-machine virt -nographic -m 2048 -smp 4 \
+-bios /usr/lib/riscv64-linux-gnu/opensbi/generic/fw_jump.elf \
+-kernel /usr/lib/u-boot/qemu-riscv64_smode/uboot.elf \
+-device virtio-net-device,netdev=eth0 -netdev user,id=eth0 \
+-drive file=ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img,format=raw,if=virtio
+
+
+
+You are in emergency mode. After logging in, type "journalctl -xb" to view
+system logs, "systemctl reboot" to reboot, "systemctl default" or "exit"
+to boot into default mode.
+Press Enter for maintenance
+(or press Control-D to continue):
+
+上記表示が出たらCTRL+Dを押します。
+
+起動までしばらく時間がかかります。
+
+
+ユーザ名：ubuntu
+パスワード：ubuntu
+ログインできない場合はしばらく待ってからまた試してください。
+(ログインできるようになるまでに起動してからしばらくかかります。)
+
+
+ログインしたらタイムゾーンの設定をします。
+
+timezoneを東京にします。。
+$ sudo timedatectl set-timezone Asia/Tokyo 
+$ timedatectl
+
+
+
+QEMU上のUbuntu Server 22.04.1を終了させます。
+$ sudo poweroff
+
+
+
+
+
+
+
+
+VisionFive2のDebian上でUbuntu Server 22.04.1のイメージをマウントするための情報を調べます。
+ここからはVisioFive2での操作になります。。
+fdiskでUbuntu Server 22.04.1のイメージのパーティション情報を表示します。
+
+
+$ sudo fdisk ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img
+
+Welcome to fdisk (util-linux 2.38).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+
+Command (m for help): p
+Disk ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img: 12.5 GiB, 13421772800 bytes, 26214400 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: gpt
+Disk identifier: 33A6823A-6F2D-447A-9CEA-9D3D957D1D2D
+
+Device                                                      Start      End  Sectors  Size Type
+ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img1  235520 26214366 25978847 12.4G Linux file
+ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img12 227328   235519     8192    4M Linux file
+ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img13     34     2081     2048    1M HiFive FSB
+ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img14   2082    10239     8158    4M HiFive BBL
+ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img15  10240   227327   217088  106M EFI System
+
+Partition table entries are not in disk order.
+
+Command (m for help): q
+
+
+
+
+Linuxパーティションの開始位置が235520と分かったので、このオフセットを直接指定してやってマウントをします。
+
+$ mkdir mnt
+$ sudo mount -o loop,offset=$[235520*512] ubuntu-22.04.1-preinstalled-server-riscv64+unmatched.img ./mnt
+
+
+マウントしたUbuntu Server 22.04.1のイメージからファイルをコピーします。
+コピーするのは外付けのSSDやSDカードにした方がいいです(容量的に厳しいかもしれないので)
+$ mkdir riscv64-ubuntu-root
+$ sudo cp -rpf ./mnt/* riscv64-ubuntu-root/
+
+
+
+
+Ubuntu Server 22.04.1のルートファイルシステムは下記になります。
+私の場合は/cにNFSのネットワークドライブをマウントしました
+以下、/c/riscv64-ubuntu-rootにルートファイルがあると仮定します。
+
+
+/dev /proc /sysをchrootするルートファイルシステムにマウントします。
+これをしないと使えないデバイスや使えないプログラムがたくさんあります。
+
+$ sudo mount --rbind /dev /c/riscv64-ubuntu-root/dev
+$ sudo mount -t proc none /c/riscv64-ubuntu-root/proc
+$ sudo mount --rbind /sys /c/riscv64-ubuntu-root/sys
+
+
+Ubuntu Server 22.04.1のイメージにchrootします。
+$ sudo chroot /c/riscv64-ubuntu-root /bin/bash
+
+
+
+sshdのポート変更(Ubuntu Server 22.04.1側のsshd_configを編集します)
+# nano /etc/ssh/sshd_config
+
+14行目あたりの
+#Port 22の下に下記を追加
+
+Port 10022
+
+
+するとUbuntu Server 22.04.1へのsshdへの接続はポート10022になります。
+
+
+
+chrootするとrootアカウントでログインした状態になります。
+必要最低限のデーモンを起動します。
+
+# /etc/init.d/dbus start
+# /etc/init.d/cron start
+# /etc/init.d/ssh start
+# /etc/init.d/avahi-daemon start
+# /etc/init.d/udev start
+
+
+アカウントubuntuにsuします
+# su ubuntu
+
+
+
+時刻設定
+$ sudo date -s "01/30 21:00 2023"
+
+(時刻を正確に設定しないとapt updateに失敗することがあります。)
+
+
+/etc/resolv.confにDNSサーバが設定されてないと正常な通信ができないのですが
+シンボリックリングが張ってありました。
+
+$ ls resolv.conf -l
+lrwxrwxrwx 1 root root 39 Aug  9 21:36 resolv.conf -> ../run/systemd/resolve/stub-resolv.conf
+
+
+resolv.confを作成してDNSの設定をします。
+$ sudo mkdir -p /run/systemd/resolve
+$ sudo touch /run/systemd/resolve/stub-resolv.conf
+
+$ sudo nano touch /run/systemd/resolve/stub-resolv.conf
+
+nameserver 8.8.8.8
+
+
+
+今後、時刻あわせが楽なようにいntpdateを入れます。
+$ sudo apt update
+$ sudo apt install ntpdate
+
+
+$ sudo ntpdate ntp.nc.u-tokyo.ac.jp
+
+
+
+日本語化の設定をします。
+$ sudo apt install language-pack-ja-base language-pack-ja ibus-kkc 
+
+
+
+
+xrdpでリモートデスクトップを使いたい場合はデスクトップを入れます
+私の場合、lubuntu-desktopを入れました。
+
+$ sudo apt install lubuntu-desktop
+
+
+デスクトップの日本語化の設定
+$ sudo apt install task-japanese locales-all
+$ sudo apt install task-japanese-desktop task-japanese-gnome-desktop language-pack-gnome-ja-base language-pack-gnome-ja gnome-user-docs-ja fonts-noto-cjk-extra gimp-help-ja ibus-mozc
+
+
+
+/etc/X11/Xwrapper.configを修正
+
+$ sudo nano /etc/X11/Xwrapper.config
+
+allowed_users=console
+これを
+allowed_users=anybody
+に変更します
+
+
+
+xrdpをインストールします。
+$ sudo apt-get install xrdp
+
+
+
+ログインした時に日本語環境になるように~/.profileに下記を最後に追記します。
+
+$ nano ~/.profile
+
+export LANG=ja_JP.UTF-8
+export LANGUAGE="ja_JP:ja"
+
+
+
+
+Debian側でxrdpを入れている場合はDebian側のxrdpをストップする
+$ sudo /etc/init.d/xrdp stop
+
+
+Ubuntu側のxrdpをスタート
+$ sudo /etc/init.d/xrdp start
+
+xrdpで接続します。
+
+
+lubuntu-desktopではLXQt側での設定はLXQt設定のLcaleで日本語の設定が必要でした。
+また、日本語入力を起動するのにIBus Preferenceのinput methodでmozcを追加する必要がありました。
+
+
+
+
+firefoxが入ってないのでepiphany-browserを入れました
+
+$ sudo apt-get install epiphany-browser
+
+
+epiphany-browserで動画が見られるようにするためにGstreamerがいるのですが
+パッケージに何を入れていいのかわからないのでgst123を入れます
+
+$ sudo apt-get install gst123
+
+
+
+動画再生は非常に重いようです。
+VLCでDVD画質の動画を再生してもみたのですがズームで1/4の大きさで何とか再生できる程度でした
+VisionFive2のCPUはSIMDやVector命令を持っていないようなのでメディア再生は苦手なようです。
+
+
+
+
+
+chrootするルートファイルに/proc /dev /sysをマウントする作業はchrootする前に毎回必要です。
+また、chrootしたらdbusなどの最低限のデーモンの起動も毎回必須です。
+
+
+chroot環境のsshdのポートを10022に変更したので
+sshで接続したりscpでファイル転送する場合はポートを指定する必要があります。

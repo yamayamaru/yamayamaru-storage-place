@@ -1,0 +1,44 @@
+https://www.kurims.kyoto-u.ac.jp/~ooura/pi_fft-j.html
+
+
+VisionFive2 pi_fftc6のpi_caの結果
+
+Debian starfive-jh7110-VF2_515_v2.5.0-69
+gcc (Debian 11.3.0-3) 11.3.0
+
+length of FFT = 2000000
+calculating 8388608 digits of PI
+
+
+$ ./pi_ca
+Calculation of PI using FFT and AGM, ver. LG1.1.2-MP1.5.2af
+length of FFT =?
+2000000
+initializing...
+nfft= 2097152
+radix= 10000
+error_margin= 0.0423752
+mem_alloc_size= 109056156
+calculating 8388608 digits of PI...
+AGM iteration,  time= 10,       chksum= ffffd9c8
+precision= 48,  time= 20,       chksum= ffffee7d
+precision= 80,  time= 29,       chksum= ffffc287
+precision= 176, time= 38,       chksum= ffffe01d
+precision= 352, time= 48,       chksum= fffff4f9
+precision= 688, time= 57,       chksum= ffffef61
+precision= 1392,        time= 66,       chksum= ffffc780
+precision= 2784,        time= 75,       chksum= ffffe999
+precision= 5584,        time= 85,       chksum= ffffecf3
+precision= 11168,       time= 94,       chksum= ffffef13
+precision= 22336,       time= 103,      chksum= ffffd353
+precision= 44688,       time= 112,      chksum= fffff0c4
+precision= 89408,       time= 122,      chksum= ffffe321
+precision= 178816,      time= 131,      chksum= ffffcbc4
+precision= 357648,      time= 140,      chksum= fffff028
+precision= 715312,      time= 149,      chksum= ffffff15
+precision= 1430640,     time= 159,      chksum= ffffd289
+precision= 2861280,     time= 168,      chksum= ffffdf6a
+precision= 5722592,     time= 177,      chksum= ffffd294
+precision= 11445200,    time= 187,      chksum= ffffd758
+writing pi.dat...
+Total 200 sec. (real time),     chksum= 30f8
