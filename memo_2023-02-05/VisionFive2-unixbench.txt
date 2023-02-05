@@ -1,3 +1,5 @@
+Debian image69
+
 $ unamme -a
 Linux starfive 5.15.0-starfive #1 SMP Mon Dec 19 07:56:37 EST 2022 riscv64 GNU/Linux
 
@@ -8,6 +10,8 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
+
+libc6:riscv64  2.33-7
 
 
 
