@@ -1,0 +1,174 @@
+VisionFive2でUnixBenchをDebian image69からUbuntu Server 22.04.1にchrootした状態で実行した結果
+
+
+gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0
+Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+libc6:riscv64  2.35-0ubuntu3.1 riscv64
+
+
+
+$ ./Run
+make all
+make[1]: Entering directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+make distr
+make[2]: Entering directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+Checking distribution of files
+./pgms  exists
+./src  exists
+./testdir  exists
+./tmp  exists
+./results  exists
+make[2]: Leaving directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+make programs
+make[2]: Entering directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+make[2]: Nothing to be done for 'programs'.
+make[2]: Leaving directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+make[1]: Leaving directory '/home/ubuntu/unixbench/byte-unixbench/UnixBench'
+sh: 1: 3dinfo: not found
+
+   #    #  #    #  #  #    #          #####   ######  #    #   ####   #    #
+   #    #  ##   #  #   #  #           #    #  #       ##   #  #    #  #    #
+   #    #  # #  #  #    ##            #####   #####   # #  #  #       ######
+   #    #  #  # #  #    ##            #    #  #       #  # #  #       #    #
+   #    #  #   ##  #   #  #           #    #  #       #   ##  #    #  #    #
+    ####   #    #  #  #    #          #####   ######  #    #   ####   #    #
+
+   Version 5.1.3                      Based on the Byte Magazine Unix Benchmark
+
+   Multi-CPU version                  Version 5 revisions by Ian Smith,
+                                      Sunnyvale, CA, USA
+   January 13, 2011                   johantheghost at yahoo period com
+
+------------------------------------------------------------------------------
+   Use directories for:
+      * File I/O tests (named fs***) = /home/ubuntu/unixbench/byte-unixbench/UnixBench/tmp
+      * Results                      = /home/ubuntu/unixbench/byte-unixbench/UnixBench/results
+------------------------------------------------------------------------------
+
+
+1 x Dhrystone 2 using register variables  1 2 3 4 5 6 7 8 9 10
+
+1 x Double-Precision Whetstone  1 2 3 4 5 6 7 8 9 10
+
+1 x Execl Throughput  1 2 3
+
+1 x File Copy 1024 bufsize 2000 maxblocks  1 2 3
+
+1 x File Copy 256 bufsize 500 maxblocks  1 2 3
+
+1 x File Copy 4096 bufsize 8000 maxblocks  1 2 3
+
+1 x Pipe Throughput  1 2 3 4 5 6 7 8 9 10
+
+1 x Pipe-based Context Switching  1 2 3 4 5 6 7 8 9 10
+
+1 x Process Creation  1 2 3
+
+1 x System Call Overhead  1 2 3 4 5 6 7 8 9 10
+
+1 x Shell Scripts (1 concurrent)  1 2 3
+
+1 x Shell Scripts (8 concurrent)  1 2 3
+
+4 x Dhrystone 2 using register variables  1 2 3 4 5 6 7 8 9 10
+
+4 x Double-Precision Whetstone  1 2 3 4 5 6 7 8 9 10
+
+4 x Execl Throughput  1 2 3
+
+4 x File Copy 1024 bufsize 2000 maxblocks  1 2 3
+
+4 x File Copy 256 bufsize 500 maxblocks  1 2 3
+
+4 x File Copy 4096 bufsize 8000 maxblocks  1 2 3
+
+4 x Pipe Throughput  1 2 3 4 5 6 7 8 9 10
+
+4 x Pipe-based Context Switching  1 2 3 4 5 6 7 8 9 10
+
+4 x Process Creation  1 2 3
+
+4 x System Call Overhead  1 2 3 4 5 6 7 8 9 10
+
+4 x Shell Scripts (1 concurrent)  1 2 3
+
+4 x Shell Scripts (8 concurrent)  1 2 3
+
+========================================================================
+   BYTE UNIX Benchmarks (Version 5.1.3)
+
+   System: starfive: GNU/Linux
+   OS: GNU/Linux -- 5.15.0-starfive -- #1 SMP Mon Dec 19 07:56:37 EST 2022
+   Machine: riscv64 (riscv64)
+   Language: en_US.utf8 (charmap="UTF-8", collate="UTF-8")
+   13:00:21 up 5 min,  0 users,  load average: 0.12, 0.17, 0.09; runlevel
+
+------------------------------------------------------------------------
+Benchmark Run: Sun Feb 05 2023 13:00:21 - 13:28:28
+4 CPUs in system; running 1 parallel copy of tests
+
+Dhrystone 2 using register variables        7292515.5 lps   (10.0 s, 7 samples)
+Double-Precision Whetstone                     1453.3 MWIPS (10.0 s, 7 samples)
+Execl Throughput                               1907.4 lps   (29.9 s, 2 samples)
+File Copy 1024 bufsize 2000 maxblocks        194570.6 KBps  (30.0 s, 2 samples)
+File Copy 256 bufsize 500 maxblocks           68133.3 KBps  (30.0 s, 2 samples)
+File Copy 4096 bufsize 8000 maxblocks        343033.5 KBps  (30.0 s, 2 samples)
+Pipe Throughput                              370540.9 lps   (10.0 s, 7 samples)
+Pipe-based Context Switching                  51293.0 lps   (10.0 s, 7 samples)
+Process Creation                               2051.3 lps   (30.0 s, 2 samples)
+Shell Scripts (1 concurrent)                   2553.9 lpm   (60.0 s, 2 samples)
+Shell Scripts (8 concurrent)                   1000.8 lpm   (60.0 s, 2 samples)
+System Call Overhead                         783545.3 lps   (10.0 s, 7 samples)
+
+System Benchmarks Index Values               BASELINE       RESULT    INDEX
+Dhrystone 2 using register variables         116700.0    7292515.5    624.9
+Double-Precision Whetstone                       55.0       1453.3    264.2
+Execl Throughput                                 43.0       1907.4    443.6
+File Copy 1024 bufsize 2000 maxblocks          3960.0     194570.6    491.3
+File Copy 256 bufsize 500 maxblocks            1655.0      68133.3    411.7
+File Copy 4096 bufsize 8000 maxblocks          5800.0     343033.5    591.4
+Pipe Throughput                               12440.0     370540.9    297.9
+Pipe-based Context Switching                   4000.0      51293.0    128.2
+Process Creation                                126.0       2051.3    162.8
+Shell Scripts (1 concurrent)                     42.4       2553.9    602.3
+Shell Scripts (8 concurrent)                      6.0       1000.8   1668.0
+System Call Overhead                          15000.0     783545.3    522.4
+                                                                   ========
+System Benchmarks Index Score                                         418.2
+
+------------------------------------------------------------------------
+Benchmark Run: Sun Feb 05 2023 13:28:28 - 13:56:36
+4 CPUs in system; running 4 parallel copies of tests
+
+Dhrystone 2 using register variables       29229256.9 lps   (10.0 s, 7 samples)
+Double-Precision Whetstone                     5810.8 MWIPS (10.0 s, 7 samples)
+Execl Throughput                               7281.7 lps   (29.8 s, 2 samples)
+File Copy 1024 bufsize 2000 maxblocks        425643.9 KBps  (30.0 s, 2 samples)
+File Copy 256 bufsize 500 maxblocks          127533.8 KBps  (30.0 s, 2 samples)
+File Copy 4096 bufsize 8000 maxblocks        721180.4 KBps  (30.0 s, 2 samples)
+Pipe Throughput                             1484541.5 lps   (10.0 s, 7 samples)
+Pipe-based Context Switching                 252997.9 lps   (10.0 s, 7 samples)
+Process Creation                              17772.7 lps   (30.0 s, 2 samples)
+Shell Scripts (1 concurrent)                   8345.5 lpm   (60.0 s, 2 samples)
+Shell Scripts (8 concurrent)                   1066.9 lpm   (60.1 s, 2 samples)
+System Call Overhead                        2876966.1 lps   (10.0 s, 7 samples)
+
+System Benchmarks Index Values               BASELINE       RESULT    INDEX
+Dhrystone 2 using register variables         116700.0   29229256.9   2504.6
+Double-Precision Whetstone                       55.0       5810.8   1056.5
+Execl Throughput                                 43.0       7281.7   1693.4
+File Copy 1024 bufsize 2000 maxblocks          3960.0     425643.9   1074.9
+File Copy 256 bufsize 500 maxblocks            1655.0     127533.8    770.6
+File Copy 4096 bufsize 8000 maxblocks          5800.0     721180.4   1243.4
+Pipe Throughput                               12440.0    1484541.5   1193.4
+Pipe-based Context Switching                   4000.0     252997.9    632.5
+Process Creation                                126.0      17772.7   1410.5
+Shell Scripts (1 concurrent)                     42.4       8345.5   1968.3
+Shell Scripts (8 concurrent)                      6.0       1066.9   1778.2
+System Call Overhead                          15000.0    2876966.1   1918.0
+                                                                   ========
+System Benchmarks Index Score                                        1338.2
