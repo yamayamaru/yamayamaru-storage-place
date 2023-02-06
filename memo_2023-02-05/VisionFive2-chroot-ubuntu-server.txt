@@ -307,3 +307,46 @@ chrootするルートファイルに/proc /dev /sysをマウントする作業�
 
 chroot環境のsshdのポートを10022に変更したので
 sshで接続したりscpでファイル転送する場合はポートを指定する必要があります。
+
+
+
+
+
+
+追記：
+chroot環境からPulseAudioのサーバが見えないようです。
+chroot環境のPulseAudioからDebianのPulseAudioへTCP/IPで接続することで鳴らすようにできるようです。
+
+Debianでの作業
+
+/etc/pulse/default.paに追記します
+
+$ sudo nano /etc/pulse/default.pa
+
+load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1;10.0.0.0/8;172.16.0.0/12;192.168.0.0/16
+
+
+
+chrootしたUbuntu Server 22.04.1の作業
+
+$ sudo nano /etc/pulse/client.conf
+
+autospawn = no
+daemon-binary = /bin/true
+default-server = 127.0.0.1
+
+
+VisionFive2を再起動します。
+
+
+
+pulseaudioのデフォルトの切り替えはpulsemixerをaptで入れて実行するといいようです
+
+$ sudo apt install pulsemixer
+
+
+$ pulsemixer
+
+ならせたいデバイスを上下の矢印キーで選択してEnterを押します。
+メニューが出るので「Set as default」を選択してEnterキーを押します。
+qキーを押すと終了します。
