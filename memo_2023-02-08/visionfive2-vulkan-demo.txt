@@ -1,0 +1,88 @@
+RVspace ForumのVisionFive2のスレッドで紹介されていたvulkanのdemoをビルドして実行してみました。
+
+Vulkan C++ examples and demos
+https://github.com/SaschaWillems/Vulkan
+
+
+sudo apt-get install libvulkan1 libvulkan-dev
+
+
+まずgit cloneします
+
+$ git clone --recursive https://github.com/SaschaWillems/Vulkan.git
+
+
+cmakeするためのbuildディレクトリを作成します
+
+$ cd Vulkan
+$ mkdir build
+
+
+cmakeを実行します
+
+$ cmake ..
+
+
+makeを実行します
+$ make
+
+
+途中でビルドに失敗します
+
+ビルドに失敗したアプリをビルドから外しました
+
+buildディレクトリの下のCMakeFiles/Makefile2を編集します。
+
+$ nano CMakeFiles/Makefile2
+
+128行目あたり
+
+#examples/all: examples/CMakeFiles/imgui.dir/all
+
+これをコメントアウトします。
+
+
+同じように下記もコメントアウトします。
+
+151行目あたり
+
+#examples/all: examples/CMakeFiles/rayquery.dir/all
+#examples/all: examples/CMakeFiles/raytracingbasic.dir/all
+#examples/all: examples/CMakeFiles/raytracingcallable.dir/all
+#examples/all: examples/CMakeFiles/raytracingreflections.dir/all
+#examples/all: examples/CMakeFiles/raytracingsbtdata.dir/all
+#examples/all: examples/CMakeFiles/raytracingshadows.dir/all
+
+
+178行目あたり
+#examples/all: examples/CMakeFiles/variablerateshading.dir/all
+
+
+
+ビルドが終わったらVulkanディレクトリに戻ります。
+
+$ cd ..
+
+
+asset_packをダウンロードして展開するpythonのスクリプトが用意されているので実行します。
+
+$ python3 download_assets.py
+
+(http://vulkan.gpuinfo.org/downloads/vulkan_asset_pack_gltf.zipがダウンロードされるようです)
+
+
+
+ビルドで作成されたバイナリファイルをVulkan/binにコピーします。
+
+$ cp build/bin/* bin
+
+
+Vulkan/binディレクトリに移動します。
+
+$ cd bin
+
+
+ベンチマークを実行します。
+
+$ python3 benchmark-all.py
+
