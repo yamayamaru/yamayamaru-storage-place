@@ -58,6 +58,11 @@ $ nano CMakeFiles/Makefile2
 #examples/all: examples/CMakeFiles/variablerateshading.dir/all
 
 
+再度makeを実行します
+
+$ make
+
+
 
 ビルドが終わったらVulkanディレクトリに戻ります。
 
