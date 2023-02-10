@@ -1,0 +1,83 @@
+VisionFive2でSuperTuxKartを遊ぶ
+
+
+aptで入るSuperTuxKartはOpenGL用なのか起動しませんでした。
+SuperTuxKartをソースコードからビルドしてみたら動きました。
+
+starfive公式のDebian image69で試してみました。
+
+
+まず、ビルドの前にDebianのimage69を焼いただけのSDカードは
+パーティション容量が16GBで容量が足りないので
+SDカードのルートパーティションをpartedで拡張してください
+(データの紛失は一切責任を持ちません、自己責任で行ってください)
+$ sudo parted /dev/mmcblk1
+でpartedを立ち上げて
+resizepart 3 100%
+を実行してからpartedをqで閉じて
+$ sudo resize2fs /dev/mmcblk1p3
+(データの紛失は一切責任を持ちません、自己責任で行ってください)
+
+
+
+
+ビルドに必要なパッケージを入れます
+$ sudo apt install build-essential
+$ sudo apt install cmake libgles-dev libbluetooth-dev libcurl4-gnutls-dev
+$ sudo apt install fonts-cantarell fonts-noto-color-emoji fonts-noto-core fonts-noto-extra fonts-noto-ui-core  fonts-noto-ui-extra
+$ sudo apt install libjpeg-dev
+
+
+
+Supertuxkartのソースコードをダウンロードします。
+
+https://supertuxkart.net/Download
+https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-src.tar.xz
+
+
+
+
+解凍します。
+
+$ xz -dc SuperTuxKart-1.4-src.tar.xz | tar xfv -
+
+
+
+
+SuperTuxkartのソースディレクトリに入ります。
+
+$ cd SuperTuxKart-1.4-src
+
+
+buildディレクトリを作成して作成したbuildディレクトリに入ります。
+
+$ mkdir build
+$ cd build
+
+
+
+cmakeを実行します。
+
+$ cmake .. -DBUILD_RECORDER=0
+
+
+
+makeを実行します
+
+$ make
+
+
+インストールします。
+
+$ sudo make install
+
+
+
+メニューのApplications→Games→SuperTuxKart
+で起動します。
+
+
+もしくはコマンドラインから起動します。
+
+$ supertuxkart
+
