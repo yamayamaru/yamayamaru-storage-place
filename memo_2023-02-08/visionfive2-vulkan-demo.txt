@@ -4,6 +4,7 @@ Vulkan C++ examples and demos
 https://github.com/SaschaWillems/Vulkan
 
 
+sudo apt-get install build-essential make cmake
 sudo apt-get install libvulkan1 libvulkan-dev
 
 
