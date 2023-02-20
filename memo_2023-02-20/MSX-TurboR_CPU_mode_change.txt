@@ -13,7 +13,8 @@ void chgcpu_subfunc(char mode) {
     push    ix
     ld      a,(0xfcc1)      // a:slot EXPTBL:0xfcc1
     ld      hl,#0x0180      // hl:RDSLT read address
-    call    0x000c          //
+    call    0x000c          // RDSLT
+    ei
     pop     ix
 
     cp      #0xc3
