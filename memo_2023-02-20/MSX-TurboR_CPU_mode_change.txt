@@ -1,0 +1,42 @@
+MSX TurboRのMSX-DOS 1からCPUモードを切り替える関数です。
+Z80モード、R800 DRAMモード、R800 ROMモードに切り替えられます。
+インタースロットコールでBIOSの0x0180番地をコールしてます。
+sdcc-4.0.0用に作ってみました。。
+sdcc-4.2.0では動かないです。
+
+void chgcpu_subfunc(char mode) {
+    __asm
+    push    ix
+    ld      ix,#0
+    add     ix,sp
+
+    push    ix
+    ld      a,(0xfcc1)      // a:slot EXPTBL:0xfcc1
+    ld      hl,#0x0180      // hl:RDSLT read address
+    call    0x000c          //
+    pop     ix
+
+    cp      #0xc3
+    jr      nz,chgcpu_subfunc_jmp01
+
+    ld      iy,(0xfcc1-1)   // EXPTBL:0xfcc1
+    ld      a,4(ix)         // A register:0x00:z80 mode 0x81:R800 ROM mode   0x82:R800 DRAM mode
+    ld      ix,#0x0180      // ix:CALSLT call address
+    call    0x001c          // CALSLT
+
+chgcpu_subfunc_jmp01:
+    pop     ix
+    __endasm;
+}
+
+void chgcpu_r800_dram() {
+    chgcpu_subfunc(0x82);
+}
+
+void chgcpu_r800_rom() {
+    chgcpu_subfunc(0x81);
+}
+
+void chgcpu_z80() {
+    chgcpu_subfunc(0x00);
+}
