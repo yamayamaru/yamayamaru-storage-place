@@ -1,0 +1,92 @@
+MSX TurboRのMSX-DOS 1からCPUモードを切り替える関数です。
+Z80モード、R800 DRAMモード、R800 ROMモードに切り替えられます。
+インタースロットコールでBIOSの0x0180番地をコールしてます。
+今回はsdcc-4.2.0用です。
+
+void chgcpu_subfunc(char mode) {
+    __asm
+    push    ix
+
+    push    af
+    ld      a,(0xfcc1)      // a:slot EXPTBL:0xfcc1
+    ld      hl,#0x0180      // hl:RDSLT read address
+    call    0x000c          // RDSLT
+    ei
+    pop     hl
+
+    cp      #0xc3
+    jr      nz,chgcpu_subfunc_jmp01
+
+    ld      iy,(0xfcc1-1)   // EXPTBL:0xfcc1
+    ld      a,h         // A register:0x00:z80 mode 0x81:R800 ROM mode   0x82:R800 DRAM mode
+    ld      ix,#0x0180      // ix:CALSLT call address
+    call    0x001c          // CALSLT
+
+chgcpu_subfunc_jmp01:
+    pop     ix
+    __endasm;
+}
+
+void chgcpu_r800_dram() {
+    chgcpu_subfunc(0x82);
+}
+
+void chgcpu_r800_rom() {
+    chgcpu_subfunc(0x81);
+}
+
+void chgcpu_z80() {
+    chgcpu_subfunc(0x00);
+}
+
+
+備考：sdcc 4.2.0では新しい関数呼び出し規約がデフォルトになってます。
+　　　古い関数呼び出し既約を使う場合はアトリビュート__sdcccall(0)をつけるようです。
+
+例）
+
+#include <stdio.h>
+
+int add01(int a, int b) __sdcccall(0);
+int add02(int a, int b);
+
+int main() {
+    int a, b, c;
+    a = 13;
+    b = 17;
+    c = add01(a, b);
+    printf("%d + %d = %d\r\n", a, b, c);
+
+    c = add02(a, b);
+    printf("%d + %d = %d\r\n", a, b, c);
+
+    return 0;
+}
+
+int add01(int a, int b) __sdcccall(0) {       // 古い関数呼び出し規約
+__asm
+        push    ix
+        ld      ix,#0
+        add     ix,sp
+
+        ld      l,4(ix)
+        ld      h,5(ix)
+        ld      e,6(ix)
+        ld      d,7(ix)
+        add     hl,de
+
+        pop     ix
+__endasm;
+}
+
+int add02(int a, int b) {                     // 新しい関数呼び出し規約
+__asm
+        push    ix
+
+        add     hl,de
+        ld      e,l
+        ld      d,h
+
+        pop     ix
+__endasm;
+}
