@@ -10,3 +10,14 @@ makebin -s 15000 dhry21.ihx > dhry21.bin
 gcc -o binout bintou.c
 ./binout dhry21.bin > dhry21.com
 
+
+
+備考：
+Linuxの場合、MSXのFDのイメージは次のようにマウントできます。
+$ sudo mount -o loop fdimage01.dsk /mnt
+
+cpでファイルをコピーして終わったらumountします。
+$ sudo umount /mnt
+
+FDのイメージは次のように作成できます。(ubuntuの場合mkdosfsはdosfstoolsというパッケージに入ってます)
+$ mkdosfs -C fdimage01.dsk 720
