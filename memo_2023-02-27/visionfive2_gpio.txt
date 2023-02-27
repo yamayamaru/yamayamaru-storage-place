@@ -1,0 +1,297 @@
+VVisionFive2でlibgpiodでGPIOを使う
+
+参考サイト: PINE A64でI2CとGPIOを使ってみた
+            https://dev.classmethod.jp/articles/how-to-use-i2c-and-gpio-on-pine-a64/
+
+            index : libgpiod/libgpiod.git
+            https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/tree/README
+
+            libgpiodの使い方
+            https://qiita.com/wancom/items/b041ee7408a87fabf48e
+
+            Программирование на Python и установка Docker для Sipeed Lichee RV RISC-V
+            https://habr.com/ru/company/timeweb/blog/680054/
+
+
+
+aptでlibgpiod2、gpiod、libgpiod-devを入れます。
+
+$ sudo apt-get install libgpiod2 gpiod libgpiod-dev
+
+
+$ sudo gpiodetect
+gpiochip0 [13040000.gpio] (64 lines)
+gpiochip1 [17020000.gpio] (4 lines)
+
+
+
+$ sudo cat /sys/kernel/debug/pinctrl/13040000.gpio/pinmux-pins
+
+Pinmux settings per pin
+Format: pin (name): mux_owner gpio_owner hog?
+pin 0 (PAD_GPIO0): 29590000.hdmi (GPIO UNCLAIMED) function inno_hdmi-pins group inno_hdmi-pins.inno_hdmi-scl
+pin 1 (PAD_GPIO1): 29590000.hdmi (GPIO UNCLAIMED) function inno_hdmi-pins group inno_hdmi-pins.inno_hdmi-sda
+pin 2 (PAD_GPIO2): 10050000.i2c (GPIO UNCLAIMED) function i2c2-pins group i2c2-pins.i2c2-pins-sda
+pin 3 (PAD_GPIO3): 10050000.i2c (GPIO UNCLAIMED) function i2c2-pins group i2c2-pins.i2c2-pins-scl
+pin 4 (PAD_GPIO4): 120b0000.i2stx_4ch0 (GPIO UNCLAIMED) function mclk_ext_pins group mclk_ext_pins.mclk_ext_pins
+pin 5 (PAD_GPIO5): 10000000.serial (GPIO UNCLAIMED) function uart0-pins group uart0-pins.uart0-pins-tx
+pin 6 (PAD_GPIO6): 10000000.serial (GPIO UNCLAIMED) function uart0-pins group uart0-pins.uart0-pins-rx
+pin 7 (PAD_GPIO7): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins4
+pin 8 (PAD_GPIO8): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins5
+pin 9 (PAD_GPIO9): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins1
+pin 10 (PAD_GPIO10): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins0
+pin 11 (PAD_GPIO11): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins2
+pin 12 (PAD_GPIO12): 16020000.sdio1 (GPIO UNCLAIMED) function sdcard1-pins group sdcard1-pins.sdcard1-pins3
+pin 13 (PAD_GPIO13): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 14 (PAD_GPIO14): 29590000.hdmi (GPIO UNCLAIMED) function inno_hdmi-pins group inno_hdmi-pins.inno_hdmi-cec-pins
+pin 15 (PAD_GPIO15): 29590000.hdmi (GPIO UNCLAIMED) function inno_hdmi-pins group inno_hdmi-pins.inno_hdmi-hpd-pins
+pin 16 (PAD_GPIO16): 12060000.i2c (GPIO UNCLAIMED) function i2c6-pins group i2c6-pins.i2c6-pins-scl
+pin 17 (PAD_GPIO17): 12060000.i2c (GPIO UNCLAIMED) function i2c6-pins group i2c6-pins.i2c6-pins-sda
+pin 18 (PAD_GPIO18): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 19 (PAD_GPIO19): 12050000.i2c (GPIO UNCLAIMED) function i2c5-pins group i2c5-pins.i2c5-pins-scl
+pin 20 (PAD_GPIO20): 12050000.i2c (GPIO UNCLAIMED) function i2c5-pins group i2c5-pins.i2c5-pins-sda
+pin 21 (PAD_GPIO21): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 22 (PAD_GPIO22): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 23 (PAD_GPIO23): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 24 (PAD_GPIO24): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 25 (PAD_GPIO25): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 26 (PAD_GPIO26): 2b000000.pcie (GPIO UNCLAIMED) function pcie0_perst_default group pcie0_perst_default.perst-pins
+pin 27 (PAD_GPIO27): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 28 (PAD_GPIO28): 2c000000.pcie (GPIO UNCLAIMED) function pcie1_perst_default group pcie1_perst_default.perst-pins
+pin 29 (PAD_GPIO29): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 30 (PAD_GPIO30): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 31 (PAD_GPIO31): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 32 (PAD_GPIO32): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 33 (PAD_GPIO33): 100b0000.pwmdac (GPIO UNCLAIMED) function pwmdac0-pins group pwmdac0-pins.pwmdac0-pins-left
+pin 34 (PAD_GPIO34): 100b0000.pwmdac (GPIO UNCLAIMED) function pwmdac0-pins group pwmdac0-pins.pwmdac0-pins-right
+pin 35 (PAD_GPIO35): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 36 (PAD_GPIO36): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 37 (PAD_GPIO37): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 38 (PAD_GPIO38): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 39 (PAD_GPIO39): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 40 (PAD_GPIO40): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 41 (PAD_GPIO41): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 42 (PAD_GPIO42): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 43 (PAD_GPIO43): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 44 (PAD_GPIO44): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 45 (PAD_GPIO45): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 46 (PAD_GPIO46): 120d0000.pwm (GPIO UNCLAIMED) function pwm-pins group pwm-pins.pwm_ch0-pins
+pin 47 (PAD_GPIO47): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 48 (PAD_GPIO48): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_clk
+pin 49 (PAD_GPIO49): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_cs
+pin 50 (PAD_GPIO50): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 51 (PAD_GPIO51): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 52 (PAD_GPIO52): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_tx
+pin 53 (PAD_GPIO53): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_rx
+pin 54 (PAD_GPIO54): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 55 (PAD_GPIO55): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 56 (PAD_GPIO56): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 57 (PAD_GPIO57): 10030000.i2c (GPIO UNCLAIMED) function i2c0-pins group i2c0-pins.i2c0-pins-scl
+pin 58 (PAD_GPIO58): 10030000.i2c (GPIO UNCLAIMED) function i2c0-pins group i2c0-pins.i2c0-pins-sda
+pin 59 (PAD_GPIO59): 120d0000.pwm (GPIO UNCLAIMED) function pwm-pins group pwm-pins.pwm_ch1-pins
+pin 60 (PAD_GPIO60): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 61 (PAD_GPIO61): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 62 (PAD_GPIO62): 16010000.sdio0 (GPIO UNCLAIMED) function mmc0-pins group mmc0-pins.mmc0-pins-rest
+pin 63 (PAD_GPIO63): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 64 (PAD_SD0_CLK): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 65 (PAD_SD0_CMD): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 66 (PAD_SD0_DATA0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 67 (PAD_SD0_DATA1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 68 (PAD_SD0_DATA2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 69 (PAD_SD0_DATA3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 70 (PAD_SD0_DATA4): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 71 (PAD_SD0_DATA5): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 72 (PAD_SD0_DATA6): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 73 (PAD_SD0_DATA7): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 74 (PAD_SD0_STRB): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 75 (PAD_GMAC1_MDC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 76 (PAD_GMAC1_MDIO): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 77 (PAD_GMAC1_RXD0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 78 (PAD_GMAC1_RXD1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 79 (PAD_GMAC1_RXD2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 80 (PAD_GMAC1_RXD3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 81 (PAD_GMAC1_RXDV): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 82 (PAD_GMAC1_RXC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 83 (PAD_GMAC1_TXD0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 84 (PAD_GMAC1_TXD1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 85 (PAD_GMAC1_TXD2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 86 (PAD_GMAC1_TXD3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 87 (PAD_GMAC1_TXEN): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 88 (PAD_GMAC1_TXC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 89 (PAD_QSPI_SCLK): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 90 (PAD_QSPI_CSn0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 91 (PAD_QSPI_DATA0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 92 (PAD_QSPI_DATA1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 93 (PAD_QSPI_DATA2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 94 (PAD_QSPI_DATA3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+
+
+$ sudo cat /sys/kernel/debug/pinctrl/17020000.gpio/pinmux-pins
+
+Pinmux settings per pin
+Format: pin (name): mux_owner gpio_owner hog?
+pin 0 (PAD_TESTEN): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 1 (PAD_RGPIO0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 2 (PAD_RGPIO1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 3 (PAD_RGPIO2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 4 (PAD_RGPIO3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 5 (PAD_RSTN): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 6 (PAD_GMAC0_MDC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 7 (PAD_GMAC0_MDIO): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 8 (PAD_GMAC0_RXD0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 9 (PAD_GMAC0_RXD1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 10 (PAD_GMAC0_RXD2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 11 (PAD_GMAC0_RXD3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 12 (PAD_GMAC0_RXDV): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 13 (PAD_GMAC0_RXC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 14 (PAD_GMAC0_TXD0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 15 (PAD_GMAC0_TXD1): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 16 (PAD_GMAC0_TXD2): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 17 (PAD_GMAC0_TXD3): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 18 (PAD_GMAC0_TXEN): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 19 (PAD_GMAC0_TXC): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+
+
+
+libgpiodの関数で指定するpin番号とGPIO番号は一致してるようです。
+ピン番号はピンはhttps://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdfの13ページ目ので確認できます。
+
+
+
+
+gpiodのコマンドでGPIOを操作する
+$ sudo chmod o+rw /dev/gpiochip0
+
+GPIO pin 44(ピンヘッダ40番ピン)をLOWにする(UNCLAIMEDになっているピンを選びました)
+$ gpioset 0 44=0
+
+
+GPIO pin 44(ピンヘッダ40番ピン)をHIGHにする
+$ gpioset 0 44=1
+
+
+
+サンプルプログラムのコンパイル
+$ gcc -O2 -o test_libgpiod_gpio01 test_libgpiod_gpio01.c -lgpiod
+
+
+実行
+ 
+$ sudo chmod o+rw /dev/gpiochip0
+$ ./test_libgpiod_gpio01
+
+
+
+以降はtest_libgpiod_gpio01.cのソースコード
+ 
+//
+//  下記サイトを参考にしてます。
+//  libgpiodの使い方
+//    https://qiita.com/wancom/items/b041ee7408a87fabf48e
+//  ledはピンヘッダの40番ピンに接続して使ってください(シンク接続を想定してます)
+//
+ 
+#include<stdio.h>
+#include<unistd.h>
+#include<gpiod.h>
+
+#include<signal.h>
+
+void sigint_handler(int sig);
+struct gpiod_chip *gchip_handler;
+
+int main() {
+
+  // SIGINTハンドラの設定
+  if (signal(SIGINT, sigint_handler) == SIG_ERR) {
+      perror("signal SIGINT");
+      exit(-1);
+  }
+
+  const char *appname = "gpiotest";
+
+  struct gpiod_chip *gchip;
+  struct gpiod_line *glinein, *glineout;
+  int value;
+
+  // GPIOデバイスを開く
+  if ((gchip=gpiod_chip_open("/dev/gpiochip0")) == NULL) {
+    perror("gpiod_chip_open");
+    return 1;
+  }
+
+  gchip_handler =gchip;
+
+  // GPIO入力
+  // GPIOのピンのハンドラを取得する
+  // ここではpin 61(ピンヘッダの39番ピンです)
+  // ピンはhttps://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdfの13ページで確認できます。
+  if ((glinein=gpiod_chip_get_line(gchip, 61)) == NULL) {
+    perror("gpiod_chip_get_line");
+    return 1;
+  }
+
+  // GPIOを入力モードに設定する
+  if (gpiod_line_request_input(glinein, appname) != 0) {
+    perror("gpiod_line_request_input");
+  }
+
+  // GPIOの値を取得する
+  if ((value=gpiod_line_get_value(glinein)) == -1) {
+    perror("gpiod_line_get_value");
+  }
+  printf("input Pin 61=%d\n", value);
+
+  // GPIO出力
+  // GPIOのピンのハンドラを取得する
+  // ここではpin 44(ピンヘッダの40番ピン)を使用
+  // ピンはhttps://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdfの13ページで確認できます。
+  if ((glineout=gpiod_chip_get_line(gchip, 44)) == NULL) {
+    perror("gpiod_chip_get_line");
+    return 1;
+  }
+
+  // GPIOを出力モードに設定する
+  if (gpiod_line_request_output(glineout, appname, 0) != 0) {
+    perror("gpiod_line_request_output");
+  }
+
+  // GPIOの値を1に設定する
+  if ((value=gpiod_line_set_value(glineout, 1)) == -1) {
+    perror("gpiod_line_set_value");
+  }
+
+  // 出力を維持するためちょっと待つ。
+  sleep(1);
+
+
+  for (int i = 0; i < 20; i++) {
+      // GPIOの値を1に設定する
+      printf("output Pin 44 = 1\n");
+      if ((value=gpiod_line_set_value(glineout, 1)) == -1) {
+          perror("gpiod_line_set_value");
+      }
+
+      // 出力を維持するためちょっと待つ。
+      sleep(2);
+
+      // GPIOの値を0に設定する
+      printf("output Pin 44 = 0\n");
+      if ((value=gpiod_line_set_value(glineout, 0)) == -1) {
+          perror("gpiod_line_set_value");
+      }
+
+      // 出力を維持するためちょっと待つ。
+      sleep(2);
+
+  }
+
+  // GPIOデバイスを閉じる
+  gpiod_chip_close(gchip);
+  return 0;
+}
+
+void sigint_handler(int sig) {
+    gpiod_chip_close(gchip_handler);
+    exit(1);
+}
