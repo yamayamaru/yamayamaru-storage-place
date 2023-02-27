@@ -224,7 +224,7 @@ int main() {
 
   // GPIO入力
   // GPIOのピンのハンドラを取得する
-  // ここではpin 61(ピンヘッダの39番ピンです)
+  // ここではpin 61(ピンヘッダの38番ピンです)
   // ピンはhttps://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdfの13ページで確認できます。
   if ((glinein=gpiod_chip_get_line(gchip, 61)) == NULL) {
     perror("gpiod_chip_get_line");
