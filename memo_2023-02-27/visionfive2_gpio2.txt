@@ -1,0 +1,78 @@
+VisionFive2のGPIOピンのまとめ
+
+
+$ sudo cat /sys/kernel/debug/pinctrl/13040000.gpio/pinmux-pins
+この出力をVisionFive2のGPIO端子の通りに並べてみました。
+
+
+GPIO left line
+1   3.3V Power
+3   pin 58 (PAD_GPIO58): 10030000.i2c (GPIO UNCLAIMED) function i2c0-pins group i2c0-pins.i2c0-pins-sda
+5   pin 57 (PAD_GPIO57): 10030000.i2c (GPIO UNCLAIMED) function i2c0-pins group i2c0-pins.i2c0-pins-scl
+7   pin 55 (PAD_GPIO55): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+9   GND
+11  pin 42 (PAD_GPIO42): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+13  pin 43 (PAD_GPIO43): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+15  pin 47 (PAD_GPIO47): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+17  3.3V Power
+19  pin 52 (PAD_GPIO52): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_tx
+21  pin 53 (PAD_GPIO53): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_rx
+23  pin 48 (PAD_GPIO48): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_clk
+25  GND
+27  pin 45 (PAD_GPIO45): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+29  pin 37 (PAD_GPIO37): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+31  pin 39 (PAD_GPIO39): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+33  pin 59 (PAD_GPIO59): 120d0000.pwm (GPIO UNCLAIMED) function pwm-pins group pwm-pins.pwm_ch1-pins
+35  pin 63 (PAD_GPIO63): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+37  pin 60 (PAD_GPIO60): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+39  GND
+
+
+GPIO right line
+2   5V Power
+4   5V Power
+6   GND
+8   pin 5 (PAD_GPIO5): 10000000.serial (GPIO UNCLAIMED) function uart0-pins group uart0-pins.uart0-pins-tx
+10  pin 6 (PAD_GPIO6): 10000000.serial (GPIO UNCLAIMED) function uart0-pins group uart0-pins.uart0-pins-rx
+12  pin 38 (PAD_GPIO38): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+14  GND
+16  pin 54 (PAD_GPIO54): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+18  pin 51 (PAD_GPIO51): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+20  GND
+22  pin 50 (PAD_GPIO50): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+24  pin 49 (PAD_GPIO49): 10060000.spi (GPIO UNCLAIMED) function ssp0-pins group ssp0-pins.ssp0-pins_cs
+26  pin 56 (PAD_GPIO56): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+28  pin 40 (PAD_GPIO40): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+30  GND
+32  pin 46 (PAD_GPIO46): 120d0000.pwm (GPIO UNCLAIMED) function pwm-pins group pwm-pins.pwm_ch0-pins
+34  GND
+36  pin 36 (PAD_GPIO36): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+38  pin 61 (PAD_GPIO61): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+40  pin 44 (PAD_GPIO44): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+
+
+
+特殊な機能が割り当てられているピンは下記になります。
+
+
+・UARTのTXがpin 5(端子ピン番号8)、RXがpin 6(端子ピン番号10)
+
+・I2CのSDAがpin 58(端子ピン番号3)、SCLがpin 57(端子ピン番号5)
+　このI2Cは/dev/i2c-0が対応
+
+・SPIのMOSIがpin 52(端子ピン番号19)、MISOがpin 53(端子ピン番号21)、SCLKがpin48(端子ピン番号23)、CSがpin 49(端子ピン番号24)
+　このSPIは/dev/spidev1.0が対応
+
+・PWMがpin 46(端子ピン番号32)、pin 59(端子ピン番号33)
+
+
+
+これら以外はgpiod、libgpiodで使えそうです。
+gpiod、libgpiodの関数ではこのpin xxの番号を指定します。
+
+
+gpiod、libgpiodの使い方は他のLinux SBCと同じです。
+
+I2Cの使い方も他のLinux SBCと同じです。
+
+SPIの使い方も他のLinux SBCでのspidevの使い方と同じです。
