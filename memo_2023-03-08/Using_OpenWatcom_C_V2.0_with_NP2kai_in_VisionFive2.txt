@@ -1,0 +1,414 @@
+VisionFive2でnp21kaiを使ってOpenWatcom C v2.0を使ってみました
+
+
+
+
+NP2kaiには286までのエミュレーションのnp2kaiと
+386以降のエミュレーションに対応したnp21kaiがあります。
+今回はnp21kaiの方を使います。
+
+OpenWatcom Cのファイルをnp21kaiのHDDイメージに書き込むのにWindowsを使います。
+MSDOS 5.0以上が必要です。
+
+
+
+
+
+OpenWatcom C v2.0のファイルはWindowsからダウンロードします。
+
+ここからダウンロードできます
+https://github.com/open-watcom/open-watcom-v2/releases
+
+2023-03-04 Buildを使ってみます
+https://github.com/open-watcom/open-watcom-v2/releases/tag/2023-03-04-Build
+
+MSDOS用なのでopen-watcom-2_0-c-dos.exeをダウンロードします
+https://github.com/open-watcom/open-watcom-v2/releases/download/2023-03-04-Build/open-watcom-2_0-c-dos.exe
+
+
+Linux上のnp21kaiでHDDイメージを作成します。
+np21kaiのメニューのEmulate→New disk→Hard disk image...を選択します。
+
+「Create new hard disk image file」の画面が開くので
+名前にイメージのファイル名を入力します。
+ここではopenwatcom-hdd-511mbとします。
+右下のイメージファイルのファイル形式を選択できるところがあるので
+そこを「T98-Next harddisk image files(*.nhd)」を選択します。
+
+保存を押します。
+
+HDD Sizeを聞いてくるので指定します。
+OpenWatcom C v2.0は350MBくらいあるのでここではとりあえず、511MBにします。
+
+511 MBにしてOK
+
+
+
+np21kaiのメニューのHardDisk→IDE0-1→Openを選択します
+（既にHDDが1台接続されていることを想定してます。)
+
+先ほど作成したopenwatcom-hdd-511mb.nhdを選択して開くを押します。
+
+Emulate→Resetでリセットします。
+
+
+
+
+
+次に作成したHDDイメージをフォーマットします。
+
+np21kaiのMSDOSのコマンドラインでFORMATと入力します。
+
+装置名のところで「固定ディスク」を選択します。
+
+右側の接続状況で「固定ディスク#1」と「固定ディスク#2」があると思います。
+
+
+装置番号のところで2を選択します。
+(自分の環境にあわせて追加したHDDを選択してください。間違えるとデータが消えます。)
+
+
+次に「初期化」を選択します。
+(初期化するHDDを間違えるとデータが消えるので自分の環境に合わせて間違えないようにしてください）
+
+はいを選択してEnter
+
+次に「領域確保」を選択します。
+
+確保領域を確認して「実行」を選択してEnterを押します。
+
+「終了」を選択してEnter
+
+np21kaiは一度終了させます。
+
+
+
+
+作成したHDDのイメージファイルをscpなどを使ってWindowsに持ってきます。
+(現在のWindows 10ではssh、scpが標準で使えるようになってます)
+
+ダウンロードしたopen-watcom-2_0-c-dos.exeを実行して解凍します。
+(EXEファイルを実行したくない人は解凍ソフトを使って解凍してもいいです)
+
+イメージにOpenWatcom CのファイルをコピーするのにDiskExplorerを使いました
+https://hp.vector.co.jp/authors/VA013937/editdisk/index.html
+
+解凍してできたopen-watcom-2_0-c-dosの下のファイルすべてをwatcomというフォルダを作ってコピーします。
+そのwatcomフォルダごとDiskExplorerを使ってHDDイメージファイルにコピーします。
+
+
+
+OpenWatcom CのファイルをコピーしたHDDイメージをscpなどでLinux側に持ってきます。
+
+
+
+持ってきたHDDイメージをnp21kaiのメニューのHardDisk→IDE0-1→Openで指定します。
+
+np21kaiを起動します。
+
+np21kaiのメニューのDevice→Memoryを13.6MBにします。
+
+
+NECのMSDOSにはseditという簡易的なエディタが入ってるのでこれでconfig.sysとautoexec.batを編集します。
+
+seditの起動方法は
+
+sedit filename
+
+終了はF10を押してから「文書を保存してエディタを終了」を選択します。
+
+
+
+
+config.sysはこんな感じ(EMM386が起動してるとdos4gwが起動しないのでコメントアウトしてあります)
+
+FILES=40
+BUFFERS=10
+SHELL=A:\COMMAND.COM /P
+DEVICE=A:\WINDOWS\HIMEM.SYS
+rem DEVICE=A:\WINDOWS\EMM386.EXE /P=32 /UMB
+LASTDRIVE=Z
+
+DEVICEHIGH=A:\DOS\KKCFUNC.SYS
+DEVICE=A:\DOS\NECAIK1.DRV
+DEVICE=A:\DOS\NECAIK2.DRV A:\NECAI.SYS
+
+DOS=HIGH,UMB
+
+
+
+autoexec.batはこんな感じ
+(b:\watcom\binwにパスを通すのとDOS16Mの環境変数を設定します)
+(b:\watcom\binwはOpenWatcom Cのフォルダがb:\watcomの場合の時です。フォルダを別のものにした場合は適宜書き換えてください)
+(環境変数INCLUDEが正常に設定されてないとwccやwcc386でエラーが出ます。)
+(環境変数WATCOMが正常に設定されてないとwlinkでエラーが出ます。)
+(DOS16M=1にするとPC98用でdos4gwが起動します。)
+(@ 0 - 10mは1MBから10MBまでメモリを使う設定です(0からでは無いようです))
+
+@ECHO OFF
+
+PATH A:\DOS;A:\;a:\mu;a:\fd98;a:\mimpiv4
+
+set PATH=b:\watcom\binw;%PATH%
+set DOS16M=1 @ 0 - 10m
+set INCLUDE=b:\watcom\h
+set WATCOM=b:\watcom
+
+rem SET MIMPI_SW=/I3
+SET MIMPI_SW=/I0
+SET TEMP=A:\DOS
+SET DOSDIR=A:\DOS
+PROMPT $P$G
+rem MENU
+CD \
+
+
+
+config.sysとautoexec.batを編集したら一度、np21kaiを再起動します。
+
+
+
+
+
+np21kaiのMSDOS上で作業用の任意のフォルダを作ります。(ここではwatcomcにします。)
+
+mkdir watcomc
+cd watcomc
+
+
+OpenWatcom C v2.0はソースファイルの末尾にEOF(0x1a)があると動作がおかしくなります。
+しかし、MSDOSのエディタの多くは末尾にEOF(0x1a)を付けてしまうようです。
+なので末尾のEOFを取り除くプログラムを作ってみました。
+
+
+#include <stdio.h>
+
+int main(int argc, char *argv[]) {
+
+    FILE *fp, *fp2;
+    int  c;
+
+    if (argc != 2) {
+	printf("usage : rmeof filename\n");
+	return 1;
+    }
+    if ((fp = fopen(argv[1], "rb")) == NULL) {
+	printf("file open error %s\n", argv[1]);
+	return 1;
+    }
+    fprintf(stderr,"open file %s\n", argv[1]);
+    remove("NONAME99.BAK");
+    if ((fp2 = fopen("NONAME99.BAK", "wb")) == NULL) {
+        printf("file open error noname99.bak\n");
+        fclose(fp);
+        return 1;
+    }
+    while(1) {
+	c = fgetc(fp);
+	if (feof(fp)) break;
+	if (c == 0x1a) continue;
+	fputc(c,fp2);
+    }
+    fclose(fp);
+    fclose(fp2);
+
+    remove(argv[1]);
+    rename("NONAME99.BAK", argv[1]);
+
+    return 0;
+}
+
+
+上記プログラムをrmeof.cという名前で保存します。
+このプログラムはlinuxやWindows上のエディタで入力してからnp2kaiに持ってきます。
+また、このプログラムはLinux上でもコンパイルできるので
+Linuxで入力ミスなどを修正しておいてからnp21kaiに持ってくるといいかもしれません。
+ファイルの末尾にEOF(0x1a)があるとOpenWatcom Cで正常にコンパイルできません。
+
+このプログラムでEOFを削除する前に必ずソースファイルはバックアップを取っておいてください。
+
+
+
+コンパイルは下記のようになります(16bitでコンパイルしてます。)
+dos4gw b:\watcom\binw\wcc -zq rmeof.c
+dos4gw b:\watcom\binw\wlink name rmeof file { rmeof.obj }
+
+使い方は
+rmeof filename
+
+このプログラムはfilenameで指定したファイルのEOF(0x1a)を取り除きます。
+
+
+試しに32bitでの簡単なC言語のプログラムをコンパイルしてみます。
+
+コンパイル用に簡単なバッチファイルを作ります。
+
+dos4gw b:\watcom\binw\wcc386 -4s -zq %1.c
+dos4gw b:\watcom\binw\wlink name %1 file { %1.obj }
+
+上記をcc.batという名前で作成してください。
+
+
+#include <stdio.h>
+
+int main(int argc, char * argv[]) {
+    printf("Hello OpenWatcom c\n");
+
+    return 0;
+}
+
+上記をtest01.cという名前で作成してください。
+
+コンパイル方法は
+
+
+rmeof test01.c
+(このrmeofでEOFを削除する前に必ずソースファイルはバックアップを取っておいてください。)
+
+cc test01
+
+
+
+実行方法は
+dos4gw test01.exe
+
+32bitのプログラムの場合は、必ず、dos4gwから起動します。
+
+
+
+複数のCソースファイルを分割コンパイルする場合はこんな感じです。
+
+dos4gw b:\watcom\binw\wcc386 -fo=main01.obj -4s -zq main01.c
+dos4gw b:\watcom\binw\wcc386 -fo=sub01.obj -4s -zq sub01.c
+dos4gw b:\watcom\binw\wlink name main01.exe file { main01.obj sub01.obj }
+
+
+
+
+
+
+16bitのアプリをコンパイルするにはwcc386ではなく、wccを使います。
+
+
+dos4gw b:\watcom\binw\wcc -4 -zq %1.c
+dos4gw b:\watcom\binw\wlink name %1 file { %1.obj }
+
+cc16.batという名前で作成すればいいと思います。
+
+
+
+コンパイル方法は
+rmeof test01.c
+cc16 test01
+
+実行方法は
+test01
+
+16bitのアプリはdos4gwを使わずにそのまま実行できます。
+
+
+
+メモリモデルを指定する場合はwccに-mオプションを付けます。
+-mc     コンパクトメモリモデル(コード：スモール、データ：ラージ)
+-mh     ヒュージメモリモデル(コード：ラージ、データ：ビュージ)
+-ml     ラージメモリモデル(コード：ラージ、データ：ラージ)
+-mm     ミディアムメモリモデル(コード：ラージ、データ：スモール)
+-ms     スモールメモリモデル(コード：スモール、データ：スモール)
+
+
+
+
+
+
+
+
+
+最後にここのπの計算プログラムをコンパイルしてみたいと思います。
+(32bitでのみです、16bitではint型が16bitになるので正常な結果にならないと思われます)
+(-mlオプションを付けたら16bitでもコンパイル自体は成功しました)
+
+http://www.kurims.kyoto-u.ac.jp/~ooura/pi_fft-j.html
+
+pi_fftc6の方です。
+https://www.kurims.kyoto-u.ac.jp/~ooura/pi_fftc6_src.tgz
+
+
+解凍してからnp21kaiのHDDイメージにコピーします
+(ソースコード自体はフロッピーイメージに入る大きさです)
+
+コンパイルはこんな感じのBATファイルを作成して実行します。
+
+pi_fftc6.bat
+
+
+
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=pi_fftca.obj pi_fftca.c
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=pi_fftcs.obj pi_fftcs.c
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=pi_fftcw.obj pi_fftcw.c
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=fftsgx.obj fftsgx.c
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=fftsg_hx.obj fftsg_hx.c
+dos4gw b:\watcom\binw\wcc386 /DPI_OUT_LOGFILE -fo=dgt_div.obj dgt_div.c
+
+dos4gw b:\watcom\binw\wlink name pi_ca file { pi_fftca.obj fftsgx.obj }
+dos4gw b:\watcom\binw\wlink name pi_cs file { pi_fftcs.obj fftsg_hx.obj }
+dos4gw b:\watcom\binw\wlink name pi_cs file { pi_fftcw.obj fftsg_hx.obj }
+dos4gw b:\watcom\binw\wlink name dgt_div file { dgt_div.obj }
+
+
+
+
+実行方法
+
+
+dos4gw pi_ca.exe
+
+値を入力
+試しに20000を入れてみました
+
+
+mem_alloc_sizeが1704604になってるのがわかります。
+1704604バイトだと1.6MBくらいメモリを確保してますね。
+
+終わるまでに、しばらく時間がかかります。
+
+Calculation of PI using FFT and AGM, ver. LG1.1.2-MP1.5.2af
+nfft= 32768
+radix= 100000
+error_margin= 0.0516604
+mem_alloc_size= 1704604
+calculating 163840 digits of PI...
+AGM iteration,	time= 12,	chksum= fffec9c1
+precision= 40,	time= 23,	chksum= fffe8dae
+precision= 80,	time= 34,	chksum= ffffe029
+precision= 180,	time= 44,	chksum= ffff7d4b
+precision= 340,	time= 55,	chksum= ffff0b15
+precision= 700,	time= 65,	chksum= fffff7b8
+precision= 1400,	time= 76,	chksum= fffee56d
+precision= 2780,	time= 87,	chksum= ffff2229
+precision= 5580,	time= 97,	chksum= ffffa8df
+precision= 11160,	time= 108,	chksum= fffea8b4
+precision= 22340,	time= 118,	chksum= ffffcd65
+precision= 44700,	time= 129,	chksum= ffff37b7
+precision= 89400,	time= 140,	chksum= fffee029
+precision= 178820,	time= 150,	chksum= fffeca63
+Total 165 sec. (real time),	chksum= 11583
+
+
+
+
+
+
+
+漢字は一部文字化けします。
+文字化けする漢字は漢字コードを直接入力すると良いようです。
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv){
+
+    printf("一部の文字が文字化けするので\\x95\\x5cなどのようにコードで指定する\n");
+    printf("日本語\x95\x5c\x8e\xa6テスト\n");
+
+    return 0;
+}
