@@ -1,0 +1,37 @@
+/etc/X11/xorg.conf.d/の下に下記内容の設定ファイルを追加します。
+
+sudo nano /etc/X11/xorg.conf.d/10-hdmi.conf
+
+
+
+
+
+
+Section "Device"
+    Identifier  "Default Device"
+    Driver      "modesetting"
+    Option      "AccelMethod"    "none"     ### "glamor" to enable 3D acceleration, "none" to disable.
+EndSection
+Section "ServerFlags"
+        Option  "AutoAddGPU" "off"
+        Option "Debug" "dmabuf_capable"
+EndSection
+
+
+
+
+
+設定ファイルを追加後、armbianを再起動します。
+
+
+
+
+
+
+
+
+VLCを起動すると色がおかしくなるようです。。
+
+一応VLCのメニューのTools→Preferences→Video→Outputのところを
+X11 video output(XCB)
+にすると動画が再生はできるようになります(色はおかしいですが)。
