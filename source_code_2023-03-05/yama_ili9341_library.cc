@@ -491,23 +491,23 @@ int32_t test_spi_abs(int32_t num) {
     return num;
 }
 
-void test_spi_swap_int32_t(int32_t a, int32_t b) {
+void test_spi_swap_int32_t(int32_t *a, int32_t *b) {
     int32_t t;
-    t = a;
-    a = b;
-    b = t;
+    t = *a;
+    *a = *b;
+    *b = t;
 }
 
 void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color) {
   int32_t steep = test_spi_abs(y1 - y0) > test_spi_abs(x1 - x0);
   if (steep) {
-    test_spi_swap_int32_t(x0, y0);
-    test_spi_swap_int32_t(x1, y1);
+    test_spi_swap_int32_t(&x0, &y0);
+    test_spi_swap_int32_t(&x1, &y1);
   }
 
   if (x0 > x1) {
-    test_spi_swap_int32_t(x0, x1);
-    test_spi_swap_int32_t(y0, y1);
+    test_spi_swap_int32_t(&x0, &x1);
+    test_spi_swap_int32_t(&y0, &y1);
   }
 
   int32_t dx, dy;
@@ -791,13 +791,13 @@ void canvas16_drawPixel(int32_t x, int32_t y, uint32_t color) {
 void canvas16_drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color) {
   int32_t steep = test_spi_abs(y1 - y0) > test_spi_abs(x1 - x0);
   if (steep) {
-    test_spi_swap_int32_t(x0, y0);
-    test_spi_swap_int32_t(x1, y1);
+    test_spi_swap_int32_t(&x0, &y0);
+    test_spi_swap_int32_t(&x1, &y1);
   }
 
   if (x0 > x1) {
-    test_spi_swap_int32_t(x0, x1);
-    test_spi_swap_int32_t(y0, y1);
+    test_spi_swap_int32_t(&x0, &x1);
+    test_spi_swap_int32_t(&y0, &y1);
   }
 
   int32_t dx, dy;

@@ -11,3 +11,9 @@ spitest_ili9486_double_buffer_draw_char.ccはILI9486に文字を表示するデ�
 spitest_ili9486_mandelbrot_set03.cはILI9486にマンデルブロ集合を表示するプログラムです。
 
 yamaから始まるファイル名はライブラリ的な部分を分離したものです。
+
+
+
+2023/03/15 追記
+    yama_ssd1306_library.cc、yama_ili9341_library.cc、yama_ili9486_library.cc、
+    yama_ili9341_library_double_buffer.c、yama_ili9486_library_double_buffer.cのdrawLineで不具合修正

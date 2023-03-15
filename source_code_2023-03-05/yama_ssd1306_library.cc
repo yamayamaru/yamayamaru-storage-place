@@ -1435,11 +1435,11 @@ int32_t ssd1306_abs(int32_t num) {
     return num;
 }
 
-void ssd1306_swap_int32_t(int32_t a, int32_t b) {
+void ssd1306_swap_int32_t(int32_t *a, int32_t *b) {
     int32_t t;
-    t = a;
-    a = b;
-    b = t;
+    t = *a;
+    *a = *b;
+    *b = t;
 }
 
 void ssd1306_set_rotation(int32_t x) {
@@ -1461,13 +1461,13 @@ void ssd1306_set_rotation(int32_t x) {
 void ssd1306_drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t color) {
   int32_t steep = ssd1306_abs(y1 - y0) > ssd1306_abs(x1 - x0);
   if (steep) {
-    ssd1306_swap_int32_t(x0, y0);
-    ssd1306_swap_int32_t(x1, y1);
+    ssd1306_swap_int32_t(&x0, &y0);
+    ssd1306_swap_int32_t(&x1, &y1);
   }
 
   if (x0 > x1) {
-    ssd1306_swap_int32_t(x0, x1);
-    ssd1306_swap_int32_t(y0, y1);
+    ssd1306_swap_int32_t(&x0, &x1);
+    ssd1306_swap_int32_t(&y0, &y1);
   }
 
   int32_t dx, dy;
