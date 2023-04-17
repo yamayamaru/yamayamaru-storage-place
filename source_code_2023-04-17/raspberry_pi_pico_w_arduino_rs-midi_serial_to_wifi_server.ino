@@ -17,8 +17,8 @@
 #include <WiFi.h>
 
 #ifndef STASSID
-#define STASSID "e392bb-e76034-2"
-#define STAPSK "c^B}q7QwboFicqIy|Oaw.=2tBgX-8__fV%dm]Ghu8Q]rB_7QwboFicqIy|Oaw@9"
+#define STASSID "Your SSID"
+#define STAPSK "Your PASSWORD"
 #endif
 
 
