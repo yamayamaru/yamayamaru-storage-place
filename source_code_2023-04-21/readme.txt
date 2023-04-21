@@ -17,6 +17,15 @@ Windows上でX68000エミュレータのXM6typeGでtantanさんのFDイメージ
 3.3V USB-Serialから出力してRaspberry Piにつないだ3.3V USB-Serialで受け取ったデータを
 MIDIインターフェースに直接データをそのまま流してます
 
+PCの3.3V USB-SerialとRaspberry Pi側の3.3V USB-Serialの接続方法は
+まず、両方のGNDをつなぎ、次にPC側の3.3V USB-SerialのTXをRaspberry Pi側の3.3V USB-SerialのRXにつなぎます
+これだけでOKです
+
+Raspberry Pi側はRaspberry PiでUARTを使える設定を行えば3.3V USB-Serialでなくても
+Raspberry PiのUARTのポートのttyAMA0を指定すれば行けるはずです
+
+
+
 MIDIインターフェースはUM-ONEmk2を使ってます
 
 Windows上でTMIDIで演奏してloopMIDIとHairless MIDI<->Serial Bridgeで3.3VのUSB-Serialから出力してもいいです
