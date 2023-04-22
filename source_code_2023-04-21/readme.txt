@@ -1,4 +1,4 @@
-このプログラムはシリアルポートからRS-MIDIのデータを受け取って
+raspberry_pi_serial_to_midi.cはシリアルポートからRS-MIDIのデータを受け取って
 そのデータをそのままMIDIインターフェースに出力してMIDI音源を鳴らします
 
 コンパイル方法
@@ -53,3 +53,26 @@ ZMUSICRS.X
 ZMUSICRS.X  -T1024
 としてください
 -T1024でトラックバッファの容量を1MB確保します
+
+
+
+
+追記：
+
+シリアルからRS-MIDIのデータを受けてRaspberry Piに接続したUSB-RS232Cポートに出力してRS-MIDI対応MIDI音源を鳴らすプログラムの
+raspberry_pi_serial_to_serial.cと
+
+LANからRS-MIDIのデータを受けてRaspberry Piに接続したUSB-MIDIインターフェースに出力してMIDI音源を鳴らすプログラムの
+raspberry_pi_rs-midi-wifi_to_midi_client.c
+
+2つのプログラムを追加しました
+
+
+
+raspberry_pi_rs-midi-wifi_to_midi_client.cのサーバプログラムは
+https://github.com/yamayamaru/yamayamaru-storage-place/tree/main/source_code_2023-04-17
+raspberry_pi_rs-midi-serial_to_wifi_server.c
+になります
+
+あらかじめサーバ側のSBCでraspberry_pi_rs-midi-serial_to_wifi_serverを立ち上げてから
+raspberry_pi_rs-midi-wifi_to_midi_clientで接続します。
