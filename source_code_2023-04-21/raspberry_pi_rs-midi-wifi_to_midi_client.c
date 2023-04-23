@@ -47,13 +47,13 @@
 #define PORT 4242
 
 
-int fd0; /* シリアル通信ファイルディスクリプタ */
+int fd0 = -1; /* シリアル通信ファイルディスクリプタ */
 
 void sigint_handler(int sig);
 
 char buffer[1];
 char destination[32];
-int dstSocket;
+int dstSocket = -1;
 struct sockaddr_in dstAddr;
 int numrcv, rcv_data_size;
 
@@ -62,8 +62,8 @@ void micro_delay(long micro_sec);
 int main(int argc, char *argv[]){
 
     if (argc != 2) {
-       printf("Usage : %s  midi_device\n"); 
-       printf("例)     %s  /dev/snd/midiC2D0\n");
+       printf("Usage : %s  midi_device\n", argv[0]); 
+       printf("例)     %s  /dev/snd/midiC2D0\n", argv[0]);
        return -1;
     }
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
 
-    if(!(fd0 = open(MIDI_PORT0, O_WRONLY))) { /* デバイスをオープンする */
+    if((fd0 = open(MIDI_PORT0, O_WRONLY)) == -1) { /* デバイスをオープンする */
         printf("MIDIデバイスが開けません : %s\n", MIDI_PORT0);
         return -1; /* デバイスをオープンする */
     }
@@ -120,8 +120,12 @@ int main(int argc, char *argv[]){
 }
 
 void sigint_handler(int sig) {
-    close(fd0);                         /* デバイスのクローズ */
-    close(dstSocket);
+    if (fd0 != -1) {
+        close(fd0);                         /* デバイスのクローズ */
+    }
+    if (dstSocket != -1) {
+        close(dstSocket);
+    }
 
     exit(1);
 } 
