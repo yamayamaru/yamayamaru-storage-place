@@ -10,7 +10,10 @@
 コンパイル方法
       gcc -O2 -o raspberry_pi_rs-midi-serial_to_wifi_server raspberry_pi_rs-midi-serial_to_wifi_server.c -lpthread
 
-  41行目の "/dev/ttyUSB0" の部分はご自分のUSB-Serialアダプタのデバイスを指定してください。 
+実行方法
+      ./raspberry_pi_rs-midi-serial_to_wifi_server  serial_device
+実行例
+      ./raspberry_pi_rs-midi-serial_to_wifi_server  /dev/ttyUSB0
 
 このプログラムで生じた損害などは一切保障しません
   自己責任で行ってください
@@ -38,12 +41,12 @@
 #include <signal.h>
 
 
-#define SERIAL_PORT0 "/dev/ttyUSB0"
+#define SERIAL_PORT0          (argv[1])
 #define BAUDRATE0 B38400                    /* ボーレートの設定 */
 
 #define PORT 4242
 
-int fd0; /* シリアル通信ファイルディスクリプタ */
+int fd0 = -1; /* シリアル通信ファイルディスクリプタ */
 
 struct termios newtio0, oldtio0;     /* シリアル通信設定 */
 void sigint_handler(int sig);
@@ -59,18 +62,27 @@ struct param01 {
 
 volatile int endflag = 0;
 
-int srcSocket;                   /* 自分 */
+int srcSocket = -1;                   /* 自分 */
 pthread_t pthread01;
 
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    if (argc != 2) {
+       printf("Usage : %s  serial_device\n", argv[0]);
+       printf("例)     %s  /dev/ttyUSB0\n", argv[0]);
+       return -1;
+    }
 
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal SIGINT");
         exit(-1);
     }
 
-    if(!(fd0 = open(SERIAL_PORT0, O_RDWR))) return -1; /* デバイスをオープンする */
+    if((fd0 = open(SERIAL_PORT0, O_RDWR)) == -1) {
+        printf("シリアルポートが開けません : %s\n", SERIAL_PORT0);
+        return -1; /* デバイスをオープンする */
+    }
     ioctl(fd0, TCGETS, &oldtio0);       /* 現在のシリアルポートの設定を待避 */
 
     bzero(&newtio0, sizeof(newtio0));
@@ -174,9 +186,13 @@ void sigint_handler(int sig) {
     
     void *pthread_ret;
     int status = pthread_join(pthread01, (void *)pthread_ret);     /* 指定したスレッドが終了するまで 待機 */
-    close(srcSocket);
+    if (srcSocket != -1) {
+        close(srcSocket);
+    }
 
-    ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
-    close(fd0);                         /* デバイスのクローズ */
+    if (fd0 != -1) {
+        ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
+        close(fd0);                         /* デバイスのクローズ */
+    }
     exit(1);
 }

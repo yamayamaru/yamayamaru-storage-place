@@ -35,8 +35,8 @@
 #define SERIAL_PORT1 (argv[2])
 #define BAUDRATE1 B38400         //ボーレートの設定(音源側)
 
-int fd0; /* シリアル通信ファイルディスクリプタ */
-int fd1; /* シリアル通信ファイルディスクリプタ */
+int fd0 = -1; /* シリアル通信ファイルディスクリプタ */
+int fd1 = -1; /* シリアル通信ファイルディスクリプタ */
 
 struct termios newtio0, newtio1, oldtio0, oldtio1;    /* シリアル通信設定 */
 void sigint_handler(int sig);
@@ -55,7 +55,10 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
 
-    if(!(fd0 = open(SERIAL_PORT0, O_RDONLY))) return -1; /* デバイスをオープンする */
+    if((fd0 = open(SERIAL_PORT0, O_RDONLY)) == -1) {
+        fprintf(stderr, "シリアルポートがオープンできません : %s\n", SERIAL_PORT0);
+        return -1; /* デバイスをオープンする */
+    }
     fprintf(stderr, "入力側シリアルポート %s を開きました\n", SERIAL_PORT0);
 
     ioctl(fd0, TCGETS, &oldtio0);       /* 現在のシリアルポートの設定を待避 */
@@ -80,8 +83,9 @@ int main(int argc, char *argv[]){
     ioctl(fd0, TCSETS, &newtio0);       /* ポートの設定を有効にする */
 
 
-    if(!(fd1 = open(SERIAL_PORT1, O_WRONLY))) {
+    if((fd1 = open(SERIAL_PORT1, O_WRONLY)) == -1) {
         close(fd0);
+        fprintf(stderr, "シリアルポートがオープンできません : %s\n", SERIAL_PORT1);
         return -1; /* デバイスをオープンする */
     }
     fprintf(stderr, "音源側シリアルポート %s を開きました\n", SERIAL_PORT1);
@@ -124,10 +128,14 @@ int main(int argc, char *argv[]){
 }
 
 void sigint_handler(int sig) {
-    ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
-    close(fd0);                        /* デバイスのクローズ */
-    ioctl(fd1, TCSETS, &oldtio1);       /* ポートの設定を元に戻す */
-    close(fd1);                        /* デバイスのクローズ */
+    if (fd0 != -1) {
+        ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
+        close(fd0);                        /* デバイスのクローズ */
+    }
+    if (fd1 != -1) {
+        ioctl(fd1, TCSETS, &oldtio1);       /* ポートの設定を元に戻す */
+        close(fd1);                        /* デバイスのクローズ */
+    }
 
     exit(1);
 }

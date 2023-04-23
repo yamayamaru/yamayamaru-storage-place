@@ -19,7 +19,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<strings.h>
-
+ 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -35,8 +35,8 @@
 #define MIDI_PORT0    (argv[2])
 
 
-int fd0; /* シリアル通信ファイルディスクリプタ */
-int fd1; /* MIDIポートファイルディスクリプタ */
+int fd0 = -1; /* シリアル通信ファイルディスクリプタ */
+int fd1 = -1; /* MIDIポートファイルディスクリプタ */
 
 struct termios newtio0, oldtio0;    /* シリアル通信設定 */
 void sigint_handler(int sig);
@@ -46,22 +46,22 @@ int main(int argc, char *argv[]){
 
     if (argc != 3) {
         printf("Usage : %s  serial_device  midi_device\n", argv[0]);
-        printf("例) %s  /dev/ttyUSB0  /dev/snd/midiC2D0\n", argv[0]);
-        return -1;
+	printf("例) %s  /dev/ttyUSB0  /dev/snd/midiC2D0\n", argv[0]);
+	return -1;
     }
-
+         
     if (signal(SIGINT, sigint_handler) == SIG_ERR) {
         perror("signal SIGINT");
         exit(-1);
     }
 
-    if(!(fd0 = open(SERIAL_PORT0, O_RDWR))) {    /* デバイスをオープンする */
+    if((fd0 = open(SERIAL_PORT0, O_RDWR)) == -1) {    /* デバイスをオープンする */
         fprintf(stderr, "シリアルポートが開けません : %s\n", SERIAL_PORT0);
         return -1;
     }
     fprintf(stderr, "シリアルポート %s を開きました\n", SERIAL_PORT0);
     ioctl(fd0, TCGETS, &oldtio0);       /* 現在のシリアルポートの設定を待避 */
-
+ 
     bzero(&newtio0, sizeof(newtio0));
     newtio0 = oldtio0;                  /* ポートの設定をコピー */
 
@@ -82,9 +82,9 @@ int main(int argc, char *argv[]){
     ioctl(fd0, TCSETS, &newtio0);       /* ポートの設定を有効にする */
 
 
-    if(!(fd1 = open(MIDI_PORT0, O_WRONLY))) {
+    if((fd1 = open(MIDI_PORT0, O_WRONLY)) == -1) {
         fprintf(stderr, "MIDIデバイスがオープンできません : %s\n", MIDI_PORT0);
-        close(fd0);
+	close(fd0);
         return -1; /* デバイスをオープンする */
     }
     fprintf(stderr, "MIDIポート %s を開きました\n", MIDI_PORT0);
@@ -93,9 +93,9 @@ int main(int argc, char *argv[]){
     ssize_t cnt01 = 0;
     for (;;) {
         cnt = read(fd0, buf01, sizeof(buf01));
-        if (cnt == 0) break;
+	if (cnt == 0) break;
         write(fd1, buf01, cnt);
-        cnt01++;
+	cnt01++;
     }
 
     ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
@@ -106,9 +106,13 @@ int main(int argc, char *argv[]){
 }
 
 void sigint_handler(int sig) {
-    ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
-    close(fd0);                        /* デバイスのクローズ */
-    close(fd1);                        /* デバイスのクローズ */
+    if (fd0 != -1) {
+        ioctl(fd0, TCSETS, &oldtio0);       /* ポートの設定を元に戻す */
+        close(fd0);                        /* デバイスのクローズ */
+    }
+    if (fd1 != -1) {
+        close(fd1);                        /* デバイスのクローズ */
+    }
 
     exit(1);
 }

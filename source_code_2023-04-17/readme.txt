@@ -25,14 +25,15 @@ Linuxマシン用のサーバプログラムが
 raspberry_pi_rs-midi-serial_to_wifi_server.c
 です
 3.3VのUSB-Serialからの入力をネットワークに飛ばします
-41行目でSERIAL_PORT0にお使いの3.3VのUSB-Serialのデバイスファイルを指定してください
 
 コンパイル方法は
    gcc -O2 -o raspberry_pi_rs-midi-serial_to_wifi_server raspberry_pi_rs-midi-serial_to_wifi_server.c -lpthread
 
 実行方法は
-   ./raspberry_pi_rs-midi-serial_to_wifi_server
+   ./raspberry_pi_rs-midi-serial_to_wifi_server  serial_device
 
+実行例は
+   ./raspberry_pi_rs-midi-serial_to_wifi_server  /dev/ttyUSB0
 
 
 
@@ -43,7 +44,6 @@ raspberry_pi_rs-midi-serial_to_wifi_client.c
 サーバプログラムが飛ばしたネットワークからのデータを受け取り
 USB-RS232Cポートに出力してUSB-RS232CにつながっているRS-MIDI対応のMIDI音源を鳴らします
 
-36行目でSERIAL_PORT0にお使いのUSB-RS232Cのデバイスファイルを指定してください
 USB-RS232Cでなくて3.3VUSB-Serialの場合はMIDI音源のシリアルポートにつなぐには
 RS232C用に電圧レベルを上げるコンバータモジュールが必要です
 
@@ -54,5 +54,7 @@ RS232C用に電圧レベルを上げるコンバータモジュールが必要�
 
 
 実行方法は
-    ./raspberry_pi_rs-midi-serial_to_wifi_client
+    ./raspberry_pi_rs-midi-serial_to_wifi_client  serial_device
 
+実行例は
+    ./raspberry_pi_rs-midi-serial_to_wifi_client  /dev/ttyUSB0
