@@ -2,7 +2,7 @@
     注意：NEO_PIXEL_PINの番号は0から7まで指定できます。8以降はまだ未対応
 */
 
-#define NEO_PIXEL_PIN 3
+#define NEO_PIXEL_PIN 2
 #define PIXEL_N 12
 
 
@@ -192,8 +192,8 @@ void showPixelColor() {
 //    num4 = 21;  // T0L
     num1 =  7;  // T1H
     num2 =  2;  // T0H
-    num3 =  7;  // T1L
-    num4 =  7;  // T0L
+    num3 =  4;  // T1L
+    num4 =  4;  // T0L
 
     while (p < (neoPixels + (_pixel_num * 3))) {
       pix = *p++;
@@ -235,7 +235,15 @@ void showPixelColor() {
                   "  orr      r2, r3, %[r_port_n_pin_mask]\n\t"
                   "  strh     r2, [r4]\n\t"
                   "  movs     r0, %[flag1]\n\t"
-                  "  bne      jmp_showPixelColor01\n"
+                  "  bne      jmp_showPixelColor01\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
                   "  b        jmp_showPixelColor02\n"
                   "jmp_showPixelColor01:\n\t"
                   "  movs     r0, %[num1]\n"
@@ -243,6 +251,17 @@ void showPixelColor() {
                   "  sub      r0, #1\n\t"
                   "  cmp      r0, #0\n\t"
                   "  bne      loop_showPixelColor01\n"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
+                  "  nop\n\t"
                   "jmp_showPixelColor02:\n\t"
                   "  strh     r1, [r4]\n"
                   :
