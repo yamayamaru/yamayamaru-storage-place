@@ -164,7 +164,8 @@ int initPixelColor(int pin, int pixel_number) {
     setPixelColor(i, 0);
   }
   showPixelColor();
-
+  delay(200);
+  
   return 0;
 }
 
