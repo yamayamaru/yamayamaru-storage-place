@@ -19,10 +19,6 @@ int getPixelNum();
 void setup() {
   Serial.begin(115200);
 
-  pinMode(NEO_PIXEL_PIN, OUTPUT);
-  set_pin_no(NEO_PIXEL_PIN);
-  pin_clear();
-
   initPixelColor(NEO_PIXEL_PIN, 12);
   for (int i = 0; i < PIXEL_N; i++) {
     setPixelColor(i, rgb_color(0, 0, 255));
@@ -160,6 +156,9 @@ int initPixelColor(int pin, int pixel_number) {
   _pixel_pin = pin;
 
   pinMode(_pixel_pin, OUTPUT);
+  set_pin_no(_pixel_pin);
+  pin_clear();
+
   memset(neoPixels, 0, MAX_NEOPIXEL_COUNT * 3);
   for (int i = 0; i < _pixel_num; i++) {
     setPixelColor(i, 0);
