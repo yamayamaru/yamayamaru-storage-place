@@ -5,10 +5,6 @@
   C:\Users\USERNAME\AppData\Local\Arduino15\packages\arduino\hardware\renesas_uno\1.0.1\libraries
     注：USERNAMEの部分はご自分のWindowsのユーザ名です
   ここにwiring_privateというフォルダを作り、その下にwiring_private.hという名前で空のファイルを作るとコンパイルできるようです
-
-
-  2023/07/04  初アップ
-  2023/07/05  パラメーターの数値表示を改善(Arduino UNO R4のvnsprintfで%eが表示されないのでprint_double, print_double_ln関数追加)
 */
 
 #include "Arduino.h"
@@ -31,8 +27,8 @@ const int tft_frequency = 20000000;
 
 void printf1(const char* format, ...);
 void mandelbrot(void);
-void mandel(float xcorner, float ycorner, float length, int xdot, int ydot, int depth);
-int mand(float a1, float b1, int depth1);
+void mandel(double xcorner, double ycorner, double length, int xdot, int ydot, int depth);
+int mand(double a1, double b1, int depth1);
 
 struct m_param {
     double    xcorner;
@@ -82,28 +78,28 @@ uint16_t color01(int colr, int colg, int colb) {
 
 void mandelbrot(void) {
 
-    float    xcorner, ycorner, length;
+    double    xcorner, ycorner, length;
     int       xdot, ydot, depth;
 
     xdot = 320;
     ydot = 240;
 
     for (int number01 = 0; number01 < 15; number01++) {
-      xcorner =  (float)m_param01[number01].xcorner;
-      ycorner =  (float)m_param01[number01].ycorner;
-      length  =  (float)m_param01[number01].length;
+      xcorner =  m_param01[number01].xcorner;
+      ycorner =  m_param01[number01].ycorner;
+      length  =  m_param01[number01].length;
       depth   =  m_param01[number01].depth;
       mandel(xcorner, ycorner, length, xdot, ydot, depth);
 //      delay(10000);
     }
 }
 
-void mandel(float xcorner, float ycorner, float length, int xdot, int ydot, int depth) {
-    float xgap, ygap;
-    float xx, yy;
+void mandel(double xcorner, double ycorner, double length, int xdot, int ydot, int depth) {
+    double xgap, ygap;
+    double xx, yy;
     int    i, j;
     int    col01, colr, colg, colb;
-    float xcorner1;
+    double xcorner1;
 
     // xgap = length / xdot;
     // ygap = length / xdot;
@@ -113,10 +109,10 @@ void mandel(float xcorner, float ycorner, float length, int xdot, int ydot, int 
     xcorner1 = xcorner;
     xcorner = xcorner - (xdot - ydot) / 2 * xgap;
     printf1("xdot = %d    ydot = %d\r\n", xdot, ydot);
-    printf1("xcorner = "); print_double(xcorner, 6);
-    printf1("  :  "); print_double(xcorner1, 6); printf1(" - (%d - %d) / 2 * ", xdot, ydot); print_double_ln(xgap, 6);
-    printf1("ycorner = "); print_double_ln(ycorner, 6);
-    printf1("length  = "); print_double_ln(length, 6);
+    printf1("xcorner = "); print_double(xcorner, 15);
+    printf1("  :  "); print_double(xcorner1, 15); printf1(" - (%d - %d) / 2 * ", xdot, ydot); print_double_ln(xgap, 15);
+    printf1("ycorner = "); print_double_ln(ycorner, 15);
+    printf1("length  = "); print_double_ln(length, 15);
     printf1("depth   = %d\r\n", depth);
     printf1("\r\n");
 
@@ -143,9 +139,9 @@ void mandel(float xcorner, float ycorner, float length, int xdot, int ydot, int 
     }
 }
 
-int mand(float a1, float b1, int depth1) {
+int mand(double a1, double b1, int depth1) {
     int     i1;
-    float  x1, y1, tmp1, x2, y2;
+    double  x1, y1, tmp1, x2, y2;
 
     i1 = 0;
     x1 = 0; y1 = 0;
