@@ -51,3 +51,9 @@ bmp24_data_to_msx_screen8_data_bsave.sh(LinuxまたはMingw-w64用)
 plot_dat-256x212-24bit.pyはPython3のtkinter用の24bit bitmap RAW画像を表示するためのプログラムです
 msx_screen8_plot.pyはPython3のtkinter用のMSX 8bit画像を表示するめのプログラムです
 tkinterはPythonをインストールすると自動でインストールされます。
+
+
+bmp24_data_to_rgb24bit_raw_data.pyは
+https://www.tutimogura.com/python-bitmap-read/を参考にしてます
+error_diffusion01.cは
+https://zenn.dev/baroqueengine/books/a19140f2d9fc1a/viewer/531f1dを参考にして作りました。
