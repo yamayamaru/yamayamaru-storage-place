@@ -55,9 +55,11 @@ tkinterはPythonをインストールすると自動でインストールされ�
 
 
 bmp24_data_to_rgb24bit_raw_data.pyは
-https://www.tutimogura.com/python-bitmap-read/を参考にしてます
+https://www.tutimogura.com/python-bitmap-read/
+を参考にしてます
 error_diffusion01.cは
-https://zenn.dev/baroqueengine/books/a19140f2d9fc1a/viewer/531f1dを参考にして作りました。
+https://zenn.dev/baroqueengine/books/a19140f2d9fc1a/viewer/531f1d
+を参考にして作りました。
 
 
 BASICでMSX SCREEN 8用に変換した5枚のサンプル画像を表示するプログラムとしてPUTSCRN8.BASを用意しました
