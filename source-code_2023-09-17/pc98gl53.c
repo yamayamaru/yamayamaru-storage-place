@@ -1,4 +1,4 @@
-/* watcom cç”¨ */
+/* watcom c—p */
 
 #include <dos.h>
 #include <i86.h>
@@ -6,6 +6,8 @@
 
 #define PC98_GLIB_WIDTH  640
 #define PC98_GLIB_HEIGHT 400
+
+#define PC98_XLINE_WIDTH 640
 
 #define pc98_glib_div8(x) (x >> 3)
 #define pc98_glib_mod8(x) (x & 0x7)
@@ -80,10 +82,10 @@ void get_image(int x, int y, int width, int height, void *image) {
     struct xy_data01 *xydata01 = (struct xy_data01 *)image;
 
     for (j = 0; j < 4; j++) {
-        src_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        src_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         dst_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(width) * height * j;
         for (i = 0; i < height; i++) {
-            line_src_addr01 = src_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_src_addr01 = src_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             line_dst_addr01 = dst_base_addr01 + get_image_size_line_one_plane_data(width) * i;
             get_image_line_one_plane(line_dst_addr01, line_src_addr01, x, width);
         }
@@ -104,7 +106,7 @@ static void get_image_line_one_plane(uint8_t *line_data_addr, uint8_t FAR *base_
 
     if ((left_fraction01 + width) >= 8) {
 
-        /* ãƒã‚¤ãƒˆã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚³ãƒ”ãƒ¼ */
+        /* ƒoƒCƒgƒCƒ[ƒW‚ÌƒRƒs[ */
         sp = base_addr + pc98_glib_div8(x);
         for (i = 0; i < pc98_glib_div8(width); i++) {
             *dp++ = *sp++ << left_fraction01 | *sp >> (8 - left_fraction01);
@@ -112,23 +114,23 @@ static void get_image_line_one_plane(uint8_t *line_data_addr, uint8_t FAR *base_
 
         if (left_fraction01 > 0) {
             if (left_fraction01 >= right_fraction01) {
-                /* å³ç«¯ç«¯æ•°å‡¦ç† */
+                /* ‰E’[’[”ˆ— */
                 *dp++ = *sp++ << left_fraction01 & (0xff << (left_fraction01 - right_fraction01));
             } else {
-                /* å³ç«¯ç«¯æ•°å‡¦ç† */
-                /* å·¦ç«¯ãŒãƒã‚¤ãƒˆã‚’ã¾ãŸãå ´åˆ */
+                /* ‰E’[’[”ˆ— */
+                /* ¶’[‚ªƒoƒCƒg‚ğ‚Ü‚½‚®ê‡ */
                 *dp++ = (*sp++ << left_fraction01) | (*sp >> (8 - left_fraction01));
                 *dp++ = *sp & (~(0xff << (8 - (right_fraction01 - left_fraction01))));
             }
         } else {
-            /* å·¦ç«¯ã«ç«¯æ•°ãŒç„¡ã„å ´åˆ */
+            /* ¶’[‚É’[”‚ª–³‚¢ê‡ */
             if (right_fraction01 != 0) {
-                /* å·¦ç«¯ã«ç«¯æ•°ãŒç„¡ãã€widthãŒ8ã§å‰²ã‚Šåˆ‡ã‚Œãªã„å ´åˆ */
+                /* ¶’[‚É’[”‚ª–³‚­Awidth‚ª8‚ÅŠ„‚èØ‚ê‚È‚¢ê‡ */
                 *dp++ = *sp & (~(0xff << (8 - right_fraction01)));
             }
         }
     } else {
-        /* ã‚¤ãƒ¡ãƒ¼ã‚¸ã®å·¦ç«¯ã®ç«¯æ•°+æ¨ªå¹…ãŒæœ€åˆã®1ãƒã‚¤ãƒˆä»¥å†…ã ã£ãŸå ´åˆã®å‡¦ç† */
+        /* ƒCƒ[ƒW‚Ì¶’[‚Ì’[”+‰¡•‚ªÅ‰‚Ì1ƒoƒCƒgˆÈ“à‚¾‚Á‚½ê‡‚Ìˆ— */
         *dp++ = (*sp++ << left_fraction01) & (0xff << (left_fraction01 - right_fraction01));
     }
 }
@@ -152,10 +154,10 @@ void put_image8(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane8(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -180,10 +182,10 @@ void put_image8_or(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane8_or(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -208,10 +210,10 @@ void put_image8_and(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane8_and(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -286,10 +288,10 @@ void put_image(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -314,10 +316,10 @@ void put_image_or(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane_or(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -342,10 +344,10 @@ void put_image_and(int xx, int yy, void *image) {
 
     for (j = 0; j < 4; j++) {
         src_base_addr01 = image_data01 + sizeof(struct xy_data01) + get_image_size_line_one_plane_data(xydata01->x) * xydata01->y * j;
-        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_GLIB_WIDTH) * y;
+        dst_base_addr01 = vram_addr_array[j] + (long)pc98_glib_div8(PC98_XLINE_WIDTH) * y;
         for (i = 0; i < img_height; i++) {
             line_src_addr01 = src_base_addr01 + get_image_size_line_one_plane_data(xydata01->x) * i;
-            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_GLIB_WIDTH) * i;
+            line_dst_addr01 = dst_base_addr01 + pc98_glib_div8(PC98_XLINE_WIDTH) * i;
             put_image_line_one_plane_and(line_dst_addr01, line_src_addr01, x, xydata01->x);
         }
     }
@@ -373,7 +375,7 @@ static void put_image_line_one_plane(uint8_t FAR *base_addr, uint8_t *line_data_
             *dp = (*dp & ~(0xff << (8 - right_fraction01))) | (*sp & (0xff << (8 - right_fraction01)));
         }
     } else {
-        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
+        /* ¶’[‚Ì’[”ˆ— */
         *dp = (uint8_t)((*dp & (0xff << left_fraction01)) | (*sp >> (8 - left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -384,9 +386,9 @@ static void put_image_line_one_plane(uint8_t FAR *base_addr, uint8_t *line_data_
         *dp = (*dp & (0xff >> (8 - left_fraction01))) | (*sp << left_fraction01);
 
         if (width_fraction01 > 0) {
-            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
+            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
         }
-        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
+        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
     }
 }
 
@@ -413,7 +415,7 @@ static void put_image_line_one_plane_or(uint8_t FAR *base_addr, uint8_t *line_da
             *dp = *dp | (*sp & (0xff << (8 - right_fraction01)));
         }
     } else {
-        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
+        /* ¶’[‚Ì’[”ˆ— */
         *dp = (uint8_t)(*dp | (*sp >> (8 - left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -425,9 +427,9 @@ static void put_image_line_one_plane_or(uint8_t FAR *base_addr, uint8_t *line_da
         *dp = *dp | (*sp << left_fraction01);
 
         if (width_fraction01 > 0) {
-            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
+            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
         }
-        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
+        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
     }
 }
 
@@ -454,7 +456,7 @@ static void put_image_line_one_plane_and(uint8_t FAR *base_addr, uint8_t *line_d
             *dp = (*dp & ((*sp & (0xff << (8 - right_fraction01))) | (0xff >> right_fraction01)));
         }
     } else {
-        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
+        /* ¶’[‚Ì’[”ˆ— */
         *dp = (*dp & ((*sp >> (8 - left_fraction01)) | (0xff << left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -466,9 +468,9 @@ static void put_image_line_one_plane_and(uint8_t FAR *base_addr, uint8_t *line_d
         *dp = *dp & ((*sp << left_fraction01) | (0xff >> (8 - left_fraction01)));
 
         if (width_fraction01 > 0) {
-            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
+            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
         }
-        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
+        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
     }
 }
 
@@ -483,7 +485,7 @@ void setactivepage(int apage01) {
 
 
 
-void gstart(void) {     /* ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯è¡¨ç¤ºON */
+void gstart(void) {     /* ƒOƒ‰ƒtƒBƒbƒN•\¦ON */
     union REGS regs;
     regs.h.ah = 0x40;
 #ifdef __386__
@@ -493,7 +495,7 @@ void gstart(void) {     /* ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯è¡¨ç¤ºON */
 #endif
 }
 
-void color16(void) {    /* 16è‰²è¡¨ç¤ºã«ã™ã‚‹ */
+void color16(void) {    /* 16F•\¦‚É‚·‚é */
     outp(0x6a, 1);
     outp(0xa2, 0x4b);
     outp(0xa0, 0);
@@ -546,7 +548,7 @@ void pset(int x, int y, int color) {
     char FAR *p;
     unsigned char c;
 
-    addr01 = (unsigned int)((640L * y + x) >> 3);
+    addr01 = (unsigned int)(((unsigned long)PC98_XLINE_WIDTH * y + x) >> 3);
     bit01 = x & 0x07;
     c = 0x80 >> bit01;
 
@@ -585,8 +587,8 @@ void pset(int x, int y, int color) {
 
 
 
-#define WIDTH    640
-#define HEIGHT   400
+#define WIDTH    PC98_GLIB_WIDTH
+#define HEIGHT   PC98_GLIB_HEIGHT
 #define RASPBERRY_N   40
 #define RDX        5
 #define RDY        5
@@ -794,7 +796,7 @@ void random_raspberry(void) {
 
     setvisualpage(vpage01);
 
-/*    delay(1);     */
+/*    delay(1);    */
 }
 
 int rnd(int a) {
@@ -813,7 +815,7 @@ const unsigned char bitmap_mask01[] = {
 };
 
 
-/* 32x32 24bit RGB ç”»åƒãƒ‡ãƒ¼ã‚¿  */
+/* 32x32 24bit RGB ‰æ‘œƒf[ƒ^  */
 const unsigned char bitmap01[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
