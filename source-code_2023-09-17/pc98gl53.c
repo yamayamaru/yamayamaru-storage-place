@@ -1,4 +1,4 @@
-/* watcom c—p */
+/* watcom cç”¨ */
 
 #include <dos.h>
 #include <i86.h>
@@ -104,7 +104,7 @@ static void get_image_line_one_plane(uint8_t *line_data_addr, uint8_t FAR *base_
 
     if ((left_fraction01 + width) >= 8) {
 
-        /* ƒoƒCƒgƒCƒ[ƒW‚ÌƒRƒs[ */
+        /* ãƒã‚¤ãƒˆã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚³ãƒ”ãƒ¼ */
         sp = base_addr + pc98_glib_div8(x);
         for (i = 0; i < pc98_glib_div8(width); i++) {
             *dp++ = *sp++ << left_fraction01 | *sp >> (8 - left_fraction01);
@@ -112,23 +112,23 @@ static void get_image_line_one_plane(uint8_t *line_data_addr, uint8_t FAR *base_
 
         if (left_fraction01 > 0) {
             if (left_fraction01 >= right_fraction01) {
-                /* ‰E’[’[”ˆ— */
+                /* å³ç«¯ç«¯æ•°å‡¦ç† */
                 *dp++ = *sp++ << left_fraction01 & (0xff << (left_fraction01 - right_fraction01));
             } else {
-                /* ‰E’[’[”ˆ— */
-                /* ¶’[‚ªƒoƒCƒg‚ğ‚Ü‚½‚®ê‡ */
+                /* å³ç«¯ç«¯æ•°å‡¦ç† */
+                /* å·¦ç«¯ãŒãƒã‚¤ãƒˆã‚’ã¾ãŸãå ´åˆ */
                 *dp++ = (*sp++ << left_fraction01) | (*sp >> (8 - left_fraction01));
                 *dp++ = *sp & (~(0xff << (8 - (right_fraction01 - left_fraction01))));
             }
         } else {
-            /* ¶’[‚É’[”‚ª–³‚¢ê‡ */
+            /* å·¦ç«¯ã«ç«¯æ•°ãŒç„¡ã„å ´åˆ */
             if (right_fraction01 != 0) {
-                /* ¶’[‚É’[”‚ª–³‚­Awidth‚ª8‚ÅŠ„‚èØ‚ê‚È‚¢ê‡ */
+                /* å·¦ç«¯ã«ç«¯æ•°ãŒç„¡ãã€widthãŒ8ã§å‰²ã‚Šåˆ‡ã‚Œãªã„å ´åˆ */
                 *dp++ = *sp & (~(0xff << (8 - right_fraction01)));
             }
         }
     } else {
-        /* ƒCƒ[ƒW‚Ì¶’[‚Ì’[”+‰¡•‚ªÅ‰‚Ì1ƒoƒCƒgˆÈ“à‚¾‚Á‚½ê‡‚Ìˆ— */
+        /* ã‚¤ãƒ¡ãƒ¼ã‚¸ã®å·¦ç«¯ã®ç«¯æ•°+æ¨ªå¹…ãŒæœ€åˆã®1ãƒã‚¤ãƒˆä»¥å†…ã ã£ãŸå ´åˆã®å‡¦ç† */
         *dp++ = (*sp++ << left_fraction01) & (0xff << (left_fraction01 - right_fraction01));
     }
 }
@@ -373,7 +373,7 @@ static void put_image_line_one_plane(uint8_t FAR *base_addr, uint8_t *line_data_
             *dp = (*dp & ~(0xff << (8 - right_fraction01))) | (*sp & (0xff << (8 - right_fraction01)));
         }
     } else {
-        /* ¶’[‚Ì’[”ˆ— */
+        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
         *dp = (uint8_t)((*dp & (0xff << left_fraction01)) | (*sp >> (8 - left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -384,9 +384,9 @@ static void put_image_line_one_plane(uint8_t FAR *base_addr, uint8_t *line_data_
         *dp = (*dp & (0xff >> (8 - left_fraction01))) | (*sp << left_fraction01);
 
         if (width_fraction01 > 0) {
-            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
+            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
         }
-        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
+        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
     }
 }
 
@@ -413,7 +413,7 @@ static void put_image_line_one_plane_or(uint8_t FAR *base_addr, uint8_t *line_da
             *dp = *dp | (*sp & (0xff << (8 - right_fraction01)));
         }
     } else {
-        /* ¶’[‚Ì’[”ˆ— */
+        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
         *dp = (uint8_t)(*dp | (*sp >> (8 - left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -425,9 +425,9 @@ static void put_image_line_one_plane_or(uint8_t FAR *base_addr, uint8_t *line_da
         *dp = *dp | (*sp << left_fraction01);
 
         if (width_fraction01 > 0) {
-            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
+            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
         }
-        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
+        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
     }
 }
 
@@ -454,7 +454,7 @@ static void put_image_line_one_plane_and(uint8_t FAR *base_addr, uint8_t *line_d
             *dp = (*dp & ((*sp & (0xff << (8 - right_fraction01))) | (0xff >> right_fraction01)));
         }
     } else {
-        /* ¶’[‚Ì’[”ˆ— */
+        /* å·¦ç«¯ã®ç«¯æ•°å‡¦ç† */
         *dp = (*dp & ((*sp >> (8 - left_fraction01)) | (0xff << left_fraction01)));
         dp++;
         for (i = 0; i < pc98_glib_div8(width) - 1; i++) {
@@ -466,9 +466,9 @@ static void put_image_line_one_plane_and(uint8_t FAR *base_addr, uint8_t *line_d
         *dp = *dp & ((*sp << left_fraction01) | (0xff >> (8 - left_fraction01)));
 
         if (width_fraction01 > 0) {
-            /* width‚ª8‚Ì”{”ˆÈŠO‚Ìê‡–¢À‘• */
+            /* widthãŒ8ã®å€æ•°ä»¥å¤–ã®å ´åˆæœªå®Ÿè£… */
         }
-        /* width‚ª8–¢–‚Ìê‡‚à–¢À‘• */
+        /* widthãŒ8æœªæº€ã®å ´åˆã‚‚æœªå®Ÿè£… */
     }
 }
 
@@ -483,7 +483,7 @@ void setactivepage(int apage01) {
 
 
 
-void gstart(void) {     /* ƒOƒ‰ƒtƒBƒbƒN•\¦ON */
+void gstart(void) {     /* ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯è¡¨ç¤ºON */
     union REGS regs;
     regs.h.ah = 0x40;
 #ifdef __386__
@@ -493,7 +493,7 @@ void gstart(void) {     /* ƒOƒ‰ƒtƒBƒbƒN•\¦ON */
 #endif
 }
 
-void color16(void) {    /* 16F•\¦‚É‚·‚é */
+void color16(void) {    /* 16è‰²è¡¨ç¤ºã«ã™ã‚‹ */
     outp(0x6a, 1);
     outp(0xa2, 0x4b);
     outp(0xa0, 0);
@@ -794,7 +794,7 @@ void random_raspberry(void) {
 
     setvisualpage(vpage01);
 
-    delay(10);
+/*    delay(1);     */
 }
 
 int rnd(int a) {
@@ -813,7 +813,7 @@ const unsigned char bitmap_mask01[] = {
 };
 
 
-/* 32x32 24bit RGB ‰æ‘œƒf[ƒ^  */
+/* 32x32 24bit RGB ç”»åƒãƒ‡ãƒ¼ã‚¿  */
 const unsigned char bitmap01[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
