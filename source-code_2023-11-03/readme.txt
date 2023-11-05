@@ -24,6 +24,13 @@ chmod u+x framebuf_draw_mjpeg02-build.sh
 
 
 
+
+追記
+https://www.pexels.com/ja-jp/search/videos/%E8%87%AA%E7%84%B6/
+こちらのサイトからダウンロードした無料動画を付けてみました
+
+
+
 動画ファイルは付属してないので実行するにあたっては150行目くらいにあるloop関数で
 ご自分で用意したMotionJPEGのファイルを指定してください
 拡張子は大文字の.MJP固定です
@@ -36,3 +43,6 @@ ffmpeg -i test_in3.mp4 -b:v 750k -r 38.0 -s 240x160 -vcodec mjpeg -an test_o3.mo
 
 これらのプログラムの使用に当たってはご自分の責任において使用してください
 これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません
+
+
+
