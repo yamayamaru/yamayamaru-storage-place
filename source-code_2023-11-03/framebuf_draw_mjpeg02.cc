@@ -169,15 +169,19 @@ void loop() {
 */
 
     tft.fillScreen(ILI9486_RED);
-//    drawJpgBmppicture_mjpeg("A4_12FPS.MJP", 12);
-//    drawJpgBmppicture_mjpeg("bad2-15.MJP", 15);
+
+    drawJpgBmppicture_mjpeg("V1_15FPS.MJP", 15);
+    delay(5000);
+
+    drawJpgBmppicture_mjpeg("V2_15FPS.MJP", 15);
+    delay(5000);
+
+    drawJpgBmppicture_mjpeg("V3_15FPS.MJP", 15);
+    delay(5000);
+
 
 
     drawJpgBmppicture_mjpeg("macr1-13.MJP", 13);
-
-
-//    drawJpgBmppicture_mjpeg("maca1-22.MJP", 22);
-//    drawJpgBmppicture_mjpeg("macb1-38.MJP", 38);
     delay(5000);
 
     drawJpgBmppicture_mjpeg("A5_9FPS.MJP", 9);
