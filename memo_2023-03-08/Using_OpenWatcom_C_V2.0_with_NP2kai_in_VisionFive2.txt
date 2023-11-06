@@ -399,16 +399,30 @@ Total 165 sec. (real time),	chksum= 11583
 
 
 
-漢字は一部文字化けします。
-文字化けする漢字は漢字コードを直接入力すると良いようです。
+漢字はシフトJISを使う場合、-zk0オプションを付けてコンパイルすると文字化けしないようです
+
+
+dos4gw b:\watcom\binw\wcc386 -4s -zq -zk0 ktest01.c
+dos4gw b:\watcom\binw\wlink name ktest01 file { ktest01.obj }
+
+
+
+
+ktest01.c
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char **argv){
 
-    printf("一部の文字が文字化けするので\\x95\\x5cなどのようにコードで指定する\n");
+    printf("一部の文字が文字化けするのでコンパイルオプションに-zk0を指定する\n");
     printf("日本語\x95\x5c\x8e\xa6テスト\n");
+    printf("日本語表示テスト\n");
 
     return 0;
 }
+
+
+
