@@ -2,6 +2,10 @@ sdcc4.2.0用のマンデルブロ集合のプログラムです
 
 コンパイル方法
 
+export SDCC_HOME=  #ここにsdccのHOMEのパスを指定
+export SDCC_INCLUDE=$SDCC_HOME/include
+export PATH=$SDCC_HOME/bin:$PATH
+
 rm mandelc.com
 rm mandelc.rel
 rm mandelc.asm

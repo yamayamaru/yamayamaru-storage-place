@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#export SDCC_HOME=  #ここにsdccのHOMEのパスを指定
+export SDCC_HOME=  #ここにsdccのHOMEのパスを指定
 export SDCC_INCLUDE=$SDCC_HOME/include
 export PATH=$SDCC_HOME/bin:$PATH
 
