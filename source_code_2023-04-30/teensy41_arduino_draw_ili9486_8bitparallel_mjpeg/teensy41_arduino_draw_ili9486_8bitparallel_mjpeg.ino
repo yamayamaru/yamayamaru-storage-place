@@ -154,13 +154,11 @@ void loop() {
     // 240x160、750kで38FPSくらいでした。
     // JPEG画像やBMP画像の表示もできますが、表示されない場合は一度Windows付属のペイントで保存してから試してみてください。
 
-/*
     fillScreen(ILI9486_BLACK);
     drawJpgBmppicture_mjpeg("SNAIL01.JPG", 0);
     delay(5000);
     drawJpgBmppicture_mjpeg("SCENIC01.BMP", 0);
     delay(5000);
-*/
 /*
     fillScreen(ILI9486_BLUE);
     drawJpgBmppicture_mjpeg("test_o1.MJP", 13);
