@@ -150,7 +150,7 @@ void loop() {
     drawJpgBmppicture_mjpeg("W2_15FPS.MJP", 15);
     delay(5000);
  
-    drawJpgBmppicture_mjpeg("W1_15FPS.MJP", 15);
+    drawJpgBmppicture_mjpeg("W3_15FPS.MJP", 15);
     delay(5000);
 }
  
