@@ -161,6 +161,7 @@ void loop() {
     drawJpgBmppicture_mjpeg("SCENIC01.BMP", 0);
     delay(5000);
 */
+/*
     fillScreen(ILI9486_BLUE);
     drawJpgBmppicture_mjpeg("test_o1.MJP", 13);
     delay(5000);
@@ -171,6 +172,18 @@ void loop() {
 
     fillScreen(ILI9486_BLUE);
     drawJpgBmppicture_mjpeg("test_o3.MJP", 38);
+    delay(5000);
+*/
+    fillScreen(ILI9486_BLUE);
+    drawJpgBmppicture_mjpeg("V1_15FPS.MJP", 15);
+    delay(5000);
+
+    fillScreen(ILI9486_BLUE);
+    drawJpgBmppicture_mjpeg("V2_15FPS.MJP", 15);
+    delay(5000);
+
+    fillScreen(ILI9486_BLUE);
+    drawJpgBmppicture_mjpeg("V3_15FPS.MJP", 15);
     delay(5000);
 }
 
