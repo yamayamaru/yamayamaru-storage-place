@@ -426,3 +426,24 @@ int main(int argc, char **argv){
 
 
 
+
+
+
+
+アセンブラソースを出力したい場合はコンパイラにはアセンブラソースを出力するオプションはなく
+watcom\binw\wdis.exeというコマンドでオブジェクトファイルからアセンブラソースを生成することが可能なようです
+また、アセンブラソースの他にアセンブラのリスティングファイルも生成可能です
+
+dos4gw wdis.exe -a hoge.obj
+
+と入力すると標準出力にアセンブラソースが出力されます
+次のようにリダイレクトすればファイルに落とせます
+
+dos4gw wdis.exe -a hoge.obj > hoge.asm
+
+(wdis.exeのパスが通ってない場合はパスを通すかwdis.exeを絶対パスで指定すること)
+
+
+リスティングファイルの生成は次のようになります
+
+dos4gw wdis.exe -l hoge.obj > hoge.lst
