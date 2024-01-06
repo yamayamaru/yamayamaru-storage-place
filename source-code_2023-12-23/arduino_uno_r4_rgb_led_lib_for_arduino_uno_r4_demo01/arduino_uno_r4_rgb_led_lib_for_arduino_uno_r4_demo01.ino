@@ -6,7 +6,7 @@
 
 
 #define NEO_PIXEL_PIN 2                 // Arduino Uno R4でLED制御信号を出力するピンの番号を指定してください
-#define PIXEL_N 12                      // NeoPixelのLEDの個数を指定してください
+#define PIXEL_N 25                      // NeoPixelのLEDの個数を指定してください
 
 
 rgb_led_lib_for_arduino_uno_r4 rgb_led01 = rgb_led_lib_for_arduino_uno_r4();
@@ -19,6 +19,7 @@ void setup() {
     // mode = 1 8bit送信中に割り込み禁止にする(8bit送ったら割り込み禁止解除)
     // mode = 2 全RGB LEDにデータを送信中に割り込み禁止にする(割り込み禁止時間が長くなります)
 
+  rgb_led01.setBrightness(5);
 
   for (int i = 0; i < PIXEL_N; i++) {
     rgb_led01.setPixelColor(i, rgb_led01.rgb_color(0, 0, 255));
@@ -127,4 +128,3 @@ uint32_t Wheel(byte WheelPos) {
   WheelPos -= 170;
   return rgb_led01.rgb_color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
-

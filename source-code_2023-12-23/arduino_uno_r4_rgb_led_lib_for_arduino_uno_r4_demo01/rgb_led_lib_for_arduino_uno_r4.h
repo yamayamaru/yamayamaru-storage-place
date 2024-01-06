@@ -7,7 +7,7 @@ protected:
   uint8_t neoPixels[MAX_NEOPIXEL_COUNT * 3];
   int _pixel_num = 0;
   int _pixel_pin = 0;
-
+  int32_t _brightness = 100;
 
   R_PORT0_Type *r_port_n[10] = {R_PORT0, R_PORT1, R_PORT2, R_PORT3, R_PORT4, R_PORT5, R_PORT6, R_PORT7, R_PORT8, R_PORT9};
   void digitalWrite01(uint8_t pin_no, uint8_t value);
@@ -29,6 +29,8 @@ public:
   inline uint8_t color_r(uint32_t color);
   inline uint8_t color_g(uint32_t color);
   inline uint8_t color_b(uint32_t color);
+
+  void setBrightness(int32_t bright01);
 
   void setPixelColor(int pixel_number, uint32_t color);
   void showPixelColor();
