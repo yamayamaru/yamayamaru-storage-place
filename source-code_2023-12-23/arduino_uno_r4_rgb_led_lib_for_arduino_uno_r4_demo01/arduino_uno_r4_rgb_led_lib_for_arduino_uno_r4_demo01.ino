@@ -1,13 +1,25 @@
+// これらのプログラムの使用に当たってはご自分の責任において使用してください
+// これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません
+
+
 #include "rgb_led_lib_for_arduino_uno_r4.h"
 
-#define NEO_PIXEL_PIN 2
-#define PIXEL_N 12
+
+#define NEO_PIXEL_PIN 2                 // Arduino Uno R4でLED制御信号を出力するピンの番号を指定してください
+#define PIXEL_N 12                      // NeoPixelのLEDの個数を指定してください
+
 
 rgb_led_lib_for_arduino_uno_r4 rgb_led01 = rgb_led_lib_for_arduino_uno_r4();
 
 void setup() {
   Serial.begin(115200);
   rgb_led01.initPixelColor(NEO_PIXEL_PIN, PIXEL_N);
+  rgb_led01.set_interrupt_disable_mode(1);
+    // mode = 0 割り込み禁止を行わない
+    // mode = 1 8bit送信中に割り込み禁止にする(8bit送ったら割り込み禁止解除)
+    // mode = 2 全RGB LEDにデータを送信中に割り込み禁止にする(割り込み禁止時間が長くなります)
+
+
   for (int i = 0; i < PIXEL_N; i++) {
     rgb_led01.setPixelColor(i, rgb_led01.rgb_color(0, 0, 255));
   }
