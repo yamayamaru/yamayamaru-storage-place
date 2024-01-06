@@ -66,8 +66,14 @@ void rgb_led_lib_for_arduino_uno_r4::showPixelColor() {
     num3 =  4;  // T1L
     num4 =  4;  // T0L
 
+    if (interrupt_disable_mode_num == 2) {
+        disable_irq();
+    }
     while (p < (neoPixels + (_pixel_num * 3))) {
       pix = *p++;
+      if (interrupt_disable_mode_num == 1) {
+          disable_irq();
+      }
       for (mask = 0x80; mask; mask >>= 1) {
 //        sio_hw->gpio_set = (1ul << _pixel_pin);
         flag1 = pix & mask;
@@ -161,6 +167,12 @@ void rgb_led_lib_for_arduino_uno_r4::showPixelColor() {
           );
         }
       }
+      if (interrupt_disable_mode_num == 1) {
+          enable_irq();
+      }
+    }
+    if (interrupt_disable_mode_num == 2) {
+        enable_irq();
     }
 }
 
@@ -191,4 +203,25 @@ inline void rgb_led_lib_for_arduino_uno_r4::pin_clear(void) {
 //  r_port_n_number->PODR = ~((uint32_t)((uint32_t)1 << r_port_n_pin_mask)) & r_port_n_number->PODR;
   r_port_n_number->PODR = 0xffffffdf & r_port_n_number->PODR;
 //  *r_port_n_podr01 = r_port_n_pin_mask_not & *r_port_n_podr01;
+}
+
+
+inline void rgb_led_lib_for_arduino_uno_r4::enable_irq() {
+    asm volatile("CPSIE i":::"memory");
+}
+
+inline void rgb_led_lib_for_arduino_uno_r4::disable_irq() {
+    asm volatile("CPSID i":::"memory");
+}
+
+void rgb_led_lib_for_arduino_uno_r4::set_interrupt_disable_mode(uint32_t mode) {
+// mode = 0 割り込み禁止を行わない
+// mode = 1 8bit送信中に割り込み禁止にする(8bit送ったら割り込み禁止解除)
+// mode = 2 全RGB LEDにデータを送信中に割り込み禁止にする(割り込み禁止時間が長くなります)
+
+    interrupt_disable_mode_num = mode;
+}
+
+int32_t rgb_led_lib_for_arduino_uno_r4::get_interrupt_disable_mode() {
+    return interrupt_disable_mode_num;
 }

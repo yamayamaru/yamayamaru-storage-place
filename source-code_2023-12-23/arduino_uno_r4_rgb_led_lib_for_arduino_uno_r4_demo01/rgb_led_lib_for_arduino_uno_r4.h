@@ -19,6 +19,10 @@ protected:
   inline void pin_set(void);
   inline void pin_clear(void);
 
+  int32_t interrupt_disable_mode_num = 0;
+  inline void enable_irq();
+  inline void disable_irq();
+
 public:
   rgb_led_lib_for_arduino_uno_r4();
   uint32_t rgb_color(int r, int g, int b);
@@ -30,6 +34,13 @@ public:
   void showPixelColor();
   int initPixelColor(int pin, int pixel_number);
   int getPixelNum();
+
+  int32_t get_interrupt_disable_mode();
+  void set_interrupt_disable_mode(uint32_t mode);
+    // mode = 0 割り込み禁止を行わない
+    // mode = 1 8bit送信中に割り込み禁止にする(8bit送ったら割り込み禁止解除)
+    // mode = 2 全RGB LEDにデータを送信中に割り込み禁止にする(割り込み禁止時間が長くなります)
+  
 };
 
 // renesas_uno/1.0.1/variants/MINIMA/variant.cpp:
