@@ -47,9 +47,9 @@ int rgb_led_lib_for_arduino_uno_r4::getPixelNum(){
 void rgb_led_lib_for_arduino_uno_r4::setPixelColor(int pixel_number, uint32_t color) {
   if (pixel_number >= _pixel_num) return;
 
-  neoPixels[pixel_number * 3 + 0] = color_b(color);
-  neoPixels[pixel_number * 3 + 1] = color_g(color);
-  neoPixels[pixel_number * 3 + 2] = color_r(color);
+  neoPixels[pixel_number * 3 + 0] = color_b(color) * _brightness / 100;
+  neoPixels[pixel_number * 3 + 1] = color_g(color) * _brightness / 100;
+  neoPixels[pixel_number * 3 + 2] = color_r(color) * _brightness / 100;
 }
 
 void rgb_led_lib_for_arduino_uno_r4::showPixelColor() {
@@ -224,4 +224,12 @@ void rgb_led_lib_for_arduino_uno_r4::set_interrupt_disable_mode(uint32_t mode) {
 
 int32_t rgb_led_lib_for_arduino_uno_r4::get_interrupt_disable_mode() {
     return interrupt_disable_mode_num;
+}
+
+void rgb_led_lib_for_arduino_uno_r4::setBrightness(int32_t bright01) {
+    if (bright01 < 0) return;
+
+    _brightness = bright01;
+    if (_brightness > 100) _brightness = 100;
+    if (_brightness < 0) _brightness = 0;
 }
