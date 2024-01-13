@@ -5,6 +5,11 @@
     新バージョンではNEO_PIXEL_PINに任意の番号を指定できます。
     https://github.com/yamayamaru/yamayamaru-storage-place/tree/main/source_code_2023-07-02-0002/arduino_uno_r4_rgb_led02
 
+    扱いやすいようにクラス化してライブラリのように使えるようにしたものを作ってみました
+    同じように任意のピン番号を指定できます
+    https://github.com/yamayamaru/yamayamaru-storage-place/tree/main/source-code_2023-12-23/arduino_uno_r4_rgb_led_lib_for_arduino_uno_r4_demo01
+
+
 */
 
 #define NEO_PIXEL_PIN 2
