@@ -1,0 +1,230 @@
+Raspberry Pi4で64bitのRaspberry Pi OS(bookworm)でDuckStationをビルドした時のメモ
+
+
+
+
+Raspberry Pi4のRaspberry Pi OS(bookworm)でDuckStationが動いたのでビルドした時のメモを残します
+Raspberry Pi OSは64bitのbookwormのRaspberry Pi OS with desktop and recommended softwareを使いました
+注意点としてはDuckStationの実行にはPlayStation1のBIOSが必要です
+Linux版やWindows版のDuckStationはPlayStation2のBIOSでも実行できます
+
+
+
+
+DuckStationのビルドに必要なパッケージをaptで入れます
+
+$ sudo apt install cmake
+$ sudo apt install build-essential
+$ sudo apt install pkg-config
+$ sudo apt install qt6-base-dev qt6-base-private-dev qt6-base-dev-tools qt6-tools-dev libqt6svg6
+$ sudo apt install libwayland-dev libwayland-egl-backend-dev extra-cmake-modules qt6-wayland
+$ sudo apt install git
+$ sudo apt install libcurl4-openssl-dev
+$ sudo apt install libsdl2-dev libxrandr-dev
+
+
+
+
+build-essentialで現時点で標準で入るgccはcc-12、g++-12なのでこれでコンパイルをします
+
+gccのバージョンはgcc --versionで確認できます
+もしbuild-essentialで入るgccがgcc-13,g++13以上になった場合は下記のようにします
+$ sudo apt install gcc-12
+$ sudo apt install g++-12
+ビルドする直前に下記を実行します
+$ export CC=gcc-12
+$ export CXX=g++-12
+ここで12の部分はgccのバージョン(ここではgcc-12やg++-12を指定してます)
+
+
+
+
+v0.1-5624以降はQt6のバージョンが6.5.1以上でないとビルドできないのでv0.1-5494をビルド
+適当なディレクトリにv0.1-5494.tar.gzをダウンロードします
+
+$ wget https://github.com/stenzek/duckstation/archive/refs/tags/v0.1-5494.tar.gz
+
+
+$ tar zxvf v0.1-5494.tar.gz
+
+
+
+$ cd duckstation-0.1-5494
+
+
+ビルド用のbuildディレクトリを作成します
+
+$ mkdir build
+$ cd build
+
+$ cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release ..
+
+(最後はスペースを空けてピリオド2個です、間違いやすいので注意)
+
+
+
+下記のように表示されればOK
+$ cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release ..
+-- The C compiler identification is GNU 12.2.0
+-- The CXX compiler identification is GNU 12.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Version: 3.25.1
+CMake System Name: Linux
+Build Type: Release
+-- Found SDL2: /usr/lib/aarch64-linux-gnu/libSDL2.so (found version "2.26.5")
+CMake Warning (dev) at /usr/share/cmake-3.25/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
+  The package name passed to `find_package_handle_standard_args` (SDL2main)
+  does not match the name of the calling package (SDL2).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  CMakeModules/FindSDL2.cmake:319 (FIND_PACKAGE_HANDLE_STANDARD_ARGS)
+  CMakeLists.txt:102 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found SDL2main: /usr/lib/aarch64-linux-gnu/libSDL2main.a (found version "2.26.5")
+-- Found CURL: /usr/lib/aarch64-linux-gnu/libcurl.so (found version "7.88.1")
+-- Found Threads: TRUE
+-- Performing Test HAVE_STDATOMIC
+-- Performing Test HAVE_STDATOMIC - Success
+-- Found WrapAtomic: TRUE
+-- Found OpenGL: /usr/lib/aarch64-linux-gnu/libOpenGL.so
+-- Found WrapOpenGL: TRUE
+-- Found XKB: /usr/lib/aarch64-linux-gnu/libxkbcommon.so (found suitable version "1.5.0", minimum required is "0.5.0")
+-- Found WrapVulkanHeaders: /usr/include
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+-- Performing Test HAVE_EGL
+-- Performing Test HAVE_EGL - Success
+-- Found EGL: /usr/include (found version "1.5")
+-- Found X11: /usr/include
+-- Looking for XOpenDisplay in /usr/lib/aarch64-linux-gnu/libX11.so;/usr/lib/aarch64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/aarch64-linux-gnu/libX11.so;/usr/lib/aarch64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- RetroAchievements support enabled
+-- Performing Test COMPILER_SUPPORTS_WALL
+-- Performing Test COMPILER_SUPPORTS_WALL - Success
+-- Performing Test COMPILER_SUPPORTS_MEMACCESS
+-- Performing Test COMPILER_SUPPORTS_MEMACCESS - Success
+-- Performing Test COMPILER_SUPPORTS_OFFSETOF
+-- Performing Test COMPILER_SUPPORTS_OFFSETOF - Success
+-- Module support is disabled.
+-- Version: 9.0.0
+-- Build type: Release
+-- CXX_STANDARD: 17
+-- Performing Test has_std_17_flag
+-- Performing Test has_std_17_flag - Success
+-- Performing Test has_std_1z_flag
+-- Performing Test has_std_1z_flag - Success
+-- Required features: cxx_variadic_templates
+-- The ASM compiler identification is GNU
+-- Found assembler: /usr/bin/cc
+-- Looking for include file pulse/pulseaudio.h
+-- Looking for include file pulse/pulseaudio.h - found
+-- Looking for include file alsa/asoundlib.h
+-- Looking for include file alsa/asoundlib.h - found
+-- Looking for include file jack/jack.h
+-- Looking for include file jack/jack.h - not found
+-- Looking for include file sndio.h
+-- Looking for include file sndio.h - found
+-- Looking for include file aaudio/AAudio.h
+-- Looking for include file aaudio/AAudio.h - not found
+-- Looking for include file AudioUnit/AudioUnit.h
+-- Looking for include file AudioUnit/AudioUnit.h - not found
+-- Looking for include file audioclient.h
+-- Looking for include file audioclient.h - not found
+-- Looking for include files windows.h, mmsystem.h
+-- Looking for include files windows.h, mmsystem.h - not found
+-- Looking for include file SLES/OpenSLES.h
+-- Looking for include file SLES/OpenSLES.h - not found
+-- Looking for include file sys/soundcard.h
+-- Looking for include file sys/soundcard.h - found
+-- Looking for include file android/log.h
+-- Looking for include file android/log.h - not found
+-- Looking for include file sys/audioio.h
+-- Looking for include file sys/audioio.h - not found
+-- Looking for include file kai.h
+-- Looking for include file kai.h - not found
+Building AArch64 recompiler
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /w01/duckstation/duckstation-0.1-5494/build/build-release
+
+
+
+build-releaseというディレクトリが作成されるます
+その中へ入ってmakeを実行します
+(ビルドに1時間くらいかかったと思います)
+
+$ cd build-release
+$ make
+(make -j4ではビルド失敗する模様)
+
+
+
+build-releaseの下のbinディレクトリにduckstation-qtが出来上がる
+これが実行ファイルになります
+
+
+
+
+Raspberry Pi OS(bookworm)ではデフォルトではWaylandを使うようになっているようです
+Wayland環境だとゲーム画面が表示されないのでX11にします
+コマンドラインからsudo raspi-cofigを実行します
+$ sudo raspi-config
+
+画面が表示されたら
+6 Advanced Optionを選択してEnterキーを押します
+A6 Waylandを選択してEnterキーを押します
+W1 X11を選択してEnterキーを押します
+了解が選択されている状態でEnterキーを押します
+TABキーを2回押してFinishを選択します
+Would you like to reboot now?
+と表示されたらはいを選択してEnterを押します
+
+
+DuckStationを使わずにWaylandでRaspberry Pi OSを使いたいときは
+同じようにしてA6 Waylandを選択してEnterキーを押して
+W2 Wayfireを選択してEnterキーを押して同じようにリブートします
+
+
+
+
+DuckStationをビルドしたディレクトリの下の
+duckstation-0.1-5494/build/build-release/bin
+にduckstation-qtという実行ファイルが入ってます
+これを実行します
+
+$ cd duckstation-0.1-5494/build/build-release/bin
+$ ./duckstation-qt
+
+
+
+duckstation-qtを起動すると
+ログインしているユーザのホームディレクトリの
+~/.config/duckstation/bios
+というディレクトリが作成されるのでここにPS1のBIOSを入れる(Linux版ではPS2のBIOSでも行けるようです)
+duckstationの設定や必要なファイル類は~/.config/duckstation以下に置かれるようです
+("."で始まるディレクトリはGUIでは表示されないのでコマンドラインでコピーしてください)
+(GUIで操作するならln -s ~/.config/duckstation duckstation-configという感じでシンボリックリンクを作成してもいいかもしれないです)
+
+
+ゲームパッドを使った方が操作は楽です
+私はロジクールのF310というPlayStationのゲームパッドによく似たゲームパッドを使ってます
