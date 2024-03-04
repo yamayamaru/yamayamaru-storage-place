@@ -14,9 +14,12 @@
 
 int data_address01;
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 400
-#define VRAM_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT)
+#define BUFFER_WIDTH  740    // ダブルバッファの横ピクセル数
+#define BUFFER_HEIGHT 500    // ダブルバッファの縦ピクセル数
+#define SCREEN_WIDTH 640     // 画面横解像度
+#define SCREEN_HEIGHT 400    // 画面縦解像度
+#define VIEW_WIDTH    320
+#define VIEW_HEIGHT   200
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -227,24 +230,20 @@ int get_ds(void)
 extern int get_ds(void);
 #pragma aux get_ds = \
            "mov       ax, ds" \
-           "mov       eax, 0ffffh" \
+           "and       eax, 0ffffh" \
            value      [eax] \
            modify     [eax];
 
 /********************************************************************/
 
 
-
-int _width = SCREEN_WIDTH;
-int _height = SCREEN_HEIGHT;
-
-byte double_buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
+byte double_buffer[BUFFER_WIDTH * BUFFER_HEIGHT];
 byte *VGA;
+int view_width;
+int view_height;
 
-//#define WIDTH    SCREEN_WIDTH
-//#define HEIGHT   SCREEN_HEIGHT
-#define WIDTH    320
-#define HEIGHT   200
+int RASP_SCREEN_WIDTH;
+int RASP_SCREEN_HEIGHT;
 #define RASPBERRY_N   40
 #define RDX        5
 #define RDY        5
@@ -260,19 +259,32 @@ void setup1(void);
 void random_raspberry(void);
 int kbhit01(void);
 
+void plot_pixel_fast(int x, int y, int color);
+void fill_vram(int color);
+void update_view_pixel(int width, int height);
+void draw_pixel(int x, int y, int color);
+void draw_pixel1(int x, int y, int color);
+void screen_update(void);
+void draw_bitmap(int x, int y, byte *buf, int width, int height);
+void draw_bitmap_mask(int x, int y, byte *buf, byte *mask, int width, int height);
+void fill_double_buffer(int color);
+void fill_double_buffer_all(int color);
+
+
 void main()
 {
-    unsigned char *VVRAM;
     int i,j,x,y,dat,my_ds;
-    unsigned char tp1,tp2,tp3,tp4;
-    unsigned char p1,p2,p3,p4;
-    unsigned char WTable[256];
-    float palk;
-    int ret;
     DPMI_MEM dm;
+    int ret;
+
     time_t start_time, end_time;
     long count01;
     char *p;
+
+    int count02;
+    time_t old_time01;
+    int ax[2] = { 320, 320 };
+    int ay[2] = { 200, 200 };
 
 #if _16MB_CHECK_
     if( (inp(0x043b)&0x04) ){
@@ -292,6 +304,7 @@ void main()
     my_ds = get_ds();
 
     VGA = (char *)dm.l_address;
+
     printf("リニアVRAMアドレス=0x%08x\n", dm.l_address);
     printf("mainアドレス=0x%08x\n", (long)main);
     printf("data_address01アドレス=0x%08x\n", (long)(&data_address01));
@@ -305,38 +318,70 @@ void main()
                  default_palette256_24_data[i*4 + 1], 
                  default_palette256_24_data[i*4 + 2]);
     }
-
     for(i=0;i<8;i++) {
         setpal(i,((i & 4) >> 2) * 128, 
                  ((i & 2) >> 1) * 128, 
                  (i & 1) * 128);
     }
-
     for(i=0;i<8;i++) {
         setpal(i+8,((i & 4) >> 2) * 255, 
                    ((i & 2) >> 1) * 255, 
                    (i & 1) * 255);
     }
 
-    fill_double_buffer(0);
-    screen_update1();
 
+    // 表示解像度の設定
+    update_view_pixel(VIEW_WIDTH, VIEW_HEIGHT);
+
+    // ダブルバッファとVRAMをクリア
+    fill_double_buffer_all(0);
+    screen_update();
+    fill_vram(0);
+
+    // 描画用イメージの作成
     setimage01();
 
+    // ラズベリー描画の初期化
     setup1();
+
 
     count01 = 0;
     start_time = time(0);;
+
+
+    ax[0] = 320;   ay[0] = 200;
+    ax[1] = 320;   ay[1] = 200;
+/*
+    ax[0] = 320;   ay[0] = 200;
+    ax[1] = 640;   ay[1] = 400;
+*/
+    count02 = 0;
+    old_time01 = time(0);
+
     while(!kbhit01()) {
+
+        // ラズベリーの表示
         random_raspberry();
         count01++;
+
+        // 表示解像度の変更
+        if (time(0) - old_time01 > 10) {
+            count02++;
+            update_view_pixel(ax[count02 % 2], ay[count02 % 2]);
+            fill_double_buffer_all(0);
+            screen_update();
+            fill_vram(0);
+            setup1();
+            old_time01 = time(0);
+        }
     }
     end_time = time(0);
     printf("exec_time = %ld\n", end_time - start_time);
     printf("fps = %.4f\n", (double)count01 / (double)(end_time - start_time));
 
-    fill_double_buffer(0);
-    screen_update1();
+
+    fill_vram(0);
+
 
     free(image01);
     free(image_mask01);
@@ -362,61 +407,86 @@ int kbhit01(void) {
 
 void plot_pixel_fast(int x, int y, int color)
 {
-    VGA[y * _width + x]=(byte)color;
+    VGA[y * SCREEN_WIDTH + x]=(byte)color;
+}
+
+void fill_vram(int color) {
+    memset(VGA, (char)color, (size_t)SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
+int diff_center_x, diff_center_y;
+void update_view_pixel(int width, int height) {
+    view_width = width;
+    view_height = height;
+    diff_center_x = (BUFFER_WIDTH - view_width) / 2;
+    diff_center_y = (BUFFER_HEIGHT - view_height) / 2;
 }
 
 void draw_pixel(int x, int y, int color) {
-    if (x >= _width || x < 0) return ;
-    if (y >=_height || y < 0) return ;
-    double_buffer[y * _width + x]=(byte)color;
+    int x1, y1;
+    x1 = x + diff_center_x;
+    y1 = y + diff_center_y;
+    if (x1 >= BUFFER_WIDTH || x1 < 0) return ;
+    if (y1 >= BUFFER_HEIGHT || y1 < 0) return ;
+    double_buffer[(y1 * BUFFER_WIDTH) + x1]=(byte)color;
+}
+
+int draw_pixel1_x1, draw_pixel1_y1;
+void draw_pixel1(int x, int y, int color) {
+    draw_pixel1_x1 = x + diff_center_x;
+    draw_pixel1_y1 = y + diff_center_y;
+    double_buffer[(draw_pixel1_y1 * BUFFER_WIDTH) + draw_pixel1_x1]=(byte)color;
 }
 
 void screen_update(void) {
-    int num, numall, pos1;
-    numall = 0;
-    while (numall < SCREEN_WIDTH*SCREEN_HEIGHT) {
-        pos1 = numall;
-        num = memcpy((void *)(VGA + pos1), (void *)(double_buffer + pos1), (size_t)(SCREEN_WIDTH * SCREEN_HEIGHT - pos1));
-        numall += num;
-    }
-}
-
-void screen_update1(void) {
-    int i, x, y;
+    int i, xvram, yvram, xbuffer, ybuffer;
     char *p1, *p2;
 
-    x = (SCREEN_WIDTH - WIDTH) / 2;
-    y = (SCREEN_HEIGHT - HEIGHT) / 2;
-    for (i = 0; i < HEIGHT; i++) {
-        p1 = VGA + (y + i) * SCREEN_WIDTH + x;
-        p2 = double_buffer + (i * SCREEN_WIDTH);
-        memcpy(p1, p2, WIDTH);
+    xvram = (SCREEN_WIDTH - view_width) / 2;
+    yvram = (SCREEN_HEIGHT - view_height) / 2;
+    xbuffer = (BUFFER_WIDTH - view_width) / 2;
+    ybuffer = (BUFFER_HEIGHT - view_height) / 2;
+    for (i = 0; i < view_height; i++) {
+        p1 = VGA + (yvram + i) * SCREEN_WIDTH + xvram;
+        p2 = double_buffer + (ybuffer + i) * BUFFER_WIDTH + xbuffer;
+        memcpy(p1, p2, view_width);
     }
 }
 
-draw_bitmap(int x, int y, byte *buf, int width, int height) {
+void draw_bitmap(int x, int y, byte *buf, int width, int height) {
     int i, j;
     for (j = 0; j < height; j++) {
         for (i = 0; i < width; i++) {
-        draw_pixel(x + i - (width >> 1), y + j - (height >> 1), buf[j * width + i]);
+            draw_pixel1(x + i - (width >> 1), y + j - (height >> 1), buf[j * width + i]);
         }
     }
 }
 
-draw_bitmap_mask(int x, int y, byte *buf, byte *mask, int width, int height) {
+void draw_bitmap_mask(int x, int y, byte *buf, byte *mask, int width, int height) {
     int i, j, mask01, pos01;
     for (j = 0; j < height; j++) {
         for (i = 0; i < width; i++) {
            pos01 = j * width + i;
            if (mask[pos01]) {
-               draw_pixel(x + i - (width >> 1), y + j - (height >> 1), buf[pos01]);
+               draw_pixel1(x + i - (width >> 1), y + j - (height >> 1), buf[pos01]);
            }
         }
     }
 }
 
 void fill_double_buffer(int color) {
-    memset(double_buffer, (byte)color, _width * _height);
+    int i, x1, y1;
+
+    x1 = (BUFFER_WIDTH - view_width) / 2;
+    y1 = (BUFFER_HEIGHT - view_height) / 2;
+    for (i = 0; i < view_height; i++) {
+        memset(double_buffer + (y1 + i) * BUFFER_WIDTH + x1,
+               (byte)color, view_width);
+    }
+}
+
+void fill_double_buffer_all(int color) {
+    memset(double_buffer, (byte)color, BUFFER_WIDTH * BUFFER_HEIGHT);
 }
 
 #define RASPBERRY_WIDTH   32
@@ -431,7 +501,6 @@ void setimage01(void) {
 
     image01 = (byte *)malloc(RASPBERRY_WIDTH * RASPBERRY_HEIGHT);
 
-    // 24bitRGB画像から256colorのイメージを作成
     for (i = 0; i < RASPBERRY_WIDTH * RASPBERRY_HEIGHT; i++) {
         if ((bitmap_mask01[i / 8] >> (7 - i % 8)) & 0x1) {
             r = bitmap01[i * 3 + 0];
@@ -463,7 +532,7 @@ void setimage01(void) {
     }
 
 
-    // 24bitRGB画像から256colorのイメージを作成(背景)
+
     image02 = (byte *)malloc(BACK01_WIDTH * BACK01_HEIGHT);
     for (i = 0; i < BACK01_WIDTH * BACK01_HEIGHT; i++) {
         r = bitmap02[i * 3 + 0];
@@ -497,9 +566,12 @@ struct {
 
 void setup1(void){
     int i;
+
+    RASP_SCREEN_WIDTH  = view_width;
+    RASP_SCREEN_HEIGHT = view_height;
     for (i = 0; i < RASPBERRY_N; i++) {
-        raspberry_data01[i].x = rnd(WIDTH);
-        raspberry_data01[i].y = rnd(HEIGHT);
+        raspberry_data01[i].x = rnd(RASP_SCREEN_WIDTH);
+        raspberry_data01[i].y = rnd(RASP_SCREEN_HEIGHT);
         raspberry_data01[i].dx = rnd(RDX) + 1;
         raspberry_data01[i].dy = rnd(RDY) + 1;
         raspberry_data01[i].signx = rnd(2) ? 1 : -1;
@@ -514,8 +586,8 @@ void random_raspberry(void) {
 
     fill_double_buffer(0);
 
-    for (j = 0; j < HEIGHT / 32 + 1; j++) {
-    for (i = 0; i < WIDTH / 32 + 1; i++) {
+    for (j = 0; j < RASP_SCREEN_HEIGHT / 32 + 1; j++) {
+    for (i = 0; i < RASP_SCREEN_WIDTH / 32 + 1; i++) {
             draw_bitmap(i * 32, j * 32, image02, 32, 32);
         }
     }
@@ -523,10 +595,10 @@ void random_raspberry(void) {
     for (i = 0; i < RASPBERRY_N; i++ ) {
         temp1 = raspberry_data01[i].dx * raspberry_data01[i].signx;
         temp2 = raspberry_data01[i].x + temp1;
-        if (temp2 > WIDTH) {
+        if (temp2 > RASP_SCREEN_WIDTH) {
             raspberry_data01[i].signx = -1;
             raspberry_data01[i].dx = rnd(RDX) + 1;
-            raspberry_data01[i].x = WIDTH + raspberry_data01[i].signx * raspberry_data01[i].dx;
+            raspberry_data01[i].x = RASP_SCREEN_WIDTH + raspberry_data01[i].signx * raspberry_data01[i].dx;
         } else if (temp2 < 0 ) {
             raspberry_data01[i].signx = 1;
             raspberry_data01[i].dx = rnd(RDX) + 1;
@@ -536,10 +608,10 @@ void random_raspberry(void) {
         } 
         temp1 = raspberry_data01[i].dy * raspberry_data01[i].signy;
         temp2 = raspberry_data01[i].y + temp1;
-        if (temp2 > HEIGHT) {
+        if (temp2 > RASP_SCREEN_HEIGHT) {
             raspberry_data01[i].signy = -1;
             raspberry_data01[i].dy = rnd(RDY) + 1;
-            raspberry_data01[i].y = HEIGHT + raspberry_data01[i].signy * raspberry_data01[i].dy;
+            raspberry_data01[i].y = RASP_SCREEN_HEIGHT + raspberry_data01[i].signy * raspberry_data01[i].dy;
         } else if (temp2 < 0 ) {
             raspberry_data01[i].signy = 1;
             raspberry_data01[i].dy = rnd(RDY) + 1;
@@ -547,13 +619,12 @@ void random_raspberry(void) {
         } else {
             raspberry_data01[i].y = raspberry_data01[i].y + temp1;
         }
-        if (raspberry_data01[i].y >= 0 && raspberry_data01[i].y < HEIGHT) {
+        if (raspberry_data01[i].y >= 0 && raspberry_data01[i].y < RASP_SCREEN_HEIGHT) {
             draw_bitmap_mask(raspberry_data01[i].x, raspberry_data01[i].y, image01, image_mask01, 32, 32);
         }
     }
 
-    screen_update1();
-//    delay(10);
+    screen_update();
 /*    delay(1);    */
 }
 
