@@ -272,9 +272,9 @@ void filvrm(unsigned int ad, unsigned int ln, char dt) {
 	ld	c,(hl)
 	inc	hl
 	ld	b,(hl)
-	ld	bc,(_filvrm_param3)
 	ld	l,c
 	ld	h,b
+	ld	bc,(_filvrm_param3)
 
 
 filvrm01:
