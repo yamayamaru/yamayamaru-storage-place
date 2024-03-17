@@ -14,12 +14,12 @@
 
 int data_address01;
 
-#define BUFFER_WIDTH  740    // ダブルバッファの横ピクセル数
-#define BUFFER_HEIGHT 500    // ダブルバッファの縦ピクセル数
-#define SCREEN_WIDTH 640     // 画面横解像度
-#define SCREEN_HEIGHT 400    // 画面縦解像度
-#define VIEW_WIDTH    320
-#define VIEW_HEIGHT   200
+#define BUFFER_WIDTH    (640+32)    // ダブルバッファの横ピクセル数(VIEW_WIDTH + 32以上にする)
+#define BUFFER_HEIGHT   (400+32)    // ダブルバッファの縦ピクセル数(VIEW_HEIGHT + 32以上にする)
+#define SCREEN_WIDTH    (640)     // 画面横解像度
+#define SCREEN_HEIGHT   (400)    // 画面縦解像度
+#define VIEW_WIDTH      (320)
+#define VIEW_HEIGHT     (200)
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -227,6 +227,7 @@ int get_ds(void)
 }
 */
 
+// Watcom C++ Ver10.5仕様のインラインアセンブラで記述したもの
 extern int get_ds(void);
 #pragma aux get_ds = \
            "mov       ax, ds" \
@@ -242,11 +243,11 @@ byte *VGA;
 int view_width;
 int view_height;
 
-int RASP_SCREEN_WIDTH;
-int RASP_SCREEN_HEIGHT;
-#define RASPBERRY_N   40
-#define RDX        5
-#define RDY        5
+int RASP_SCREEN_WIDTH;       // ラズベリーの表示範囲
+int RASP_SCREEN_HEIGHT;      // ラズベリーの表示範囲
+#define RASPBERRY_N   40     // ラズベリーの数
+#define RDX        5         // ラズベリーのX方向の移動速度の最大値
+#define RDY        5         // ラズベリーのY方向の移動速度の最大値
 
 extern const unsigned char bitmap01[];
 extern const unsigned char bitmap_mask01[];
@@ -283,8 +284,8 @@ void main()
 
     int count02;
     time_t old_time01;
-    int ax[2] = { 320, 320 };
-    int ay[2] = { 200, 200 };
+    int ax[2] = { VIEW_WIDTH, VIEW_WIDTH };
+    int ay[2] = { VIEW_HEIGHT, VIEW_HEIGHT };
 
 #if _16MB_CHECK_
     if( (inp(0x043b)&0x04) ){
@@ -299,10 +300,16 @@ void main()
     dm.p_size    = 0x00080000;    // VRAM 512[KB]
     dm.l_address = 0xFFFFFFFF;
 
+    // PC9821の256色モードをオンして、尚且つ物理アドレス0x00f00000領域にVRAMを出現させる
     pc9821_on();
+
+    // VRAM(物理アドレス0x00f00000)を仮想アドレス空間に割り当てる
     ret = dpmi_vram_on(&dm);
+
+    // DS(データセグメント)の値を取得
     my_ds = get_ds();
 
+    // 仮想アドレスに割り当てられたVRAMのリニアアドレスを設定(VGAは描画関数で使うため)
     VGA = (char *)dm.l_address;
 
     printf("リニアVRAMアドレス=0x%08x\n", dm.l_address);
@@ -318,11 +325,13 @@ void main()
                  default_palette256_24_data[i*4 + 1], 
                  default_palette256_24_data[i*4 + 2]);
     }
+    // パレットの0から7までの色を変更
     for(i=0;i<8;i++) {
         setpal(i,((i & 4) >> 2) * 128, 
                  ((i & 2) >> 1) * 128, 
                  (i & 1) * 128);
     }
+    // パレットの8から15までの色を変更
     for(i=0;i<8;i++) {
         setpal(i+8,((i & 4) >> 2) * 255, 
                    ((i & 2) >> 1) * 255, 
@@ -349,11 +358,11 @@ void main()
     start_time = time(0);;
 
 
-    ax[0] = 320;   ay[0] = 200;
-    ax[1] = 320;   ay[1] = 200;
+    ax[0] = VIEW_WIDTH;   ay[0] = VIEW_HEIGHT;   //10秒ごとに表示解像度(view_width, view_height)を変更する時の最初の解像度
+    ax[1] = VIEW_WIDTH;   ay[1] = VIEW_HEIGHT;   //10秒ごとに表示解像度(view_width, view_height)を変更する時の2番目の解像度
 /*
-    ax[0] = 320;   ay[0] = 200;
-    ax[1] = 640;   ay[1] = 400;
+    ax[0] = VIEW_WIDTH;   ay[0] = VIEW_HEIGHT;   //10秒ごとに表示解像度(view_width, view_height)を変更する時の最初の解像度
+    ax[1] = 640;   ay[1] = 400;   //10秒ごとに表示解像度(view_width, view_height)を変更する時の2番目の解像度
 */
     count02 = 0;
     old_time01 = time(0);
@@ -364,14 +373,14 @@ void main()
         random_raspberry();
         count01++;
 
-        // 表示解像度の変更
+        // 表示解像度の変更(10秒おき)
         if (time(0) - old_time01 > 10) {
             count02++;
-            update_view_pixel(ax[count02 % 2], ay[count02 % 2]);
-            fill_double_buffer_all(0);
-            screen_update();
-            fill_vram(0);
-            setup1();
+            update_view_pixel(ax[count02 % 2], ay[count02 % 2]);   // 10秒ごとに表示解像度(view_width, view_height)を変更する
+            fill_double_buffer_all(0);          // ダブルバッファ全体をクリア
+            screen_update();                    // ダブルバッファの内容を画面に表示
+            fill_vram(0);                       // ゴミが残るのでVRAM全体をクリア
+            setup1();                           // 表示解像度(view_width, view_height)が変わったのでラズベリー表示の初期化
             old_time01 = time(0);
         }
     }
@@ -405,23 +414,37 @@ int kbhit01(void) {
     return regs.h.bh;
 }
 
+// 画面(vram)に点を描画する
 void plot_pixel_fast(int x, int y, int color)
 {
     VGA[y * SCREEN_WIDTH + x]=(byte)color;
 }
 
+// vramをcolorで指定した色でfillする
 void fill_vram(int color) {
     memset(VGA, (char)color, (size_t)SCREEN_WIDTH * SCREEN_HEIGHT);
 }
 
+// view_width, view_heightを設定または更新する
 int diff_center_x, diff_center_y;
 void update_view_pixel(int width, int height) {
+    int width2, height2;
+
+    if (SCREEN_WIDTH >= BUFFER_WIDTH) width2 = BUFFER_WIDTH;
+    else                              width2 = SCREEN_WIDTH;
+    if (SCREEN_HEIGHT >= BUFFER_HEIGHT) height2 = BUFFER_HEIGHT;
+    else                                height2 = SCREEN_HEIGHT;
+
     view_width = width;
     view_height = height;
+    if (view_width > width2) view_width = width2;
+    if (view_height > height2) view_height = height2;
+
     diff_center_x = (BUFFER_WIDTH - view_width) / 2;
     diff_center_y = (BUFFER_HEIGHT - view_height) / 2;
 }
 
+// ダブルバッファに点を描画
 void draw_pixel(int x, int y, int color) {
     int x1, y1;
     x1 = x + diff_center_x;
@@ -431,6 +454,7 @@ void draw_pixel(int x, int y, int color) {
     double_buffer[(y1 * BUFFER_WIDTH) + x1]=(byte)color;
 }
 
+// ダブルバッファに点を描画(ダブルバッファの座標からはみ出てるかどうかを判定しない高速版)
 int draw_pixel1_x1, draw_pixel1_y1;
 void draw_pixel1(int x, int y, int color) {
     draw_pixel1_x1 = x + diff_center_x;
@@ -438,6 +462,7 @@ void draw_pixel1(int x, int y, int color) {
     double_buffer[(draw_pixel1_y1 * BUFFER_WIDTH) + draw_pixel1_x1]=(byte)color;
 }
 
+// ダブルバッファの内容を画面に表示
 void screen_update(void) {
     int i, xvram, yvram, xbuffer, ybuffer;
     char *p1, *p2;
@@ -453,6 +478,7 @@ void screen_update(void) {
     }
 }
 
+// マスクなしイメージ描画
 void draw_bitmap(int x, int y, byte *buf, int width, int height) {
     int i, j;
     for (j = 0; j < height; j++) {
@@ -462,6 +488,7 @@ void draw_bitmap(int x, int y, byte *buf, int width, int height) {
     }
 }
 
+// マスク付きのイメージ描画(マスクは高速化のため1ドットを1バイト指定)
 void draw_bitmap_mask(int x, int y, byte *buf, byte *mask, int width, int height) {
     int i, j, mask01, pos01;
     for (j = 0; j < height; j++) {
@@ -474,6 +501,7 @@ void draw_bitmap_mask(int x, int y, byte *buf, byte *mask, int width, int height
     }
 }
 
+// ダブルバッファのview_width, view_heightの領域だけcolorで指定した色でfillする
 void fill_double_buffer(int color) {
     int i, x1, y1;
 
@@ -485,6 +513,7 @@ void fill_double_buffer(int color) {
     }
 }
 
+// ダブルバッファ全体をcolorで指定した色でfillする
 void fill_double_buffer_all(int color) {
     memset(double_buffer, (byte)color, BUFFER_WIDTH * BUFFER_HEIGHT);
 }
@@ -501,6 +530,7 @@ void setimage01(void) {
 
     image01 = (byte *)malloc(RASPBERRY_WIDTH * RASPBERRY_HEIGHT);
 
+    // ラズベリーのイメージ作成
     for (i = 0; i < RASPBERRY_WIDTH * RASPBERRY_HEIGHT; i++) {
         if ((bitmap_mask01[i / 8] >> (7 - i % 8)) & 0x1) {
             r = bitmap01[i * 3 + 0];
@@ -521,7 +551,7 @@ void setimage01(void) {
 
 
 
-    // マスクの作成
+    // ラズベリーのイメージのマスクの作成(高速化のために1bit=1pixelの元データを1byte=1pixelの形に変更)
     image_mask01 = (byte *)malloc(RASPBERRY_WIDTH * RASPBERRY_HEIGHT);
     for (i = 0; i < RASPBERRY_WIDTH * RASPBERRY_HEIGHT; i++) {
         if ((bitmap_mask01[i / 8] << (i % 8)) & 0x80) {
@@ -532,7 +562,7 @@ void setimage01(void) {
     }
 
 
-
+    // 背景のレンガのイメージ作成
     image02 = (byte *)malloc(BACK01_WIDTH * BACK01_HEIGHT);
     for (i = 0; i < BACK01_WIDTH * BACK01_HEIGHT; i++) {
         r = bitmap02[i * 3 + 0];
@@ -563,7 +593,7 @@ struct {
 } raspberry_data01[RASPBERRY_N];
 
 
-
+// ラズベリー表示のパラメータの初期化
 void setup1(void){
     int i;
 
@@ -579,6 +609,7 @@ void setup1(void){
     }
 }
 
+// ラズベリー表示関数
 void random_raspberry(void) {
 
     int temp1, temp2;
@@ -587,7 +618,8 @@ void random_raspberry(void) {
     fill_double_buffer(0);
 
     for (j = 0; j < RASP_SCREEN_HEIGHT / 32 + 1; j++) {
-    for (i = 0; i < RASP_SCREEN_WIDTH / 32 + 1; i++) {
+        for (i = 0; i < RASP_SCREEN_WIDTH / 32 + 1; i++) {
+            // 背景のレンガのイメージの描画
             draw_bitmap(i * 32, j * 32, image02, 32, 32);
         }
     }
@@ -620,10 +652,12 @@ void random_raspberry(void) {
             raspberry_data01[i].y = raspberry_data01[i].y + temp1;
         }
         if (raspberry_data01[i].y >= 0 && raspberry_data01[i].y < RASP_SCREEN_HEIGHT) {
+            // ラズベリーのイメージの描画
             draw_bitmap_mask(raspberry_data01[i].x, raspberry_data01[i].y, image01, image_mask01, 32, 32);
         }
     }
 
+    // 画面更新
     screen_update();
 /*    delay(1);    */
 }
@@ -632,6 +666,7 @@ int rnd(int a) {
     return (rand() % a);
 }
 
+// ラズベリーのイメージのマスク(1bit=1pixel, MSBが左)
 const unsigned char bitmap_mask01[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0xfc,0x3f,0x00,0x01,0xff,0xff,0x80,0x01,0xff,0xff,0x80,
