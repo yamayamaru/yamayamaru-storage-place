@@ -1,0 +1,251 @@
+Ubuntu Server 20.04でNFSサーバを構築とXM6typeGでNFSを使う設定
+
+
+XM6typeG用のNFSはNFS v2を使いますがUbuntu Server 22.04では
+NFS v2はカーネルで無効化されているようです
+有効にするにはカーネルの再構築が必要だと思われます
+なのでUbuntu Server 20.04でNFSサーバを構築します
+
+
+
+aptでNFSサーバのパッケージを入れます
+
+$ sudo apt-get install nfs-kernel-server
+
+
+
+$ mkdir -p /export/data01
+
+$ sudo chown ubuntu /export/data01
+
+ここでubuntuの部分は自分が使ってるユーザ名になります
+
+
+$ sudo nano /etc/exports
+
+
+/export/      192.168.1.0/24(rw,fsid=0,insecure,no_subtree_check) 192.168.2.0/24(rw,fsid=0,insecure,no_subtree_check)
+
+# root権限で書き込みできるようにno_root_squashを指定
+/export/data01 192.168.1.0/24(rw,no_root_squash,nohide,insecure,no_subtree_check) 192.168.1.0/24(rw,no_root_squash,nohide,insecure,no_subtree_check)
+
+
+
+ここで192.168.1.0/24や192.168.2.0/24の部分は公開するネットワークの
+ネットワークアドレスを指定します
+ご自分の環境に合わせて変更してください
+
+
+
+設定を即時反映するには
+$ sudo exportfs -ra
+を実行する
+
+
+設定の有効化
+最後に有効にするため再起動します。
+
+$ sudo systemctl enable nfs-kernel-server
+$ sudo systemctl restart nfs-kernel-server
+
+
+
+
+Ubuntu Serverの場合、20.04まではNFS v2に対応するようにできるようです
+
+どのバージョンに対応してるか確認
+
+$ rpcinfo -p
+
+    100005    3   udp  48435  mountd
+    100005    3   tcp  34945  mountd
+    100003    3   tcp   2049  nfs
+    100003    4   tcp   2049  nfs
+    100227    3   tcp   2049
+    100003    3   udp   2049  nfs
+    100227    3   udp   2049
+    100021    1   udp  60826  nlockmgr
+
+nfsの部分が3と4しかありません
+デフォルトでは2には対応してないです
+
+
+NFS v2に対応するには下記のようにします
+(Ubuntu 20.04まで、Ubuntu 22.04は対応しない)
+
+$ sudo nano /etc/default/nfs-kernel-server
+
+
+最終行に下記を追記
+
+RPCNFSDOPTS="--nfs-version 2,3,4"
+
+
+
+再起動
+$ sudo systemctl restart nfs-kernel-server
+
+
+
+$ rpcinfo -p
+
+
+    100005    3   udp  60811  mountd
+    100005    3   tcp  59309  mountd
+    100003    2   tcp   2049  nfs
+    100003    3   tcp   2049  nfs
+    100003    4   tcp   2049  nfs
+    100227    2   tcp   2049
+    100227    3   tcp   2049
+    100003    2   udp   2049  nfs
+    100003    3   udp   2049  nfs
+    100227    2   udp   2049
+    100227    3   udp   2049
+    100021    1   udp  56850  nlockmgr
+
+
+NFS v2対応が現れました
+
+
+
+X68000用にNFSがあるようです
+NFSv2用なのでNFSサーバが最新のLinuxでは使えないかもしれないです
+
+エミュレータのXM6typeGでこのX68000用のNFSソフトを使うことができました
+
+XM6typeGのメニューのツール→オプション→Nereidタブを開きます
+セットアップ(アドレス・割り込みベクタ)のところの装着するのチェックを入れます
+$ECE300,$F9を選択します
+
+TAPデバイスにTAP-Windows Adapterを入力します
+
+
+
+
+TAP-Windows Adapter V9のインストール方法
+XM6TypeGでネットワークを使うにはWindowsに
+TAP-Windows Adapter V9のインストールが必要です
+
+TAP-Windows Adapter V9はここからダウンロードできます
+https://github.com/OpenVPN/tap-windows6/releases
+
+dist.win7.zipをダウンロードして適当なフォルダに解凍します
+
+\dist.win7\amd64にaddtap.batとremovetap.batのBATファイルを作成
+
+
+addtap.batの内容
+
+tapinstall install OemVista.inf TAP0901
+
+
+removetap.batの内容
+
+tapinstall remove TAP0901
+
+
+
+addtap.batを実行してTAP-Windows Adapter V9をインストールします
+
+
+Windows 10の設定→ネットワークとインターネット→状態の画面を開き
+「アダプタのオプションを変更する」をクリック
+ローカルエリア接続の中でTAP-Windows Adapter V9と下に書かれているものを探します
+
+右クリックして名前の変更でTAP-Windows Adapterに名前を変更します
+
+
+パソコンのメインのLANアダプタを探します(たぶんイーサネット～になってる)
+メインのLANアダプタとでTAP-Windows Adapterの2つを選択状態にして
+右クリック→ブリッジ接続をクリックします
+するとネットワークブリッジというのが出てきます
+
+TAP-Windows Adapterを右クリックしてプロパティ→構成→詳細設定
+MAC AddressにMACアドレスを入れる(例 52:54:00:00:80:81)
+OKを押して画面を閉じます
+
+
+ブリッジを解除したい場合はTAP-Windows AdapterやメインのLANアダプタを右クリックして
+ブリッジから削除を選択します
+TAP-Windows Adapter V9をアンインストールするにはブリッジを解除してから
+removetap.batを実行してください
+
+
+
+
+XM6typeGでTCP/IPを使うためのソフトウェアはこれらになります
+
+http://retropc.net/x68000/software/hardware/neptune_x/etherL12/
+ここのetherL12.LZH
+
+http://retropc.net/x68000/software/internet/tcpip/xip/index.htm
+ここのxipb5.lzh
+
+http://www.retropc.net/x68000/software/internet/kg/tcppacka/index.htm
+ここのTCPPACKA.LZH 
+
+
+X68000用のNFSのソフトウェアはこれになります
+
+http://retropc.net/x68000/software/internet/nfs/nfs/
+ここのnfs038.lzh 
+
+
+
+
+上記すべてを解凍してtcpipというフォルダを作り、そこに全部いれます
+tcpipフォルダをXM6typeGのHDDイメージファイルにコピーしたらXM6TypeGを起動します
+
+
+config.sysに下記を追記します
+
+rem ethernet driver設定
+process   = 3 10 10
+DEVICE    = \tcpip\etherL12.sys
+
+
+autoexec.batに下記を追記します
+
+rem tcp/ip設定
+set path=%path%;a:\tcpip;a:\tcpip\bin
+xip -n2
+ifconfig lp0 up
+ifconfig en0 192.168.1.20 netmask 255.255.255.0 up
+inetdconf +domain x68k.net +dns 192.168.1.1 +router 192.168.1.1
+set HOST=x68k
+
+
+ここで192.168.1.20はXM6TypeGに割り当てるIPアドレスです
++dns 192.168.1.1はDNSサーバのアドレス
++router 192.168.1.1はルータのアドレスです
+ご自分の環境にあわせて変更してください
+
+
+config.sysとautoexec.batを書き換えたらXM6typeGを再起動します
+
+
+
+nfs.xの使い方
+下記のように起動します
+
+
+nfs.x -u1000 -g1000 192.168.1.10:/export/data01
+
+
+ここで-u1000 -g1000は自分が使ってるLinuxユーザのユーザIDとグループIDです
+Linuxの方で/etc/passwdや/etc/groupの内容を見ると確認できます
+192.168.1.10はNFSサーバのIPアドレスです。ご自分の環境に合わせて変更してください
+/export/data01の部分はNFSの設定で公開したパスです
+
+
+デフォルトでマウントされるドライブはY;です
+dir Y:
+として、ネットワークドライブの内容が表示されればOKです
+これでY:ドライブを普通のドライブのように扱えます
+
+
+nfs.xを終了させるには
+
+nfs.x -R
+
+とします。大文字のRなので注意
