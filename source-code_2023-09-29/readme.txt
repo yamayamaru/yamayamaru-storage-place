@@ -24,7 +24,7 @@ sdasz80 -o mycrt0_2.rel mycrt0_2.asm
 sdcc -mz80 --code-loc 0x100 --data-loc 0 --no-std-crt0 -o mandelc.ihx mycrt0_2.rel mandelc.rel msxclib.rel msxalib.rel msxdos.rel
 
 makebin -s 14100 mandelc.ihx > mandelc.bin
-python3 binout.py mandelc.bin mandelc.com
+python binout.py mandelc.bin mandelc.com
 
 
 ここでbinout.pyは先頭の256バイトを削除するスクリプトです
