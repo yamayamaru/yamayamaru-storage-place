@@ -33,6 +33,9 @@ cpm c -O2 -V mole.obj msxclib.obj msxalib.obj LIBM.LIB
 
 
 
+これらのプログラムの使用に当たってはご自分の責任において使用してください
+これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません。
+
 
 
 MSX-C Library互換ライブラリ for HI-TECH C
