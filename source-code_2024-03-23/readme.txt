@@ -45,3 +45,6 @@ https://www.vector.co.jp/soft/other/msx/se148476.html
 
 CP/M program EXEcutor for Win32
 https://www.vector.co.jp/soft/win95/util/se378130.html
+
+HI-TECH Cを使ってみた
+https://qiita.com/Stosstruppe/items/ffc96fe921a17061a4e5
