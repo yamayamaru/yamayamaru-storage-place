@@ -37,6 +37,8 @@ cpm c -O2 -V mole.obj msxclib.obj msxalib.obj LIBM.LIB
 これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません。
 
 
+HI-TECH C Ver3.09
+http://web.archive.org/web/20040414090318/http://www.htsoft.com/software/cpm/index.html
 
 MSX-C Library互換ライブラリ for HI-TECH C
 https://www.vector.co.jp/soft/other/msx/se148476.html
