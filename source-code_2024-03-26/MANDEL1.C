@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <i86.h>
 
 int work01[256*1024/4];
@@ -11,6 +12,7 @@ void set_bgcolor(int color);
 void clear_screen(void);
 void draw_pixel(int x, int y, int color);
 void set_palette(int pal_num01, int r01, int g01, int b01);
+void draw_string(int x, int y, char *str1);
 int kbhit(void);
 
 double second();
@@ -26,7 +28,8 @@ struct _param01 {
     int    depth;
 } param01[28];
 
- 
+int end_flag = 0;
+
 int main(int argc, char *argv[]) {
     union REGS regs;
     int c;
@@ -45,7 +48,11 @@ int main(int argc, char *argv[]) {
 
     set_param();
 
+    end_flag = 0;
     mandelbrot(640, 480);
+
+    set_color(255);
+    draw_string(0, 20, "終了するには何かキーを押してください");
 
     // キーバッファのクリア
     regs.h.ah = 0x06;
@@ -210,11 +217,11 @@ void mandelbrot(int width, int height) {
     xdot = width;
     ydot = height;
 
-    for (ii = 0; ii < 1; ii++) {
+    for (ii = 0; ii < 28; ii++) {
         i = ii % 28;
+        if (end_flag != 0) break;
         mandel(param01[i].xcorner, param01[i].ycorner, param01[i].length, xdot, ydot, param01[i].depth);
     }
-
 }
 
 
@@ -248,11 +255,17 @@ void mandel(double xcorner, double ycorner, double length, int xdot, int ydot, i
             if (col01 == 0) draw_pixel(i, j, 0);
             else draw_pixel(i, j, col01 % 63 + 1);
 
+            if (kbhit()) {
+                end_flag = 1;
+                break;
+            }
+
             xx = xx + xgap;
         }
 
         yy = yy + ygap;
         xx = xcorner;
+        if (end_flag != 0) break;
     }
 }
 
@@ -365,6 +378,8 @@ void set_color(int color01) {
         push    edi
         push    ebp
 
+	push	ds
+	pop	gs
         mov	ax,0110h
 	mov	fs,ax
         mov     ah,07h
@@ -401,6 +416,8 @@ void set_bgcolor(int color01) {
         push    edi
         push    ebp
 
+	push	ds
+	pop	gs
         mov	ax,0110h
 	mov	fs,ax
         mov     ah,07h
@@ -437,6 +454,8 @@ void clear_screen(void) {
         push    edi
         push    ebp
 
+	push	ds
+	pop	gs
         mov	ax,0110h
 	mov	fs,ax
 	mov	edi,workaddr
@@ -487,6 +506,8 @@ void draw_pixel(int x, int y, int color) {
         push    edi
         push    ebp
 
+	push	ds
+	pop	gs
         mov	ax,0110h
 	mov	fs,ax
         mov     ah,40h
@@ -542,6 +563,8 @@ void set_palette(int pal_num01, int r01, int g01, int b01) {
         push    edi
         push    ebp
 
+	push	ds
+	pop	gs
         mov	ax,0110h
 	mov	fs,ax
         mov     ah,04h
@@ -562,6 +585,63 @@ void set_palette(int pal_num01, int r01, int g01, int b01) {
         pop     fs
         pop     es
     }
+}
+
+void draw_string(int x, int y, char *str1) {
+    struct draw_string_data {
+        short     x;
+        short     y;
+        short       strlen;
+        char      str[];
+    };
+    int strlen01;
+    struct draw_string_data *draw_string_data01;
+
+    strlen01 = strlen(str1);
+
+    draw_string_data01 = (struct draw_string_data *)malloc(6 + strlen01 + 1);
+
+    draw_string_data01->x = x;
+    draw_string_data01->y = y;
+    draw_string_data01->strlen = (short)strlen01;
+    memcpy(draw_string_data01->str, str1, strlen01 + 1);
+
+    __asm {
+        push    es
+        push    fs
+        push    gs
+
+        push    eax
+        push    ebx
+        push    ecx
+        push    edx
+        push    esi
+        push    edi
+        push    ebp
+
+	push	ds
+	pop	gs
+        mov	ax,0110h
+	mov	fs,ax
+        mov     ah,60h
+	mov	edi,workaddr
+        mov     esi,draw_string_data01
+        call    pword ptr fs:0020h
+
+        pop     ebp
+        pop     edi
+        pop     esi
+        pop     edx
+        pop     ecx
+        pop     ebx
+        pop     eax
+
+        pop     gs
+        pop     fs
+        pop     es
+    }
+
+    free(draw_string_data01);
 }
 
 int kbhit(void) {
