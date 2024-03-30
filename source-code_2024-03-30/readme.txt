@@ -1,7 +1,8 @@
 FM TOWNSエミュレータの津軽にはRS232Cの出力を指定したIPアドレスのネットワークに飛ばすことができます
 このプログラムはFM TOWNSエミュレータの津軽でRS232Cのデータをネットワークに飛ばしたものを
 Raspberry Piで受けてそのデータをそのままMIDIインターフェースへ出力するものです
-
+プログラムの名前にWiFiと入ってますが有線LANでも使えます
+有線LANの方が安定すると思います
 
   コンパイル方法
       gcc -O2 -o raspberrypi_midi_data_wifi_accept_to_midi_server raspberrypi_midi_data_wifi_accept_to_midi_server.c  -lpthread
