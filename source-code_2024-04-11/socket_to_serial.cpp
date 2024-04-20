@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <process.h>
+#include <synchapi.h>
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -210,7 +211,9 @@ int serial01(){
             hThread01 = (HANDLE)_beginthreadex(NULL, 0, &ConsoleToSerial, (void *)p01, 0, NULL);
         }
 
-        while ((execflag01 != 0) && (endflag01 == 0));
+        while ((execflag01 != 0) && (endflag01 == 0)) {
+            Sleep((DWORD)10);
+        };
 
         if (dstSocket01 > 0) closesocket(dstSocket01);
 
