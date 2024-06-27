@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
             z = 100 * cos(r) - 30 * cos(3*r);
             sx = 80 + x / 3 - y / 6;
             sy = 40 - y / 6 - z / 4;
-            if ((sx < 0) || (sy >= 160)) continue;
+            if ((sx < 0) || (sx >= 160)) continue;
             if (d[(int)sx] <= sy) continue;
             zz = (int)((z + 100) * 0.035) + 1;
             col = 0;
