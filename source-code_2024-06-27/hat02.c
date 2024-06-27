@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <glib.h>
-#include <msxbios.h>
 #include <msxalib.h>
 #include <msxclib.h>
 #include <math.h>
@@ -23,7 +21,7 @@ int main(int argc, char *argv[]) {
         palett(i+1, ((i >> 1) & 0x1) * 7, ((i >> 2) & 0x1) * 7, (i & 0x1) * 7);
     }
 
-    boxfil(0, 0, 255, 211, 0, 0);
+    boxfil(0, 0, 255, 211, 1, 0);
 
     xmax = 256;
     ymax = 212;
@@ -58,8 +56,9 @@ int main(int argc, char *argv[]) {
 
             px = (int)(sx * 2.0 * xmax / 320.0);
             py = (int)(sy * 2.0 * ymax / 200.0);
-            if (f == 1) {
-                line(px, py, px, py, col + 1, 0);
+            if ((f == 1) & (px < xmax) & (px >= 0) & (py < ymax) & (py >= 0)) {
+                /*line_m(px, py, px, py, col + 1, 0);*/
+                boxfil(px, py, px, py, col + 1, 0);
             }
             d[(int)sx] = sy;
         }
