@@ -133,6 +133,7 @@ int main(int argc, char *argv[]) {
 
     c = getch();
 
+    fill0(0);
     pc9821_off();
 
     return 0;
@@ -180,7 +181,8 @@ void screen256_pack() {
     outp(0x6a, 0x21);
     outp(0xa4, 0x00);
     outp(0xa6, 0x00);
-    outp(0x09a8, 0x00);
+/*    _HSYNC_ ->31.47KHz                      */
+/*    outp(0x09a8, 0x01);  */
     sp = (short far *)0xe0000100UL;
     *sp = 0;
     sp = (short far *)0xe0000102UL;
