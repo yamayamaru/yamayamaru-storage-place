@@ -3,6 +3,5 @@ jpegdeco
 picojpeg
   -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\fmcfrb.lib
   -stack 524288
-  -nomap
   -exe mjpeg06
 

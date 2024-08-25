@@ -55,7 +55,6 @@ jpegdeco
 picojpeg
   -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\fmcfrb.lib
   -stack 524288
-  -nomap
   -exe mjpeg06
 
 ここで-libの欄のHigh C用のライブラリの場所をご自分の環境に合わせてパスを変更してください
