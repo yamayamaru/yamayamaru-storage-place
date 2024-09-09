@@ -4,6 +4,8 @@ Pimoroni Pico Plus2用のPSRAMテスト用プログラムです
 https://www.kurims.kyoto-u.ac.jp/~ooura/pi_fft-j.html
 ここのサイトのpi_fftc6をArduinoに移植してみました
 
+このテストプログラムではおよそ6,816,924バイトほどPSRAMからメモリを確保して655360桁のπの計算をしています
+
 Pimononi Pico Plus2のPSRAMのCSはCircutPythonのソースコードを確認したところ
 GPIO47が使われています
 
