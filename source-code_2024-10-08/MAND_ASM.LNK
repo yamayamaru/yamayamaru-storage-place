@@ -1,0 +1,6 @@
+mand_asm
+mand
+  -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib
+  -STACK 262144
+  -exe mand_asm
+
