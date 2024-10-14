@@ -8,7 +8,7 @@
 // earlephilhowerのArduino両方で動きました。
 // 動画は映像のみの再生です、音声は再生されません。
 // FPSは遅いですが、長時間動画の再生はできてます。
-#pragma GCC optimize("Os")
+#pragma GCC optimize("O2")
 
 #include "hardware/dma.h"
 #include "hardware/spi.h"
