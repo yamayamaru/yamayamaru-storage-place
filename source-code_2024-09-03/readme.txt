@@ -7,6 +7,21 @@ Raspberry Pi Pico及び、Pimoroni Pico Plus2用です。
 ILI9341のLCD専用になってます。
 ILI9341はSPI接続です。
 他にSPI接続のSDカードのアダプタが必要です
+SDカードはSPIで指定していてSPIはデフォルトでは下記のピンになってます
+    MISO  GPIO16
+    MOSI  GPIO19
+    SCK   GPIO18
+    SS    GPIO17
+  
+Windowsの場合ArduinoのArduino coreは下記のフォルダに格納されてます
+C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1
+  
+pico専用ライブラリは下記にあります
+C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries
+  
+このプログラムを動かす場合、Spark_funのSDライブラリを使うので下記ヘッダーファイルは  
+一時的に名前を変更してください(名前を変更して読み込まなくする)  
+C:\Users\shin\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries\SD\src\SD.h
 
 今回はテスト用の動画も用意しました
 SDカードに書き込んで実行してください。
