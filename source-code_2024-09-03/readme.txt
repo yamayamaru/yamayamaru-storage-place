@@ -15,7 +15,11 @@ SDカードはSPIで指定していてSPIはデフォルトでは下記のピン
   
 Windowsの場合ArduinoのArduino coreは下記のフォルダに格納されてます
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1
-  
+
+Linuxの場合は下記にあります
+~/.arduino15/packages/rp2040/hardware/rp2040/4.0.1
+
+
 pico専用ライブラリは下記にあります
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries
   
