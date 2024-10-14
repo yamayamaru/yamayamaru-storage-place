@@ -8,7 +8,7 @@
 // earlephilhowerのArduino両方で動きました。
 // 動画は映像のみの再生です、音声は再生されません。
 // FPSは遅いですが、長時間動画の再生はできてます。
-#pragma GCC optimize("O2")
+#pragma GCC optimize("Os")
 
 #include "hardware/dma.h"
 #include "hardware/spi.h"
@@ -28,6 +28,7 @@
 
 #define DEFFRATE     5  // default frame rate
 
+#define LCD_SPI_Frequency    25000000
 #define MOSI 27
 #define SCK  26
 #define CS   22
@@ -39,7 +40,12 @@
 #define SPI_PORT  spi1
 
 // SDカードではspi0を使います。CSはGP17、SCKはGP18、MOSIはGP19、MISOはGP16を使います
-#define SDCARD_SPI_CS  17
+
+#define SDCARD_SPI_Frequency   8000000
+#define SDCARD_SPI_CS   17
+#define SDCARD_SPI_MISO 16
+#define SDCARD_SPI_MOSI 19
+#define SDCARD_SPI_SCK  18
 
 
 #define ILI9341_TFTWIDTH  240
@@ -71,7 +77,7 @@
   SPIClassRP2040 spi = SPIClassRP2040(SPI_PORT, MISO, -1, SCK, MOSI);
 #endif
 
-const int tft_frequency = 30000000;
+const int tft_frequency = LCD_SPI_Frequency;
 SPISettings _spi_settings = SPISettings(tft_frequency, MSBFIRST, SPI_MODE0);
 
 uint8_t _tft_rst = RST;
@@ -112,10 +118,15 @@ void setup() {
   spi.begin();
   initDMA();
 
+  SPI.setRX(SDCARD_SPI_MISO);
+  SPI.setTX(SDCARD_SPI_MOSI);
+  SPI.setSCK(SDCARD_SPI_SCK);
+
   tft_setup();
   setRotation(3);
   fillScreen(ILI9341_BLACK);
-  if (SD.begin(SDCARD_SPI_CS)) {
+  delay(1000);
+  if (SD.begin(SDCARD_SPI_Frequency, SDCARD_SPI_CS)) {
     Serial.println("initialization done.");
     root = SD.open("/");
     printDirectory(root, 0);
@@ -140,16 +151,16 @@ void loop() {
 
     fillScreen(ILI9341_BLACK);
     drawJpgBmppicture_mjpeg("SNAIL01.JPG", 0);
-    delay(5000);
+    delay(1000);
     drawJpgBmppicture_mjpeg("SCENIC01.BMP", 0);
-    delay(5000);
-
-    fillScreen(ILI9341_BLUE);
-    drawJpgBmppicture_mjpeg("BAD11FPS.MJP", 11);
     delay(1000);
 
     fillScreen(ILI9341_BLUE);
     drawJpgBmppicture_mjpeg("R1_08FPS.MJP", 8);
+    delay(1000);
+
+    fillScreen(ILI9341_BLUE);
+    drawJpgBmppicture_mjpeg("BAD11FPS.MJP", 11);
     delay(1000);
 
     fillScreen(ILI9341_BLUE);
