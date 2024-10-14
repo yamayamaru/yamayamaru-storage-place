@@ -12,7 +12,10 @@ SDカードはSPIで指定していてSPIはデフォルトでは下記のピン
     MOSI  GPIO19(Pin番号25)
     SCK   GPIO18(Pin番号24)
     SS    GPIO17(Pin番号22)
-  
+
+ファイルが読めない場合は、SDカードのSPIの周波数を調整してください
+LCDが真っ白になって表示がおかしい場合はLCDのSPIの周波数を下げてみてください
+
 Windowsの場合ArduinoのArduino coreは下記のフォルダに格納されてます
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1
 
@@ -23,8 +26,8 @@ Linuxの場合は下記にあります
 pico専用ライブラリは下記にあります
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries
   
-このプログラムを動かす場合、Spark_funのSDライブラリを使うので下記ヘッダーファイルは  
-一時的に名前を変更してください(名前を変更して読み込まなくする)  
+このプログラムを動かす場合、Spark_funのSDライブラリ(Ver1.3.0)を使うので下記ヘッダーファイルは  
+一時的に名前を変更してください(名前を変更して一時的に読み込まなくする)  
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries\SD\src\SD.h
 
 今回はテスト用の動画も用意しました
