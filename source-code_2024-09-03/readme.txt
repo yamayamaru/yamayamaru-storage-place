@@ -21,7 +21,7 @@ C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\
   
 このプログラムを動かす場合、Spark_funのSDライブラリを使うので下記ヘッダーファイルは  
 一時的に名前を変更してください(名前を変更して読み込まなくする)  
-C:\Users\shin\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries\SD\src\SD.h
+C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries\SD\src\SD.h
 
 今回はテスト用の動画も用意しました
 SDカードに書き込んで実行してください。
