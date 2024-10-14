@@ -8,10 +8,10 @@ ILI9341のLCD専用になってます。
 ILI9341はSPI接続です。
 他にSPI接続のSDカードのアダプタが必要です
 SDカードはSPIで指定していてSPIはデフォルトでは下記のピンになってます
-    MISO  GPIO16
-    MOSI  GPIO19
-    SCK   GPIO18
-    SS    GPIO17
+    MISO  GPIO16(Pin番号21)
+    MOSI  GPIO19(Pin番号25)
+    SCK   GPIO18(Pin番号24)
+    SS    GPIO17(Pin番号22)
   
 Windowsの場合ArduinoのArduino coreは下記のフォルダに格納されてます
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1
