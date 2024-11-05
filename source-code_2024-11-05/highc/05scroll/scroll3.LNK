@@ -1,0 +1,8 @@
+scroll3
+setscrn
+gra
+io
+  -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\fmcfrb.lib
+  -STACK 262144
+  -exe scroll3
+
