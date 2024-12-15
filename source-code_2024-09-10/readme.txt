@@ -23,6 +23,8 @@ C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\
 
 を定義して、Arduino IDEのボードにGeneric RP2350を選択してコンパイルすると
 Pimoroni Pico Plus2でArduinoからPSRAMを使うことができました
+(現在のearlephilhowerのArduinoはPimoroni Pico Plus2に対応しているため、
+Arduino IDEのボードでPimoroni Pico Plus2を選択することで上記のpins_arduino.hの変更は不要です)
 
 Linuxではお使いのユーザのホームディレクトリの.arduino15/packages/rp2040/hardware/rp2040/4.0.1/variants/generic_rp2350
 にあるpins_arduino.hになると思います
