@@ -6,6 +6,11 @@ https://www.kurims.kyoto-u.ac.jp/~ooura/pi_fft-j.html
 
 このテストプログラムではおよそ6,816,924バイトほどPSRAMからメモリを確保して655360桁のπの計算をしています
 
+プログラムの実行はSerialにTeraTermなどのターミナルソフトをつないで行います
+Serialの速度は115200bpsです
+Serialにつないだターミナルソフト上からキーボードのsキーを押すことでプログラムが開始します
+
+
 Pimononi Pico Plus2のPSRAMのCSはCircutPythonのソースコードを確認したところ
 GPIO47が使われています
 
