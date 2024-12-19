@@ -10,7 +10,18 @@ OpenWatcom C Ver2.0が使える状態で
 
 CL21R.DOCはHIGH C Ver1.7のFM TOWNS機種依存のライブラリのマニュアルのテキストファイルです
 
+TOWNSシステムソフトウェアはV2.1以上が必要です
 
+
+
+FMT_DOS.ROMはうんづのところのmkosrom.exeを使って
+FM TOWNS用のMSDOS Ver3.1から作ったものです
+FM TOWNSエミュレータの津軽やうんづで
+津軽の互換ROMセットと使うことができます
+(FMT_DOS.ROMを差し替えて使います。
+ただし、差し替えるとHDDからしか起動できなくなるため、
+TOWNSシステムソフトウェアV2.1が必須になります)
+http://ysflight.in.coocan.jp/FM/towns/FreeTOWNS/ROMS.zip
 
 
 
