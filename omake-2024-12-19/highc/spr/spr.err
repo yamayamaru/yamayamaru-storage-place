@@ -1,0 +1,237 @@
+spr.c(131): Warning! W106: Constant out of range - truncated
+spr.c(131): Note! I2003: source conversion type is 'int'
+spr.c(131): Note! I2004: target conversion type is 'short'
+spr.c(131): Warning! W106: Constant out of range - truncated
+spr.c(131): Note! I2003: source conversion type is 'int'
+spr.c(131): Note! I2004: target conversion type is 'short'
+spr.c(131): Warning! W106: Constant out of range - truncated
+spr.c(131): Note! I2003: source conversion type is 'int'
+spr.c(131): Note! I2004: target conversion type is 'short'
+spr.c(131): Warning! W106: Constant out of range - truncated
+spr.c(131): Note! I2003: source conversion type is 'int'
+spr.c(131): Note! I2004: target conversion type is 'short'
+spr.c(131): Warning! W106: Constant out of range - truncated
+spr.c(131): Note! I2003: source conversion type is 'int'
+spr.c(131): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(132): Warning! W106: Constant out of range - truncated
+spr.c(132): Note! I2003: source conversion type is 'int'
+spr.c(132): Note! I2004: target conversion type is 'short'
+spr.c(133): Warning! W106: Constant out of range - truncated
+spr.c(133): Note! I2003: source conversion type is 'int'
+spr.c(133): Note! I2004: target conversion type is 'short'
+spr.c(133): Warning! W106: Constant out of range - truncated
+spr.c(133): Note! I2003: source conversion type is 'int'
+spr.c(133): Note! I2004: target conversion type is 'short'
+spr.c(133): Warning! W106: Constant out of range - truncated
+spr.c(133): Note! I2003: source conversion type is 'int'
+spr.c(133): Note! I2004: target conversion type is 'short'
+spr.c(134): Warning! W106: Constant out of range - truncated
+spr.c(134): Note! I2003: source conversion type is 'int'
+spr.c(134): Note! I2004: target conversion type is 'short'
+spr.c(134): Warning! W106: Constant out of range - truncated
+spr.c(134): Note! I2003: source conversion type is 'int'
+spr.c(134): Note! I2004: target conversion type is 'short'
+spr.c(134): Warning! W106: Constant out of range - truncated
+spr.c(134): Note! I2003: source conversion type is 'int'
+spr.c(134): Note! I2004: target conversion type is 'short'
+spr.c(134): Warning! W106: Constant out of range - truncated
+spr.c(134): Note! I2003: source conversion type is 'int'
+spr.c(134): Note! I2004: target conversion type is 'short'
+spr.c(135): Warning! W106: Constant out of range - truncated
+spr.c(135): Note! I2003: source conversion type is 'int'
+spr.c(135): Note! I2004: target conversion type is 'short'
+spr.c(135): Warning! W106: Constant out of range - truncated
+spr.c(135): Note! I2003: source conversion type is 'int'
+spr.c(135): Note! I2004: target conversion type is 'short'
+spr.c(136): Warning! W106: Constant out of range - truncated
+spr.c(136): Note! I2003: source conversion type is 'int'
+spr.c(136): Note! I2004: target conversion type is 'short'
+spr.c(136): Warning! W106: Constant out of range - truncated
+spr.c(136): Note! I2003: source conversion type is 'int'
+spr.c(136): Note! I2004: target conversion type is 'short'
+spr.c(136): Warning! W106: Constant out of range - truncated
+spr.c(136): Note! I2003: source conversion type is 'int'
+spr.c(136): Note! I2004: target conversion type is 'short'
+spr.c(137): Warning! W106: Constant out of range - truncated
+spr.c(137): Note! I2003: source conversion type is 'int'
+spr.c(137): Note! I2004: target conversion type is 'short'
+spr.c(138): Warning! W106: Constant out of range - truncated
+spr.c(138): Note! I2003: source conversion type is 'int'
+spr.c(138): Note! I2004: target conversion type is 'short'
+spr.c(138): Warning! W106: Constant out of range - truncated
+spr.c(138): Note! I2003: source conversion type is 'int'
+spr.c(138): Note! I2004: target conversion type is 'short'
+spr.c(139): Warning! W106: Constant out of range - truncated
+spr.c(139): Note! I2003: source conversion type is 'int'
+spr.c(139): Note! I2004: target conversion type is 'short'
+spr.c(140): Warning! W106: Constant out of range - truncated
+spr.c(140): Note! I2003: source conversion type is 'int'
+spr.c(140): Note! I2004: target conversion type is 'short'
+spr.c(140): Warning! W106: Constant out of range - truncated
+spr.c(140): Note! I2003: source conversion type is 'int'
+spr.c(140): Note! I2004: target conversion type is 'short'
+spr.c(142): Warning! W106: Constant out of range - truncated
+spr.c(142): Note! I2003: source conversion type is 'int'
+spr.c(142): Note! I2004: target conversion type is 'short'
+spr.c(144): Warning! W106: Constant out of range - truncated
+spr.c(144): Note! I2003: source conversion type is 'int'
+spr.c(144): Note! I2004: target conversion type is 'short'
+spr.c(146): Warning! W106: Constant out of range - truncated
+spr.c(146): Note! I2003: source conversion type is 'int'
+spr.c(146): Note! I2004: target conversion type is 'short'
+spr.c(148): Warning! W106: Constant out of range - truncated
+spr.c(148): Note! I2003: source conversion type is 'int'
+spr.c(148): Note! I2004: target conversion type is 'short'
+spr.c(150): Warning! W106: Constant out of range - truncated
+spr.c(150): Note! I2003: source conversion type is 'int'
+spr.c(150): Note! I2004: target conversion type is 'short'
+spr.c(151): Warning! W106: Constant out of range - truncated
+spr.c(151): Note! I2003: source conversion type is 'int'
+spr.c(151): Note! I2004: target conversion type is 'short'
+spr.c(152): Warning! W106: Constant out of range - truncated
+spr.c(152): Note! I2003: source conversion type is 'int'
+spr.c(152): Note! I2004: target conversion type is 'short'
+spr.c(152): Warning! W106: Constant out of range - truncated
+spr.c(152): Note! I2003: source conversion type is 'int'
+spr.c(152): Note! I2004: target conversion type is 'short'
+spr.c(153): Warning! W106: Constant out of range - truncated
+spr.c(153): Note! I2003: source conversion type is 'int'
+spr.c(153): Note! I2004: target conversion type is 'short'
+spr.c(154): Warning! W106: Constant out of range - truncated
+spr.c(154): Note! I2003: source conversion type is 'int'
+spr.c(154): Note! I2004: target conversion type is 'short'
+spr.c(154): Warning! W106: Constant out of range - truncated
+spr.c(154): Note! I2003: source conversion type is 'int'
+spr.c(154): Note! I2004: target conversion type is 'short'
+spr.c(155): Warning! W106: Constant out of range - truncated
+spr.c(155): Note! I2003: source conversion type is 'int'
+spr.c(155): Note! I2004: target conversion type is 'short'
+spr.c(155): Warning! W106: Constant out of range - truncated
+spr.c(155): Note! I2003: source conversion type is 'int'
+spr.c(155): Note! I2004: target conversion type is 'short'
+spr.c(156): Warning! W106: Constant out of range - truncated
+spr.c(156): Note! I2003: source conversion type is 'int'
+spr.c(156): Note! I2004: target conversion type is 'short'
+spr.c(156): Warning! W106: Constant out of range - truncated
+spr.c(156): Note! I2003: source conversion type is 'int'
+spr.c(156): Note! I2004: target conversion type is 'short'
+spr.c(156): Warning! W106: Constant out of range - truncated
+spr.c(156): Note! I2003: source conversion type is 'int'
+spr.c(156): Note! I2004: target conversion type is 'short'
+spr.c(157): Warning! W106: Constant out of range - truncated
+spr.c(157): Note! I2003: source conversion type is 'int'
+spr.c(157): Note! I2004: target conversion type is 'short'
+spr.c(157): Warning! W106: Constant out of range - truncated
+spr.c(157): Note! I2003: source conversion type is 'int'
+spr.c(157): Note! I2004: target conversion type is 'short'
+spr.c(157): Warning! W106: Constant out of range - truncated
+spr.c(157): Note! I2003: source conversion type is 'int'
+spr.c(157): Note! I2004: target conversion type is 'short'
+spr.c(158): Warning! W106: Constant out of range - truncated
+spr.c(158): Note! I2003: source conversion type is 'int'
+spr.c(158): Note! I2004: target conversion type is 'short'
+spr.c(158): Warning! W106: Constant out of range - truncated
+spr.c(158): Note! I2003: source conversion type is 'int'
+spr.c(158): Note! I2004: target conversion type is 'short'
+spr.c(158): Warning! W106: Constant out of range - truncated
+spr.c(158): Note! I2003: source conversion type is 'int'
+spr.c(158): Note! I2004: target conversion type is 'short'
+spr.c(158): Warning! W106: Constant out of range - truncated
+spr.c(158): Note! I2003: source conversion type is 'int'
+spr.c(158): Note! I2004: target conversion type is 'short'
+spr.c(159): Warning! W106: Constant out of range - truncated
+spr.c(159): Note! I2003: source conversion type is 'int'
+spr.c(159): Note! I2004: target conversion type is 'short'
+spr.c(159): Warning! W106: Constant out of range - truncated
+spr.c(159): Note! I2003: source conversion type is 'int'
+spr.c(159): Note! I2004: target conversion type is 'short'
+spr.c(159): Warning! W106: Constant out of range - truncated
+spr.c(159): Note! I2003: source conversion type is 'int'
+spr.c(159): Note! I2004: target conversion type is 'short'
+spr.c(159): Warning! W106: Constant out of range - truncated
+spr.c(159): Note! I2003: source conversion type is 'int'
+spr.c(159): Note! I2004: target conversion type is 'short'
+spr.c(159): Warning! W106: Constant out of range - truncated
+spr.c(159): Note! I2003: source conversion type is 'int'
+spr.c(159): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(160): Warning! W106: Constant out of range - truncated
+spr.c(160): Note! I2003: source conversion type is 'int'
+spr.c(160): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(161): Warning! W106: Constant out of range - truncated
+spr.c(161): Note! I2003: source conversion type is 'int'
+spr.c(161): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(162): Warning! W106: Constant out of range - truncated
+spr.c(162): Note! I2003: source conversion type is 'int'
+spr.c(162): Note! I2004: target conversion type is 'short'
+spr.c(163): Warning! W106: Constant out of range - truncated
+spr.c(163): Note! I2003: source conversion type is 'int'
+spr.c(163): Note! I2004: target conversion type is 'short'
