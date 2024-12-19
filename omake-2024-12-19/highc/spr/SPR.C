@@ -1,0 +1,166 @@
+/******************************************************************************
+ *																			  *
+ *  SPRITE LIBRARY SAMPLE PROGRAM											  *
+ *																			  *
+ *        TITLE    : ﾋﾟﾝﾎﾟﾝﾎﾞｰﾙ												  *
+ *																			  *
+ *        使用方法 : [起動] TownsMENUまたはｺﾏﾝﾄﾞﾓｰﾄﾞ上    					  *
+ *                   [終了] ﾏｳｽ左右ﾎﾞﾀﾝをｸﾘｯｸ			   					  *
+ *																			  *
+ *****************************************************************************/
+
+#include <stdlib.h>
+#include "..\include\egb.h"
+#include "..\include\mos.h"
+#include "..\include\spr.h"
+
+#define MX 256 - 16
+#define MY 240 - 16
+
+char	*setpattern() ;
+char	work[1536] ;
+char	mwork[4096] ;
+char	para[64] ;
+
+void	sp_init();
+int		sp_def();
+void	sp_setattr();
+void	wait();
+
+void main( argc,argv )
+int argc ;
+char **argv ;
+{
+		char *sp ;
+		int  sn ;
+		int  ch,x,y ;
+		int  sx,sy,dx,dy ;
+		int  wai ;
+	
+		if( argc == 2 ) wai = atoi( argv[1] ) * 1000 ;
+		else wai = 0x1000 ;
+	
+		sp_init() ; 						/*	初期化				*/
+
+		sp = setpattern() ;					/*	パターンの定義		*/
+		sn = sp_def( 1,1,sp,1 ) ;			/*	スプライト定義		*/
+		sp_setattr( sn,8 ) ;				/*	アトリビュート設定	*/
+		SPR_display( 1,8 ) ;				/*	表示開始			*/
+
+		dx = dy = 1 ;
+		sx = 60 ;
+		sy = 120 ;
+
+		do {
+			MOS_rdpos( &ch,&x,&y ) ;
+
+			SPR_setPosition( 0,sn,1,1,sx,sy ) ;
+			SPR_setPosition( 0,sn-1,1,1,sx,MY-sy ) ;
+			SPR_setPosition( 0,sn-2,1,1,MX-sx,sy ) ;
+			SPR_setPosition( 0,sn-3,1,1,MX-sx,MY-sy ) ;
+			SPR_setPosition( 0,sn-4,1,1,sy,sx ) ;
+			SPR_setPosition( 0,sn-5,1,1,MX-sy,sx ) ;
+			SPR_setPosition( 0,sn-6,1,1,sy,MY-sx ) ;
+			SPR_setPosition( 0,sn-7,1,1,MX-sy,MY-sx ) ;
+			sx += dx ;
+			sy += dy ;
+
+			if( (sx == 0) || (sx == MX) ) dx = (dx>0)?-1:1 ;
+			if( (sy == 0) || (sy == MY) ) dy = (dy>0)?-1:1 ;
+			wait( wai ) ;
+		}while( ch != 3 ) ;
+
+		SPR_display( 0,8 ) ;
+		MOS_end() ;
+}
+
+void sp_init()
+{
+		EGB_init( work,1536 ) ;				/*	EGBの初期化			*/
+		MOS_start( mwork,4096 ) ;			/*	MOS動作開始の設定	*/
+		SPR_init() ; 						/*	初期化				*/
+		EGB_resolution( work,0,3 ) ;		/*	EGB仮想画面の設定	*/
+		MOS_resolution( 0,3 ) ;				/*	MOS仮想画面の設定	*/
+		MOS_disp( 0 ) ;
+		EGB_writePage( work,0 ) ;
+		EGB_color( work,0,8+5 ) ;
+		EGB_color( work,2,8+1 ) ;
+		EGB_paintMode( work,0x22 ) ;
+		EGB_pen( work,1 ) ;
+		EGB_penSize( work,3 ) ;
+
+		WORD( para + 0 ) = 0 ;
+		WORD( para + 2 ) = 0 ;
+		WORD( para + 4 ) = 511 ;
+		WORD( para + 6 ) = 479 ;
+		EGB_rectangle( work,para ) ;
+
+		EGB_resolution( work,1,5 ) ;		/*	EGBの仮想画面の設定	*/
+		EGB_displayPage( work,1,3 ) ;
+		EGB_writePage( work,1 ) ;
+		EGB_displayStart( work,2,2,2 ) ;	/*	表示開始位置の設定	*/
+		EGB_displayStart( work,3,256,240 ) ;/*	表示開始位置の設定	*/
+}
+
+int sp_def( int sx, int sy, char *ptn, int colmode )
+{
+		static int maxspr = 0 ;
+		int sp ;
+		sp = maxspr + ( sx * sy ) ;
+		SPR_define( colmode,128 + maxspr,sx,sy,ptn ) ;
+		maxspr = sp ;
+		return 1024 - sp ;
+}
+
+void sp_setattr( int sn, int num ) 
+{
+		int i ;
+		for( i = 0 ; i < num ; i++ ) 
+			SPR_setAttribute( sn - i,1,1,128,0 ) ;
+}
+
+void wait(int mc)
+{
+		int cnt ;
+		for( cnt = 0 ; cnt < mc ; cnt++ ) ;
+}
+
+char	*setpattern()
+{
+static short pat[] = { 
+	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x73C7,	0x73C7,	0x73C7,
+	0x73C7,	0x73C7,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x8000,	0x73C7,	0x73C7,	0x73C7,	0x73C7,	0x73AC,
+	0x73C7,	0x73C7,	0x73C7,	0x73C7,	0x8000,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x73C7,	0x73CF,	0x73CF,	0x73CF,	0x73CF,	0x73AC,
+	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x73C7,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x73C7,	0x73CF,	0x73CF,	0x77D6,	0x77D6,	0x77D6,	0x73CF,
+	0x73CF,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x73C7,	0x8000,	0x8000,
+	0x8000,	0x73CF,	0x73CF,	0x77D6,	0x77D9,	0x77D9,	0x77D6,	0x77D6,
+	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,	0x8000,
+	0x73C7,	0x73CF,	0x77D6,	0x77D9,	0x7FFF,	0x7FFF,	0x77D9,	0x77D6,
+	0x73CF,	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,
+	0x73C7,	0x73CF,	0x77D6,	0x77D9,	0x7FFF,	0x7FFF,	0x77D9,	0x77D6,
+	0x73CF,	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,
+	0x73C7,	0x73CF,	0x77D6,	0x77D6,	0x77D9,	0x77D9,	0x77D6,	0x73CF,
+	0x73CF,	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,
+	0x73C7,	0x73C7,	0x73CF,	0x77D6,	0x77D6,	0x77D6,	0x73CF,	0x73CF,
+	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,
+	0x73C7,	0x73C7,	0x73CF,	0x73CF,	0x73CF,	0x73CF,	0x73CF,	0x73CF,
+	0x73CF,	0x73AC,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,
+	0x8000,	0x73C7,	0x73AC,	0x73AC,	0x73CF,	0x73CF,	0x73CF,	0x73AC,
+	0x73AC,	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x8000,	0x8000,
+	0x8000,	0x73C7,	0x73C7,	0x73AC,	0x73AC,	0x73AC,	0x73AC,	0x73AC,
+	0x73AC,	0x73AC,	0x73AC,	0x73C7,	0x73C7,	0x73C7,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x73C7,	0x73C7,	0x73AC,	0x73AC,	0x73AC,	0x73AC,
+	0x73AC,	0x73AC,	0x73C7,	0x73AC,	0x73C7,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x8000,	0x73C7,	0x73C7,	0x73C7,	0x73C7,	0x73C7,
+	0x73C7,	0x73C7,	0x73C7,	0x73C7,	0x8000,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x73C7,	0x73C7,	0x73C7,
+	0x73C7,	0x73C7,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,
+	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000,	0x8000
+} ;
+		return (char *)pat ;
+}
+
