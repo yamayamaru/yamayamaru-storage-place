@@ -28,6 +28,11 @@ FM TOWNSエミュレータの津軽やうんづで
 TOWNSシステムソフトウェアV2.1が必須になります)
 http://ysflight.in.coocan.jp/FM/towns/FreeTOWNS/ROMS.zip
 
+今のところこのROMイメージを使わないで互換BIOSだけを使うと
+OpenWatcom C Ver2.0でprintf()、sprintf(), fprintf()などを使うとプログラムがハングします
+MSDOS 3.1から作ったFMT_DOS.ROMを差し替えるとprintf()、sprintf(), fprintf()を使っても
+作成したプログラムがハングしなくなります
+
 
 
 
