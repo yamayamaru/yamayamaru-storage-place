@@ -33,6 +33,8 @@ http://ysflight.in.coocan.jp/FM/towns/FreeTOWNS/ROMS.zip
 OpenWatcom C Ver2.0でprintf()、sprintf(), fprintf()などを使うとプログラムがハングします
 MSDOS 3.1から作ったFMT_DOS.ROMを差し替えるとprintf()、sprintf(), fprintf()を使っても
 作成したプログラムがハングしなくなります
+OpenWatcom C Ver2.0で作成したプログラムを津軽で動作させるときに
+プログラムによっては80387をオンにしてるとハングする場合があるのでそのときは80387をオフにしてください
 
 
 
