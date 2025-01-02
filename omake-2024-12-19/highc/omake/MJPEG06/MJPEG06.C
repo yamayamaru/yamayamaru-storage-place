@@ -16,7 +16,7 @@
 // 長時間動画の再生はできてます。
 //
 // このプログラムには動画ファイルは付属しません
-// 231行目あたりのloop関数の中身を編集してご自分の動画ファイルを再生するように変更してください
+// 233行目あたりのloop関数の中身を編集してご自分の動画ファイルを再生するように変更してください
 // (拡張子は大文字の.MJPにしてください)
 //
 // 対応している動画形式はMotionJPEGです。
@@ -106,9 +106,9 @@ typedef int   bool;
 
 bool drawJpgBmppicture(char *fname);
 bool drawJpgBmppicture_mjpeg(char *fname, unsigned char frate);
-long millis01(); 
-long time_us_64();
-void delay01(int a);
+long long millis01(); 
+long long time_us_64();
+void delay01(long long a);
 
 int ginit(int mode1, int page1, char *workaddr01, int worksize01);
 void set_color(int color);
@@ -135,15 +135,17 @@ void int_to_str(char *str1, int a);
 void uint_to_str(char *str1, unsigned int a);
 
 int init_timer01(TIM_TIME *timer01, int *timer_num01);
-unsigned int get_count_timer01(int timer_num01);
+long long get_count_timer01(int timer_num01);
 int close_timer01(int timer_num01);
+
+int color15(int color);
 
 int fread01(unsigned char *buf, int blocksize, int n, FILE *fp);
 
 void setup();
 void loop();
 
-double fps0001 = 0.0;
+long long fps0001 = 0;
 
 char buf01[1024];
 char buf02[256];
@@ -308,10 +310,10 @@ bool drawJpgBmppicture_mjpeg(char *fname, unsigned char frate) {
 
     // draw picture
     
-    long time01 = 0L;
-    long time02 = 0L;
-    long time00 = millis01();
-    double fps_aver = 0.0;
+    long long time01 = 0;
+    long long time02 = 0;
+    long long time00 = millis01();
+    long long fps_aver = 0;
     int count_fps = 0;
 
 
@@ -333,20 +335,20 @@ bool drawJpgBmppicture_mjpeg(char *fname, unsigned char frate) {
       time02 = time01;
       time01 = millis01();
       if (time02 > 0L) {
-        double time1;
-        double fps01;
+        long long time1;
+        long long fps01;
 
-        time1 = (time01 - time02) / 1000.0;
-        fps01 = 1.0 / time1;
+        time1 = (time01 - time02);
+        fps01 = 1000 / time1;
         fps_aver += fps01;
         count_fps++;
-        if (((millis01() - time00) / 1000.0) > 5.0) {
+        if ((millis01() - time00) > 5000) {
           if(count_fps > 0) {
-            fps0001 = fps_aver / count_fps;
+            fps0001 = fps_aver * 1000 / count_fps;
             picdly01 = picdly;
-//            printf("time = %.4f\r\n", time1);
-//            printf("fps = %.4f\r\n", fps_aver / count_fps);
-            fps_aver = 0.0;
+//            printf("time = %lld\r\n", time1);
+//            printf("fps = %lld\r\n", fps_aver / count_fps);
+            fps_aver  = 0;
             count_fps = 0;
           }
           time00 = millis01();
@@ -451,8 +453,8 @@ bool drawJpgBmppicture_mjpeg(char *fname, unsigned char frate) {
 
 
         fillRect(0, 0, 40, 25, ILI9486_BLACK);
-        int_to_str(buf01, (int)(fps0001 * 1000.0));
-//        sprintf(buf01, "%.4f", fps0001);
+        int_to_str(buf01, (int)(fps0001));
+//        sprintf(buf01, "%lld", fps0001);
         draw_string(0, 20, buf01);
 //        int_to_str(buf01, (int)(picdly01));
 ////        sprintf(buf01, "%ld", picdly01);
@@ -630,26 +632,20 @@ int color15(int color) {
 void dmaWait(void) {
 }
 
-int second() {
-    struct dostime_t time01;
-    _dos_gettime(&time01);
 
-    return (double)(((time01.hour * 3600L + time01.minute * 60L + time01.second) * 1000 + time01.hsecond * 10) / 1000.0);
+long long time_us_64() {
+    return (get_count_timer01(timer_num01) * 10 * 1000);
 }
 
-long time_us_64() {
-    return (long)(get_count_timer01(timer_num01) * 10 * 1000);
+long long millis01() {
+    return get_count_timer01(timer_num01) * 10;
 }
 
-long millis01() {
-    return (long)get_count_timer01(timer_num01) * 10;
-}
-
-void delay01(int a) {
-    double time0001, time0002;
+void delay01(long long a) {
+    long long time0001, time0002;
     if (a <= 0) return;
     time0001 = millis01();
-    time0002 = (double)a;
+    time0002 = a;
     while ((millis01() - time0001) < time0002);
 }
 
@@ -853,27 +849,29 @@ void uint_to_str(char *str1, unsigned int a) {
     }
 }
 
+
+volatile long long timer_counter01 = 0;
+
 int func01() {
+    timer_counter01++;
     return 0;
 }
 
 int init_timer01(TIM_TIME *timer01, int *timer_num01) {
     int ret01;
-    timer01->mode = 1;
+    timer01->mode = 0;
     timer01->inf  = 0;
     BSETCODEADR((char *)&timer01->adr, func01);
-    timer01->hcycle = 0xffff;
-    timer01->lcycle = 0xffff;
+    timer01->hcycle = 0x0;
+    timer01->lcycle = 0x1;
 
     ret01 = TIM_settime(timer01, timer_num01);
 
     return ret01;
 }
 
-unsigned int get_count_timer01(int timer_num01) {
-    TIM_TIME timer01;
-    TIM_rdtime(&timer01, timer_num01);
-    return (((unsigned int)timer01.hcycle << 16) | (unsigned int)timer01.lcycle);
+long long get_count_timer01(int timer_num01) {
+    return timer_counter01;
 }
 
 int close_timer01(int timer_num01) {

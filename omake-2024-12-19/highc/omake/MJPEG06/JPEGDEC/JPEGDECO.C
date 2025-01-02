@@ -6,10 +6,9 @@ extern void uint_to_str(char *str1, int a);
 char str01[1024];
 char str02[256];
 
-extern int second(void);
-extern long time_us_64();
-extern long millis01();
-extern void delay01(int a);
+extern long long time_us_64();
+extern long long millis01();
+extern void delay01(long long a);
 
 
 static FILE *JPEGDecoder_g_pInFile;
