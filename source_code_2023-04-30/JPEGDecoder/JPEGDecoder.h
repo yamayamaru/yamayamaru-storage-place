@@ -53,6 +53,9 @@ private:
 
 public:
 
+    int g_pInFile_flag;
+
+
     uint8 *pImage;
     JPEGDecoder *thisPtr;
 
