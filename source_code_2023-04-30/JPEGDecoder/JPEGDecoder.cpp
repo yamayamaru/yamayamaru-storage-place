@@ -22,6 +22,7 @@ JPEGDecoder::JPEGDecoder(){
     pImage = 0;
     mjpegflag = 0;
     thisPtr = this;
+    g_pInFile_flag = 0;
 }
 
 
@@ -34,6 +35,8 @@ unsigned char JPEGDecoder::pjpeg_callback(unsigned char* pBuf, unsigned char buf
 {
     JPEGDecoder *thisPtr = JpegDec.thisPtr ;
     thisPtr->pjpeg_need_bytes_callback(pBuf, buf_size, pBytes_actually_read, pCallback_data);
+
+    return 0;
 }
 
 
@@ -73,12 +76,21 @@ int JPEGDecoder::decode(char* pFilename, unsigned char pReduce){
       free(pImage);
       pImage = 0;
       g_pInFile.close();
+      g_pInFile_flag = 0;
       delay(1);
+    }
+
+
+    if (g_pInFile_flag) {
+        g_pInFile.close();
+        g_pInFile_flag = 0;
     }
 
     g_pInFile = SD.open(pFilename, FILE_READ);
     if (!g_pInFile)
         return -1;
+    g_pInFile_flag = 1;
+
 
     if(mjpegflag) g_pInFile.seek(nextjpgpos);  // set next jpeg position
     else nextjpgpos = 0;
@@ -104,6 +116,8 @@ int JPEGDecoder::decode(char* pFilename, unsigned char pReduce){
         }
         #endif
         g_pInFile.close();
+        g_pInFile_flag = 0;
+
         return -1;
     }
 
@@ -116,6 +130,8 @@ int JPEGDecoder::decode(char* pFilename, unsigned char pReduce){
     if (!pImage)
     {
         g_pInFile.close();
+        g_pInFile_flag = 0;
+
         #ifdef DEBUG
         Serial.println("Memory Allocation Failure");
         #endif
@@ -169,6 +185,8 @@ int JPEGDecoder::decode_mcu(void){
         }
 
         g_pInFile.close();
+        g_pInFile_flag = 0;
+
 
         if (status != PJPG_NO_MORE_BLOCKS)
         {
@@ -197,6 +215,8 @@ int JPEGDecoder::read(void)
         if(pImage) free(pImage);
         pImage = 0;
         g_pInFile.close();
+        g_pInFile_flag = 0;
+
         return 0;
     }
 
