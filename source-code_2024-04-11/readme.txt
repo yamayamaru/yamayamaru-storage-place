@@ -67,6 +67,8 @@ MIDI入力可能なバージョンはsocket_to_serial3になります
 互換BIOSをそのまま使うとEUP Playerでファイル選択が正常にできないです
 うんづのところのMKOSROMでMSDOS Ver3.1から作成したFMT_DOS.ROMを
 互換BIOSのROMの中のFMT_DOS.ROMと差し替えることによりファイル選択が正常にできるようになります
+ただし、MSDOS Ver3.1から作成したFMT_DOS.ROMを使うと今のところ、HDDからしか起動しなくなるようです
+なのでもともとの互換BIOSを用途によって使い分けてください
 うんづのところのMKOSROMでMSDOS Ver3.1から作成したFMT_DOS.ROMも一緒に置いておきます
 
 
