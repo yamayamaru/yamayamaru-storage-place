@@ -90,6 +90,7 @@ void loop() {
     char inChar = Serial.read();
     if (getSn_SR(socket_number) == SOCK_ESTABLISHED) {
       ethernet_buf[0] = (uint8_t)inChar;
+      while (getSn_TX_FSR(socket_number) == 0);  //Sn_TX_FST : indicates the free size of Socket n TX Buffer Block.
       ret02 = send(socket_number, ethernet_buf, 1);
     }
   }
