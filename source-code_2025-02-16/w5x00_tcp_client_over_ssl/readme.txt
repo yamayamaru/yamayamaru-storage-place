@@ -1,0 +1,19 @@
+pico-sdkでWIZnet-PICO-Cを使ってコンパイルする時のCMakeLists.txtを用意してみました
+
+WIZnet-PICO-Cのダウンロードは下記の方法でできます
+
+git clone https://github.com/WIZnet-ioNIC/WIZnet-PICO-C --recursive
+
+
+
+w5x00_tcp_client_over_ssl.c、wiznet_pico_c_sdk_version.cmake、CMMakeLists.txtが置かれてる場所と同じフォルダに
+WIZnet-PICO-Cのportフォルダとlibrariesフォルダをコピーします
+
+私の場合、pico-sdkは容量が大きいのでpico-sdkは他の場所に用意して
+環境変数PICO_SDK_PATHにpico-sdkのパスを設定してます
+librariesフォルダの中のpico-sdkを使いたい場合は
+CMakeLists.txtの中のPICO_SDK_PATHを設定してる部分のコメントアウトをはずしてください
+
+
+この状態で通常のpico-sdkのビルドと同じ方法でコンパイルできます
+無駄な部分もあるとは思いますがこれで正常にビルドできました
