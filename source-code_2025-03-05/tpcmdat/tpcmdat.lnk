@@ -1,0 +1,4 @@
+tpcmdat
+ -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\fmcfrb.lib f:\hc386\small\snd.lib
+ -STACK 262144
+ -exe tpcmdat
