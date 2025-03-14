@@ -1,0 +1,5 @@
+vsynci_c
+ -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\fmcfrb.lib
+ -STACK 262144
+ -exe vsynci_c
+ 

@@ -1,0 +1,4 @@
+vsynci
+ -stack 262144
+ -exe vsynci
+ 
