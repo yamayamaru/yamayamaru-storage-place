@@ -1,0 +1,6 @@
+コンパイル方法
+
+VSYNCI_C.BATとVSYNCI_C.LNKの中身を確認してご自分の環境に合わせて
+386linkやtlinkやライブラリのパスを変更してください
+
+VSYNCI_C.BATを実行します
