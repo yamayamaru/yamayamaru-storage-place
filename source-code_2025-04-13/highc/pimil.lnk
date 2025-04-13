@@ -1,0 +1,5 @@
+pimil
+pimil_a
+ -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib
+ -STACK 262144
+ -exe pimil
