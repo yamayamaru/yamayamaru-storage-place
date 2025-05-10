@@ -1,7 +1,7 @@
 set SDCC_HOME="C:\Program Files\SDCC"
 
 set SDCC_INCLUDE=%SDCC_HOME%\include
-#set SDCC_LIBRARY=%SDCC_HOME%\lib
+rem set SDCC_LIBRARY=%SDCC_HOME%\lib
 set PATH=%SDCC%\bin;%PATH%
 
 
