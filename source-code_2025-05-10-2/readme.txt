@@ -23,7 +23,9 @@ sdasz80 -o mycrt0_2_super_aki80.rel mycrt0_2_super_aki80.asm
 sdasz80 -o mandel_super_aki80_sio1_loop2_asm.rel mandel_super_aki80_sio1_loop2_asm.asm
 sdcc -mz80 --code-loc 0x8000 --data-loc 0 --no-std-crt0 -o mandel_super_aki80_sio1_loop2.ihx mycrt0_2_super_aki80.rel  mandel_super_aki80_sio1_loop2.rel  mandel_super_aki80_sio1_loop2_asm.rel
 
-
+簡単にビルドできるようにmandel_super_aki80_sio1_loop2-build.batを用意しました
+ファイルの中で環境変数SDCC_HOMEにSDCCをインストールしたフォルダのパスを設定してください
+あとはコマンドプロンプトでmandel_super_aki80_sio1_loop2-build.batを実行するだけです
 
 
 
@@ -48,3 +50,35 @@ mandel_super_aki80_sio1_loop2.ihxを送信します
 一度Enterキーを押します
 
 GO8000と入力してEnterキーを押すとプログラムの実行が開始されます
+
+
+
+
+
+
+SDCC-4.2.0のインストール方法
+
+sdccはここからダウンロードできます
+https://sourceforge.net/projects/sdcc/files/
+
+Windows x64版のsdcc-4.2.0はここです
+https://sourceforge.net/projects/sdcc/files/sdcc-win64/4.2.0/
+ここのsdcc-4.2.0-x64-setup.exeをダウンロードしてください
+
+
+署名がないので実行するとWindowsによってPCが保護されましたと出ます
+詳細情報をクリックして実行をクリックします
+
+ユーザアカウント制御の画面が出るので「はい」をクリックします
+
+
+
+
+コンパイル時は下記のようにSDCCのコンパイルに必要な環境変数の設定が必要です
+
+環境変数SDCC_HOMEにはSDCCをインストールしたフォルダのパスを指定します
+デフォルトではC:\Program Files\SDCCにインストールされます
+
+set SDCC_HOME="C:\Program Files\SDCC"
+set SDCC_INCLUDE=%SDCC_HOME%\include
+set PATH=%SDCC%\bin;%PATH%
