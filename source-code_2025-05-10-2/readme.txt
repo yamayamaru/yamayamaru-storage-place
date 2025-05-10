@@ -10,7 +10,7 @@ Super AKI-80のRAM上で動きます
 mandel_super_aki80_sio1_loop2.ihx      コンパイル済みのインテルHEXファイル
 
 mandel_super_aki80_sio1_loop2.c        メインプログラムのソース
-mandel_super_aki80_sio1_loop2_asm.asm  補助的なアセンブラのソース
+mandel_super_aki80_sio1_loop2_asm.asm  簡単な補助的な関数のアセンブラのソース
 mycrt0_2_super_aki80.asm               sdcc-4.2.0を使うためのスタートアップルーチン
 
 
