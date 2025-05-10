@@ -82,3 +82,8 @@ https://sourceforge.net/projects/sdcc/files/sdcc-win64/4.2.0/
 set SDCC_HOME="C:\Program Files\SDCC"
 set SDCC_INCLUDE=%SDCC_HOME%\include
 set PATH=%SDCC%\bin;%PATH%
+
+
+
+これらのプログラムの使用に当たってはご自分の責任において使用してください
+これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません。
