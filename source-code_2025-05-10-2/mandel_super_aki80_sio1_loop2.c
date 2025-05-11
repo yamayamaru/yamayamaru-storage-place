@@ -425,8 +425,8 @@ void init_sio(void) {
     outp(SIOAPORT_CMD, 0x05);
     outp(SIOAPORT_CMD, 0x68);
 
-    outp(CTC2PORT, 0x07);      //  x16
-    outp(CTC2PORT, 0x01);      // count = 1
+    outp(CTC3PORT, 0x07);      //  x16
+    outp(CTC3PORT, 0x04);      // count = 1
 }
 
 int getch(void) {
