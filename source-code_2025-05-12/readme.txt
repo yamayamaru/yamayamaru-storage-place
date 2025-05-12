@@ -9,6 +9,9 @@ Super AKI-80のRAM上で動きます
 Super AKI-80にILI9486のLCDを8bitパラレルで接続して、メキシカンハットを描いてみました
 
 
+LCDとの結線は
+PIOのポートBのbit0からbit7にLCDの8bitのbit0からbit7を接続
+PIOのポートAのbit7にWR、bit6にDC、bit5がResetです
 
 
 hat02_ili9486_super_aki80.ihx               コンパイル済みのインテルHEXファイル
