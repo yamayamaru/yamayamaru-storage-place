@@ -118,7 +118,6 @@
 
 
 
-
 #define min01(a, b) (((a) < (b)) ? (a) : (b))
 #define swap01(a, b)                                                       \
 {                                                                          \
@@ -140,23 +139,23 @@ void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void setRotation(int mode);
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color);
 void fillScreen(uint32_t color);
-void drawRGBBitmap(int x, int y, uint8_t bitmap[], int w, int h); 
+void drawRGBBitmap(int x, int y, uint8_t bitmap[], int w, int h);
 void drawPixel(int x, int y, uint32_t color);
 void drawLine(int x0, int y0, int x1, int y1, uint32_t color);
-void drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color);
+void drawFastVLine(int x, int y, int h, uint32_t color);
 void drawFastHLine(int x, int y, int w, uint32_t color);
 void drawRect(int x, int y, int w, int h, uint32_t color);
-void drawCircle(int x0, int y0, int r, uint32_t color);
-void fillCircle(int x0, int y0, int r, uint32_t color);
-void fillCircleHelper(int x0, int y0, int r,
+void drawCircle(int x0, int y0, int32_t r, uint32_t color);
+void fillCircle(int x0, int y0, int32_t r, uint32_t color);
+void fillCircleHelper(int x0, int y0, int32_t r,
                                     uint8_t corners, int32_t delta,
                                     uint32_t color);
 void drawRoundRect(int x, int y, int w, int h, int32_t r, uint32_t color);
 void fillRoundRect(int x, int y, int w, int h, int32_t r, uint32_t color);
 void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 void fillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
-uint32_t color16(int16_t color);
-uint16_t color565(unsigned int colr, unsigned int colg, unsigned int colb); 
+uint32_t color16(uint16_t color);
+uint16_t color565(uint16_t colr, uint16_t colg, uint16_t colb);
 
 void init_pio();
 void gpio_rst_off();
@@ -173,18 +172,19 @@ void z80_ei();
 void z80_di();
 void super_aki80_init(void);
 void init_sio(void);
-int getch(void); 
-int kbhit(void); 
-int sioaout_ok(void); 
-void init_ctc0(void); 
-void stop_ctc0(void); 
-unsigned long millis(void); 
-void delay(unsigned long millisec); 
+int getch(void);
+int kbhit(void);
+int sioaout_ok(void);
+void init_ctc0(void);
+void stop_ctc0(void);
+unsigned long millis(void);
+void delay(unsigned long millisec);
 extern void ctc0_intcall();
 extern void sioa_intcall();
 extern void iretmon();
-int sioa_read_available(); 
-int sioa_read(); 
+int sioa_read_available();
+int sioa_read();
+
 
 
 
@@ -200,26 +200,23 @@ void loop();
 void main(void) {
 
     z80_di();
-	
+
     super_aki80_init();
     init_sio();
-	init_ctc0();
+    init_ctc0();
 
-	z80_ei();
+    z80_ei();
 
-	init_pio();
+    init_pio();
 
-	tft_setup();
-	
+    tft_setup();
 
-	setRotation(3);
-    fillRect(0, 0, _width, _height, ILI9486_BLACK);
+
+    setRotation(3);
 
     for (;;) {
-		loop();
-
-		delay(60000);
-	}
+        loop();
+    }
 }
 
 
@@ -228,7 +225,7 @@ void hat02();
 void loop() {
     hat02();
 
-	delay(60000);
+    delay(60000);
 }
 
 
@@ -236,15 +233,16 @@ float d[160];
 int xmax, ymax;
 void hat02() {
     int       i, x, y, zz, px, py, f, colr, colg, colb, sxi;
-	int32_t   col;
+    int32_t   col;
     float    dr, r, z, sx, sy, a;
-	unsigned long start_time, end_time;
+    unsigned long start_time, end_time;
 
+    fillRect(0, 0, _width, _height, ILI9486_BLACK);
     xmax = _width;
-	ymax = _height;
+    ymax = _height;
 
-	printf("start\r\n");
-	start_time = millis();
+    printf("start\r\n");
+    start_time = millis();
 
     for (i = 0; i < 160; ++i) {
         d[i] = 100.0;
@@ -252,18 +250,18 @@ void hat02() {
     dr = 3.141592653589793 / 180.0;
     for (y = -180; y <= 180; y += 6) {
         for (x = -180; x < 180; x += 4) {
-			a = (float)x * (float)x + (float)y * (float)y;
+                        a = (float)x * (float)x + (float)y * (float)y;
             r = dr * sqrtf(a);
             z = 100 * cosf(r) - 30 * cosf(3*r);
             sx = 80 + x / 3 - y / 6;
             sy = 40 - y / 6 - z / 4;
-			sxi = sx;
+                        sxi = sx;
             if ((sxi < 0) || (sxi >= 160)) continue;
             if (d[sxi] <= sy) continue;
             zz = (int)((z + 100) * 0.035) + 1;
             colr = 0;
-			colb = 0;
-			colg = 0;
+                        colb = 0;
+                        colg = 0;
             f = 0;
             if ((zz == 1) || (zz == 3) || (zz == 5) || (zz == 7)) {
                 colb = 255;
@@ -280,15 +278,15 @@ void hat02() {
             px = (int)(sx * 2.0 * xmax / 320.0);
             py = (int)(sy * 2.0 * ymax / 200.0);
             if (f == 1) {
-				col = ((int32_t)colr << 16) | ((int32_t)colg << 8) | (int32_t)colb;
-		        fillRect(px, py, 3, 3, col);
+                col = ((int32_t)colr << 16) | ((int32_t)colg << 8) | (int32_t)colb;
+                fillRect(px, py, 3, 3, col);
             }
             d[sxi] = sy;
         }
     }
 
-	end_time = millis();
-	printf("time = %ld sec\r\n", (end_time - start_time) / 1000UL);
+    end_time = millis();
+    printf("time = %ld sec\r\n", (end_time - start_time) / 1000UL);
 }
 
 
@@ -300,7 +298,7 @@ void init_pio() {
     outp(PIOBPORT_CMD, 0x0f);
     outp(PIOAPORT_DATA, 0xff);
     outp(PIOBPORT_DATA, 0xff);
-	
+
     pio_write_porta_data = 0xff;
 }
 
@@ -309,7 +307,7 @@ void gpio_rst_off() {
         ld      a, (_pio_write_porta_data)
         set     5, a
         out     (PIOAPORT_DATA), a
-		ld      (_pio_write_porta_data), a
+        ld      (_pio_write_porta_data), a
     __endasm;
 }
 
@@ -318,7 +316,7 @@ void gpio_rst_on() {
         ld      a, (_pio_write_porta_data)
         res     5, a
         out     (PIOAPORT_DATA), a
-		ld      (_pio_write_porta_data), a
+        ld      (_pio_write_porta_data), a
     __endasm;
 }
 
@@ -327,7 +325,7 @@ void gpio_dc_off() {
         ld      a, (_pio_write_porta_data)
         set     6, a
         out     (PIOAPORT_DATA), a
-		ld      (_pio_write_porta_data), a
+        ld      (_pio_write_porta_data), a
     __endasm;
 }
 
@@ -336,19 +334,19 @@ void gpio_dc_on() {
         ld      a, (_pio_write_porta_data)
         res     6, a
         out     (PIOAPORT_DATA), a
-		ld      (_pio_write_porta_data), a
+        ld      (_pio_write_porta_data), a
     __endasm;
 }
 
 void writedata(uint8_t c) {
     __asm
-        out	    (PIOBPORT_DATA), a
+        out         (PIOBPORT_DATA), a
         ld      a, (_pio_write_porta_data)
         res     7, a
         out     (PIOAPORT_DATA), a
         set     7, a
         out     (PIOAPORT_DATA), a
-		ld      (_pio_write_porta_data), a
+        ld      (_pio_write_porta_data), a
     __endasm;
 }
 
@@ -489,36 +487,36 @@ void setRotation(int mode) {
 
 void fill_color(uint32_t color, uint32_t len)
 {
-	uint32_t i;
-	uint8_t r, g, b;
-	r = (color >> 16) & 0xff;
-	g = (color >>  8) & 0xff;
-	b = (color) & 0xff;
+    uint32_t i;
+    uint8_t r, g, b;
+    r = (color >> 16) & 0xff;
+    g = (color >>  8) & 0xff;
+    b = (color) & 0xff;
     for(i = 0; i < len; i++) {
         writedata(r);    // red
         writedata(g);    // green
-        writedata(b);          // blue
+        writedata(b);    // blue
     }
 }
 
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint32_t color) {
-  uint32_t count01;
-  int32_t w01, h01;
-  if(w > 0 && h > 0){
-    if((x >= _width) || (y >= _height)) return;
-    if((x + w - 1) >= _width)  w = _width  - x;
-    if((y + h - 1) >= _height) h = _height - y;
+    uint32_t count01;
+    int32_t w01, h01;
+    if(w > 0 && h > 0){
+        if((x >= _width) || (y >= _height)) return;
+        if((x + w - 1) >= _width)  w = _width  - x;
+        if((y + h - 1) >= _height) h = _height - y;
 
-    setAddrWindow(x, y, x+w-1, y+h-1);
-	w01 = (int32_t)w;
-	h01 = (int32_t)h;
-	count01 = w01 * h01;
-    fill_color(color, count01);
-  }
+        setAddrWindow(x, y, x+w-1, y+h-1);
+        w01 = (int32_t)w;
+        h01 = (int32_t)h;
+        count01 = w01 * h01;
+        fill_color(color, count01);
+    }
 }
 
 void fillScreen(uint32_t color) {
-  fillRect(0, 0, _width, _height, color);
+    fillRect(0, 0, _width, _height, color);
 }
 
 // 24bit RGB (r, g, b)
@@ -529,9 +527,9 @@ void drawRGBBitmap(int x, int y, uint8_t bitmap[], int w, int h) {
     setAddrWindow(x, y, x + w - 1, y + h - 1);
     for(j=0; j < h; j++){
         for(i = 0; i < w; i++) {
-          writedata(*p++ & 0xff);    // red
-          writedata(*p++ & 0xff);    // green
-          writedata(*p++ & 0xff);    // blue
+            writedata(*p++ & 0xff);    // red
+            writedata(*p++ & 0xff);    // green
+            writedata(*p++ & 0xff);    // blue
         }
     }
 }
@@ -586,7 +584,7 @@ void drawLine(int x0, int y0, int x1, int y1, uint32_t color) {
   }
 }
 
-void drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color) {
+void drawFastVLine(int x, int y, int h, uint32_t color) {
   drawLine(x, y, x, y + h - 1, color);
 }
 
@@ -601,7 +599,7 @@ void drawRect(int x, int y, int w, int h, uint32_t color) {
   drawFastVLine(x + w - 1, y, h, color);
 }
 
-void drawCircle(int x0, int y0, int r, uint32_t color) {
+void drawCircle(int x0, int y0, int32_t r, uint32_t color) {
   int f = 1 - r;
   int ddF_x = 1;
   int ddF_y = -2 * r;
@@ -634,7 +632,7 @@ void drawCircle(int x0, int y0, int r, uint32_t color) {
   }
 }
 
-void drawCircleHelper(int x0, int y0, int r,
+void drawCircleHelper(int x0, int y0, int32_t r,
                                     uint8_t cornername, uint32_t color) {
   int32_t f = 1 - r;
   int32_t ddF_x = 1;
@@ -671,12 +669,12 @@ void drawCircleHelper(int x0, int y0, int r,
 }
 
 
-void fillCircle(int x0, int y0, int r, uint32_t color) {
+void fillCircle(int x0, int y0, int32_t r, uint32_t color) {
   drawFastVLine(x0, y0 - r, 2 * r + 1, color);
   fillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
-void fillCircleHelper(int x0, int y0, int r,
+void fillCircleHelper(int x0, int y0, int32_t r,
                                     uint8_t corners, int32_t delta,
                                     uint32_t color) {
 
@@ -831,21 +829,22 @@ void fillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color
   }
 }
 
-uint32_t color16(int16_t color) {
-    uint32_t colr, colg, colb, col;
-    colr = ((((uint32_t)color >> 11) & 0x1f) << 3);
-    colg = ((((uint32_t)color >> 5) & 0x3f) << 2);
-    colb = (((uint32_t)color & 0x1f) << 3);
+uint32_t color16(uint16_t color) {
+    uint16_t colr, colg, colb;
+        uint32_t col;
+    colr = (((color >> 11) & 0x1f) << 3);
+    colg = (((color >> 5) & 0x3f) << 2);
+    colb = ((color & 0x1f) << 3);
     colr = (colr != 0) ? (colr | 0x07) : colr;
     colg = (colg != 0) ? (colg | 0x03) : colg;
     colb = (colb != 0) ? (colb | 0x07) : colb;
-    col = (colr << 16) | (colg << 8) | colb;
+    col = ((uint32_t)colr << 16) | ((uint32_t)colg << 8) | (uint32_t)colb;
     return col;
 }
 
-uint16_t color565(unsigned int colr, unsigned int colg, unsigned int colb) {
+uint16_t color565(uint16_t colr, uint16_t colg, uint16_t colb) {
     uint16_t color;
-    color = (uint16_t)(((colr & 0xff) >> 3) << 11) | (((colg & 0xff) >> 2) << 5) | ((colb & 0xff) >> 3);
+    color = (uint16_t)(((colr & 0xf8) >> 3) << 11) | (((colg & 0xfc) >> 2) << 5) | ((colb & 0xf8) >> 3);
 
     return color;
 }
@@ -872,22 +871,22 @@ putchar_loop0001:
 
         pop     hl
         pop     ix
-    __endasm;;
+    __endasm;
 
-	return 0;
+    return 0;
 }
 
 void outp(uint8_t port, uint8_t data) {
    __asm
-   ld      c, a
-   out     (c), l
+       ld      c, a
+       out     (c), l
    __endasm;;
 }
 
 uint8_t inp(uint8_t port) {
    __asm
-   ld      c, a
-   in      a, (c)
+       ld      c, a
+       in      a, (c)
    __endasm;;
 }
 
@@ -899,7 +898,7 @@ void z80_ei() {
 
 void z80_di() {
     __asm
-        di    
+        di
     __endasm;;
 }
 
@@ -913,10 +912,10 @@ void super_aki80_init(void) {
 }
 
 void intcall01() {
-	__asm
+    __asm
 
 _ctc0_intcall::
-    push                ix
+        push            ix
         push            iy
         push            af
         push            hl
@@ -925,12 +924,12 @@ _ctc0_intcall::
 
         call            _ctc0_intcall_func
 
-        pop                     de
-        pop                     bc
-        pop                     hl
-        pop                     af
-        pop                     iy
-        pop                     ix
+        pop             de
+        pop             bc
+        pop             hl
+        pop             af
+        pop             iy
+        pop             ix
         ei
         reti
 
@@ -957,7 +956,7 @@ _iretmon::
         ei
         reti
 
-	__endasm;;
+    __endasm;;
 }
 
 void init_ctc0(void) {
@@ -967,7 +966,7 @@ void init_ctc0(void) {
     __asm
         di
         ld              bc, #CTC0VECT       ;set interrupt vect
-        ld                a, c
+        ld              a, c
         out             (CTC0PORT), a
         ld              a, #0x87     ;割り込みあり、タイマーモード、1/16、
         out             (CTC0PORT), a
@@ -996,9 +995,9 @@ unsigned long millis(void) {
 }
 
 void delay(unsigned long millisec) {
-	unsigned long t1;
-	t1 = millis();
-	while ((millis() - t1) < millisec);
+    unsigned long t1;
+    t1 = millis();
+    while ((millis() - t1) < millisec);
 }
 
 extern volatile int sioa_intcall_buf_rd_point = 0;
@@ -1016,26 +1015,26 @@ void init_sio(void) {
     *(SIOVECT_PTR + 7) = (uint16_t)iretmon;
 
     outp(SIOAPORT_CMD, 0x00);
-    outp(SIOAPORT_CMD, 0x18);
+    outp(SIOAPORT_CMD, 0x18);    // reset
     outp(SIOAPORT_CMD, 0x02);
-    outp(SIOAPORT_CMD, (SIOVECT & 0xff));
+    outp(SIOAPORT_CMD, (SIOVECT & 0xff));    // set sio interrupt vector
     outp(SIOAPORT_CMD, 0x14);
     //outp(SIOAPORT_CMD, 0x04);  // x1,  parity non
     outp(SIOAPORT_CMD, 0x44);    // x16, parity non
     outp(SIOAPORT_CMD, 0x03);
-    outp(SIOAPORT_CMD, 0xc1);
+    outp(SIOAPORT_CMD, 0xc1);    // recive character length = 8bit, receiver enable
     outp(SIOAPORT_CMD, 0x05);
-    outp(SIOAPORT_CMD, 0x68);
+    outp(SIOAPORT_CMD, 0x68);    // send character length = 8bit, send enable
     outp(SIOAPORT_CMD, 0x01);
     outp(SIOAPORT_CMD, 0x10);    // rx interrupt enable
- 
 
-    outp(CTC3PORT, 0x07);       // CTC3 x16
-    outp(CTC3PORT, 0x04);       // CTC3 count = 1
+
+    outp(CTC3PORT, 0x07);        // CTC3 x16
+    outp(CTC3PORT, 0x04);        // CTC3 count = 4
 
     sioa_intcall_buf_rd_point = 0;
-    sioa_intcall_buf_wr_point = 0; 
-    sioa_intcall_ch_count = 0; 
+    sioa_intcall_buf_wr_point = 0;
+    sioa_intcall_ch_count = 0;
 }
 
 #define CH_BUFFER_SIZE 1024
@@ -1070,7 +1069,7 @@ int sioa_read() {
             sioa_intcall_buf_rd_point -= CH_BUFFER_SIZE;
         }
         z80_ei();
-		return ch;
+                return ch;
     } else {
         return -1;
     }
@@ -1104,4 +1103,3 @@ int sioaout_ok(void) {
 
     return ret;
 }
-
