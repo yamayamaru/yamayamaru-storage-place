@@ -1256,14 +1256,13 @@ void init_sio(void) {
     outp(SIOAPORT_CMD, 0xc1);    // recive character length = 8bit, receiver enable
     outp(SIOAPORT_CMD, 0x05);
     outp(SIOAPORT_CMD, 0x68);    // send character length = 8bit, send enable
-
+    outp(SIOAPORT_CMD, 0x01);
+    outp(SIOAPORT_CMD, 0x10);    // rx interrupt enable
 
     outp(SIOBPORT_CMD, 0x00);
     outp(SIOBPORT_CMD, 0x18);    // reset
     outp(SIOBPORT_CMD, 0x02);
     outp(SIOBPORT_CMD, (SIOVECT & 0xff));    // set sio interrupt vector
-    outp(SIOBPORT_CMD, 0x01);
-    outp(SIOBPORT_CMD, 0x10);    // rx interrupt enable
 
 
     outp(CTC3PORT, 0x07);        // CTC3 x16
