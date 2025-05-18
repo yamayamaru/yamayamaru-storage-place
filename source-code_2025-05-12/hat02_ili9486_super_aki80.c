@@ -33,6 +33,8 @@
 #define PIOBPORT_CMD    0x1f
 #define SIOAPORT_DATA   0x18
 #define SIOAPORT_CMD    0x19
+#define SIOBPORT_DATA   0x1a
+#define SIOBPORT_CMD    0x1b
 #define SIOVECT         0xf800
 #define PIO1VECT        0xf810
 #define CTC0VECT        0xf818
@@ -1016,8 +1018,6 @@ void init_sio(void) {
 
     outp(SIOAPORT_CMD, 0x00);
     outp(SIOAPORT_CMD, 0x18);    // reset
-    outp(SIOAPORT_CMD, 0x02);
-    outp(SIOAPORT_CMD, (SIOVECT & 0xff));    // set sio interrupt vector
     outp(SIOAPORT_CMD, 0x14);
     //outp(SIOAPORT_CMD, 0x04);  // x1,  parity non
     outp(SIOAPORT_CMD, 0x44);    // x16, parity non
@@ -1025,8 +1025,14 @@ void init_sio(void) {
     outp(SIOAPORT_CMD, 0xc1);    // recive character length = 8bit, receiver enable
     outp(SIOAPORT_CMD, 0x05);
     outp(SIOAPORT_CMD, 0x68);    // send character length = 8bit, send enable
-    outp(SIOAPORT_CMD, 0x01);
-    outp(SIOAPORT_CMD, 0x10);    // rx interrupt enable
+
+
+    outp(SIOBPORT_CMD, 0x00);
+    outp(SIOBPORT_CMD, 0x18);    // reset
+    outp(SIOBPORT_CMD, 0x02);
+    outp(SIOBPORT_CMD, (SIOVECT & 0xff));    // set sio interrupt vector
+    outp(SIOBPORT_CMD, 0x01);
+    outp(SIOBPORT_CMD, 0x10);    // rx interrupt enable
 
 
     outp(CTC3PORT, 0x07);        // CTC3 x16
@@ -1035,6 +1041,7 @@ void init_sio(void) {
     sioa_intcall_buf_rd_point = 0;
     sioa_intcall_buf_wr_point = 0;
     sioa_intcall_ch_count = 0;
+
 }
 
 #define CH_BUFFER_SIZE 1024
