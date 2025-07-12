@@ -1,0 +1,6 @@
+del *.obj
+del *.exp
+
+hc386 -v -c TJPGREAD.C
+DLRC -OBJ .\TJPGREAD.RCO TJPGREAD.RDF
+386link @TJPGREAD

@@ -1,0 +1,13 @@
+extern
+  JPEG_loadInit                  JPEGD.DLL
+  JPEG_loadEnd                   JPEGD.DLL
+  JPEG_setLoadBuffer             JPEGD.DLL
+  JPEG_setLoadFunc               JPEGD.DLL
+  JPEG_getSOF                    JPEGD.DLL
+  JPEG_getCOM                    JPEGD.DLL
+  JPEG_loadBufSize               JPEGD.DLL
+  JPEG_loadImageJFIF             JPEGD.DLL
+end
+public
+       
+end
