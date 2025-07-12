@@ -1,0 +1,6 @@
+TJPGREAD
+TJPGREAD.RCO
+  -lib f:\hc386\small\HCe.lib f:\hc386\small\na.lib f:\hc386\small\tbios.lib f:\hc386\small\t_os.lib f:\hc386\small\xld_dll.lib f:\hc386\small\tifflib.lib
+  -stack 524288
+  -nomap
+  -exe TJPGREAD
