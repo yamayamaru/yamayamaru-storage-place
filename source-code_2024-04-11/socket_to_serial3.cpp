@@ -110,7 +110,7 @@ int serial01(){
     dcb.XonChar = 0x11;                        // 送信時XON文字 ( 送信可：ビジィ解除 ) の指定:XON文字として11H ( デバイス制御１：DC1 )
     dcb.XoffChar = 0x13;                       // XOFF文字（送信不可：ビジー通告）の指定:XOFF文字として13H ( デバイス制御3：DC3 )
    
-    dcb.fNull = TRUE;                          // NULLバイトの破棄:破棄する
+    dcb.fNull = FALSE;                         // NULLバイトの破棄:破棄する
     dcb.fAbortOnError = TRUE;                  // エラー時の読み書き操作終了:終了する
     dcb.fErrorChar = FALSE;                    // パリティエラー発生時のキャラクタ（ErrorChar）置換:なし
     dcb.ErrorChar = 0x00;                      // パリティエラー発生時の置換キャラクタ
