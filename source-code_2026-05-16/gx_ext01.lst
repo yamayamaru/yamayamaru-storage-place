@@ -1,0 +1,4241 @@
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-1
+
+
+				;		name	GX
+						.386p
+				;**** G-Extender ver 0.0.1 ****
+				
+				;=== SYSTEM SELECTION ===
+ = 0000				_SYSTEM_PC9801 =	0	; NEC PC9801 se
+				ris
+ = 0001				_SYSTEM_PCAT   =	1	; IBM-PC/AT com
+				patible arch.
+				
+				;=== SEGMENT DEFINITIONS ===
+ 0000				_TEXT		segment para public use16 'CODE
+				'
+ 0000				_TEXT		ends
+				;** GX data part **
+ 0000				_DATA		segment para public use16 'DATA
+				'
+ 0000				_DATA		ends
+ 0000				STACK		segment para stack use16
+ 0000				STACK		ends
+				;** data is shared by both mode **
+				DGROUP		group	_DATA, STACK
+				;** 32-bit protect mode **
+ 0000				_TEXT_GX	segment para public use32
+ 0000				TextGxOffset0	label	byte
+ 0000				_TEXT_GX	ends
+				;** users address space (use32) **
+ 0000				_TEXT_USER	segment para public use32
+ 0000				_TEXT_USER	ends
+ 0000				_DATA_USER	segment para public use32
+ 0000				_DATA_USER	ends
+				
+				;** 80386/80486 segment descriptor **
+				_DESC		struc		; descriptor sk
+				elton
+ 0000  0000			_LIM_0_15	dw	0	; segment limit
+ 0002  0000			_BAS_0_15	dw	0	; base (0 - 15)
+ 0004  00			_BAS_16_23	db	0	; base (16 - 23
+				)
+ 0005  00			_ACCESS		db	0	; access right 
+				byte
+ 0006  00			_GRAN		db	0	; granurity
+ 0007  00			_BAS_24_31	db	0	; base (24 - 31
+				)
+ 0008				_DESC		ends
+				
+				;=== segment selector definition ===
+ = 0008				SEG_ALIAS	=	08h		; alias
+				 selector offset
+				;** GDT section **
+ = 0000				SEG_NULL	=	00h		; null 
+				selector
+ = 0008				SEG_GDT		=	08h		; GDT
+ = 0010				SEG_LDT		=	10h		; LDT
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-2
+
+
+ = 0018				SEG_LDT_AL	=	SEG_LDT+SEG_ALIAS
+ = 0020				SEG_IDT		=	20h		; IDT
+ = 0028				SEG_FLAT	=	28h		; physi
+				cal memory (4GB flat)
+ = 0030				SEG_64K_CODE	=	30h		; my us
+				e16 code (_TEXT)
+ = 0038				SEG_64K_DATA	=	38h		; my us
+				e16 data (DGROUP)
+ = 0040				SEG_GX_CODE	=	40h		; my us
+				e32 code (_TEXT_GX)
+ = 0048				SEG_GX_DATA	=	48h		; my us
+				e32 data (DGROUP)
+				;** LDT section **
+ = 0004				SEG_USER_CODE	=	04h		; user 
+				code space
+ = 000C				SEG_USER_TEXT	=	0ch		; user 
+				text space
+ = 0014				SEG_SYSCALL	=	14h		; call 
+				gate to system-call
+				
+				_SystemCallGate	macro			; call-
+				gate to SEG_SYSCALL
+						db	0eah, 0, 0, 0, 0; jmp f
+				ar SEG_SYSCALL:0
+						dw	SEG_SYSCALL
+						endm
+				
+ 0000				_DATA		segment
+				;** GDT **
+ 0000				GdtBase		label	byte
+ 0000  0000			GdtDescNull	_DESC	<>		; null 
+				segment
+ 0002  0000			
+ 0004  00			
+ 0005  00			
+ 0006  00			
+ 0007  00			
+				
+ 0008  4F00			GdtDescGdt	_DESC	<_GDT_SIZE-1,?,?,92h,40
+				h,?>	; GDT itself
+ 000A  0000			
+ 000C  00			
+ 000D  92			
+ 000E  40			
+ 000F  00			
+				
+ 0010  1700			GdtDescLdt	_DESC	<_LDT_SIZE-1,?,?,82h,00
+				0,?>	; LDT
+ 0012  0000			
+ 0014  00			
+ 0015  82			
+ 0016  00			
+ 0017  00			
+				
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-3
+
+
+ 0018  1700			GdtDescLdtAl	_DESC	<_LDT_SIZE-1,?,?,92h,40
+				h,?>	; LDT alias
+ 001A  0000			
+ 001C  00			
+ 001D  92			
+ 001E  40			
+ 001F  00			
+				
+ 0020  FF07			GdtDescIdt	_DESC	<_IDT_SIZE-1,?,?,92h,40
+				h,?>	; IDT alias
+ 0022  0000			
+ 0024  00			
+ 0025  92			
+ 0026  40			
+ 0027  00			
+				
+ 0028  FFFF			GdtDescFlat	_DESC	<0ffffh,?,?,92h,0cfh,?>
+						; 4GB flat data segment
+ 002A  0000			
+ 002C  00			
+ 002D  92			
+ 002E  CF			
+ 002F  00			
+				
+ 0030  FFFF			GdtDesc1MCode	_DESC	<0ffffh,?,?,9ah,000h,?>
+						; 64KB flat code segment
+ 0032  0000			
+ 0034  00			
+ 0035  9A			
+ 0036  00			
+ 0037  00			
+				
+ 0038  FFFF			GdtDesc1MData	_DESC	<0ffffh,?,?,92h,000h,?>
+						; 64KB flat data segment
+ 003A  0000			
+ 003C  00			
+ 003D  92			
+ 003E  00			
+ 003F  00			
+				
+ 0040  FFFF			GdtDescGxCode	_DESC	<0ffffh,?,?,9ah,0cfh,?>
+						; kernel code segment
+ 0042  0000			
+ 0044  00			
+ 0045  9A			
+ 0046  CF			
+ 0047  00			
+				
+ 0048  FFFF			GdtDescGxData	_DESC	<0ffffh,?,?,92h,0cfh,?>
+						; kernel data segment
+ 004A  0000			
+ 004C  00			
+ 004D  92			
+ 004E  CF			
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-4
+
+
+ 004F  00			
+				
+ = 0050				_GDT_SIZE	=	($ - GdtBase)
+				;** LDT **
+						align	16
+ 0050				LdtBase		label	byte
+ 0050  FFFF			LdtDescUserCode _DESC	<0ffffh,?,?,9ah,0cfh,?>
+						; user's code space
+ 0052  0000			
+ 0054  00			
+ 0055  9A			
+ 0056  CF			
+ 0057  00			
+				
+ 0058  FFFF			LdtDescUserData _DESC	<0ffffh,?,?,92h,0cfh,?>
+						; user's data space
+ 005A  0000			
+ 005C  00			
+ 005D  92			
+ 005E  CF			
+ 005F  00			
+				
+ 0060  1E0A			LdtDescSysCall	_DESC	<SystemCall-TextGxOffse
+				t0,SEG_GX_CODE,0,8ch,0,0>
+ 0062  4000			
+ 0064  00			
+ 0065  8C			
+ 0066  00			
+ 0067  00			
+				
+				
+ = 0018				_LDT_SIZE	=	($ - LdtBase)
+				;** IDT **
+ 0068  00 00 00 00 00 00			align	16
+       00 00			
+				_IdtEntryMacro	macro	n
+						_DESC	<IdtEntry&n&-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0>
+						endm
+ 0070				IdtBase		label	byte
+ = 0000				_IdtEntryNumber	=	0
+					rept	256
+						_IdtEntryMacro	%_IdtEntryNumbe
+				r
+				_IdtEntryNumber	=	_IdtEntryNumber + 1
+					endm
+ 0070  0000                  2			_DESC	<IdtEntry0-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 0072  4000                  2	
+ 0074  00                    2	
+ 0075  8E                    2	
+ 0076  00                    2	
+ 0077  00                    2	
+ 0078  0A00                  2			_DESC	<IdtEntry1-TextGxOffset
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-5
+
+
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 007A  4000                  2	
+ 007C  00                    2	
+ 007D  8E                    2	
+ 007E  00                    2	
+ 007F  00                    2	
+ 0080  1400                  2			_DESC	<IdtEntry2-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 0082  4000                  2	
+ 0084  00                    2	
+ 0085  8E                    2	
+ 0086  00                    2	
+ 0087  00                    2	
+ 0088  1E00                  2			_DESC	<IdtEntry3-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 008A  4000                  2	
+ 008C  00                    2	
+ 008D  8E                    2	
+ 008E  00                    2	
+ 008F  00                    2	
+ 0090  2800                  2			_DESC	<IdtEntry4-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 0092  4000                  2	
+ 0094  00                    2	
+ 0095  8E                    2	
+ 0096  00                    2	
+ 0097  00                    2	
+ 0098  3200                  2			_DESC	<IdtEntry5-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 009A  4000                  2	
+ 009C  00                    2	
+ 009D  8E                    2	
+ 009E  00                    2	
+ 009F  00                    2	
+ 00A0  3C00                  2			_DESC	<IdtEntry6-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 00A2  4000                  2	
+ 00A4  00                    2	
+ 00A5  8E                    2	
+ 00A6  00                    2	
+ 00A7  00                    2	
+ 00A8  4600                  2			_DESC	<IdtEntry7-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 00AA  4000                  2	
+ 00AC  00                    2	
+ 00AD  8E                    2	
+ 00AE  00                    2	
+ 00AF  00                    2	
+ 00B0  5000                  2			_DESC	<IdtEntry8-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 00B2  4000                  2	
+ 00B4  00                    2	
+ 00B5  8E                    2	
+ 00B6  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-6
+
+
+ 00B7  00                    2	
+ 00B8  5A00                  2			_DESC	<IdtEntry9-TextGxOffset
+				0,SEG_GX_CODE,0,8eh,0,0> 
+ 00BA  4000                  2	
+ 00BC  00                    2	
+ 00BD  8E                    2	
+ 00BE  00                    2	
+ 00BF  00                    2	
+ 00C0  6400                  2			_DESC	<IdtEntry10-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00C2  4000                  2	
+ 00C4  00                    2	
+ 00C5  8E                    2	
+ 00C6  00                    2	
+ 00C7  00                    2	
+ 00C8  6E00                  2			_DESC	<IdtEntry11-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00CA  4000                  2	
+ 00CC  00                    2	
+ 00CD  8E                    2	
+ 00CE  00                    2	
+ 00CF  00                    2	
+ 00D0  7800                  2			_DESC	<IdtEntry12-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00D2  4000                  2	
+ 00D4  00                    2	
+ 00D5  8E                    2	
+ 00D6  00                    2	
+ 00D7  00                    2	
+ 00D8  8200                  2			_DESC	<IdtEntry13-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00DA  4000                  2	
+ 00DC  00                    2	
+ 00DD  8E                    2	
+ 00DE  00                    2	
+ 00DF  00                    2	
+ 00E0  8C00                  2			_DESC	<IdtEntry14-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00E2  4000                  2	
+ 00E4  00                    2	
+ 00E5  8E                    2	
+ 00E6  00                    2	
+ 00E7  00                    2	
+ 00E8  9600                  2			_DESC	<IdtEntry15-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00EA  4000                  2	
+ 00EC  00                    2	
+ 00ED  8E                    2	
+ 00EE  00                    2	
+ 00EF  00                    2	
+ 00F0  A000                  2			_DESC	<IdtEntry16-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00F2  4000                  2	
+ 00F4  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-7
+
+
+ 00F5  8E                    2	
+ 00F6  00                    2	
+ 00F7  00                    2	
+ 00F8  AA00                  2			_DESC	<IdtEntry17-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 00FA  4000                  2	
+ 00FC  00                    2	
+ 00FD  8E                    2	
+ 00FE  00                    2	
+ 00FF  00                    2	
+ 0100  B400                  2			_DESC	<IdtEntry18-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0102  4000                  2	
+ 0104  00                    2	
+ 0105  8E                    2	
+ 0106  00                    2	
+ 0107  00                    2	
+ 0108  BE00                  2			_DESC	<IdtEntry19-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 010A  4000                  2	
+ 010C  00                    2	
+ 010D  8E                    2	
+ 010E  00                    2	
+ 010F  00                    2	
+ 0110  C800                  2			_DESC	<IdtEntry20-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0112  4000                  2	
+ 0114  00                    2	
+ 0115  8E                    2	
+ 0116  00                    2	
+ 0117  00                    2	
+ 0118  D200                  2			_DESC	<IdtEntry21-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 011A  4000                  2	
+ 011C  00                    2	
+ 011D  8E                    2	
+ 011E  00                    2	
+ 011F  00                    2	
+ 0120  DC00                  2			_DESC	<IdtEntry22-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0122  4000                  2	
+ 0124  00                    2	
+ 0125  8E                    2	
+ 0126  00                    2	
+ 0127  00                    2	
+ 0128  E600                  2			_DESC	<IdtEntry23-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 012A  4000                  2	
+ 012C  00                    2	
+ 012D  8E                    2	
+ 012E  00                    2	
+ 012F  00                    2	
+ 0130  F000                  2			_DESC	<IdtEntry24-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-8
+
+
+ 0132  4000                  2	
+ 0134  00                    2	
+ 0135  8E                    2	
+ 0136  00                    2	
+ 0137  00                    2	
+ 0138  FA00                  2			_DESC	<IdtEntry25-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 013A  4000                  2	
+ 013C  00                    2	
+ 013D  8E                    2	
+ 013E  00                    2	
+ 013F  00                    2	
+ 0140  0401                  2			_DESC	<IdtEntry26-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0142  4000                  2	
+ 0144  00                    2	
+ 0145  8E                    2	
+ 0146  00                    2	
+ 0147  00                    2	
+ 0148  0E01                  2			_DESC	<IdtEntry27-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 014A  4000                  2	
+ 014C  00                    2	
+ 014D  8E                    2	
+ 014E  00                    2	
+ 014F  00                    2	
+ 0150  1801                  2			_DESC	<IdtEntry28-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0152  4000                  2	
+ 0154  00                    2	
+ 0155  8E                    2	
+ 0156  00                    2	
+ 0157  00                    2	
+ 0158  2201                  2			_DESC	<IdtEntry29-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 015A  4000                  2	
+ 015C  00                    2	
+ 015D  8E                    2	
+ 015E  00                    2	
+ 015F  00                    2	
+ 0160  2C01                  2			_DESC	<IdtEntry30-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0162  4000                  2	
+ 0164  00                    2	
+ 0165  8E                    2	
+ 0166  00                    2	
+ 0167  00                    2	
+ 0168  3601                  2			_DESC	<IdtEntry31-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 016A  4000                  2	
+ 016C  00                    2	
+ 016D  8E                    2	
+ 016E  00                    2	
+ 016F  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-9
+
+
+ 0170  4001                  2			_DESC	<IdtEntry32-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0172  4000                  2	
+ 0174  00                    2	
+ 0175  8E                    2	
+ 0176  00                    2	
+ 0177  00                    2	
+ 0178  4A01                  2			_DESC	<IdtEntry33-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 017A  4000                  2	
+ 017C  00                    2	
+ 017D  8E                    2	
+ 017E  00                    2	
+ 017F  00                    2	
+ 0180  5401                  2			_DESC	<IdtEntry34-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0182  4000                  2	
+ 0184  00                    2	
+ 0185  8E                    2	
+ 0186  00                    2	
+ 0187  00                    2	
+ 0188  5E01                  2			_DESC	<IdtEntry35-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 018A  4000                  2	
+ 018C  00                    2	
+ 018D  8E                    2	
+ 018E  00                    2	
+ 018F  00                    2	
+ 0190  6801                  2			_DESC	<IdtEntry36-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0192  4000                  2	
+ 0194  00                    2	
+ 0195  8E                    2	
+ 0196  00                    2	
+ 0197  00                    2	
+ 0198  7201                  2			_DESC	<IdtEntry37-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 019A  4000                  2	
+ 019C  00                    2	
+ 019D  8E                    2	
+ 019E  00                    2	
+ 019F  00                    2	
+ 01A0  7C01                  2			_DESC	<IdtEntry38-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01A2  4000                  2	
+ 01A4  00                    2	
+ 01A5  8E                    2	
+ 01A6  00                    2	
+ 01A7  00                    2	
+ 01A8  8601                  2			_DESC	<IdtEntry39-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01AA  4000                  2	
+ 01AC  00                    2	
+ 01AD  8E                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-10
+
+
+ 01AE  00                    2	
+ 01AF  00                    2	
+ 01B0  9001                  2			_DESC	<IdtEntry40-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01B2  4000                  2	
+ 01B4  00                    2	
+ 01B5  8E                    2	
+ 01B6  00                    2	
+ 01B7  00                    2	
+ 01B8  9A01                  2			_DESC	<IdtEntry41-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01BA  4000                  2	
+ 01BC  00                    2	
+ 01BD  8E                    2	
+ 01BE  00                    2	
+ 01BF  00                    2	
+ 01C0  A401                  2			_DESC	<IdtEntry42-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01C2  4000                  2	
+ 01C4  00                    2	
+ 01C5  8E                    2	
+ 01C6  00                    2	
+ 01C7  00                    2	
+ 01C8  AE01                  2			_DESC	<IdtEntry43-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01CA  4000                  2	
+ 01CC  00                    2	
+ 01CD  8E                    2	
+ 01CE  00                    2	
+ 01CF  00                    2	
+ 01D0  B801                  2			_DESC	<IdtEntry44-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01D2  4000                  2	
+ 01D4  00                    2	
+ 01D5  8E                    2	
+ 01D6  00                    2	
+ 01D7  00                    2	
+ 01D8  C201                  2			_DESC	<IdtEntry45-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01DA  4000                  2	
+ 01DC  00                    2	
+ 01DD  8E                    2	
+ 01DE  00                    2	
+ 01DF  00                    2	
+ 01E0  CC01                  2			_DESC	<IdtEntry46-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01E2  4000                  2	
+ 01E4  00                    2	
+ 01E5  8E                    2	
+ 01E6  00                    2	
+ 01E7  00                    2	
+ 01E8  D601                  2			_DESC	<IdtEntry47-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01EA  4000                  2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-11
+
+
+ 01EC  00                    2	
+ 01ED  8E                    2	
+ 01EE  00                    2	
+ 01EF  00                    2	
+ 01F0  E001                  2			_DESC	<IdtEntry48-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01F2  4000                  2	
+ 01F4  00                    2	
+ 01F5  8E                    2	
+ 01F6  00                    2	
+ 01F7  00                    2	
+ 01F8  EA01                  2			_DESC	<IdtEntry49-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 01FA  4000                  2	
+ 01FC  00                    2	
+ 01FD  8E                    2	
+ 01FE  00                    2	
+ 01FF  00                    2	
+ 0200  F401                  2			_DESC	<IdtEntry50-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0202  4000                  2	
+ 0204  00                    2	
+ 0205  8E                    2	
+ 0206  00                    2	
+ 0207  00                    2	
+ 0208  FE01                  2			_DESC	<IdtEntry51-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 020A  4000                  2	
+ 020C  00                    2	
+ 020D  8E                    2	
+ 020E  00                    2	
+ 020F  00                    2	
+ 0210  0802                  2			_DESC	<IdtEntry52-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0212  4000                  2	
+ 0214  00                    2	
+ 0215  8E                    2	
+ 0216  00                    2	
+ 0217  00                    2	
+ 0218  1202                  2			_DESC	<IdtEntry53-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 021A  4000                  2	
+ 021C  00                    2	
+ 021D  8E                    2	
+ 021E  00                    2	
+ 021F  00                    2	
+ 0220  1C02                  2			_DESC	<IdtEntry54-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0222  4000                  2	
+ 0224  00                    2	
+ 0225  8E                    2	
+ 0226  00                    2	
+ 0227  00                    2	
+ 0228  2602                  2			_DESC	<IdtEntry55-TextGxOffse
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-12
+
+
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 022A  4000                  2	
+ 022C  00                    2	
+ 022D  8E                    2	
+ 022E  00                    2	
+ 022F  00                    2	
+ 0230  3002                  2			_DESC	<IdtEntry56-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0232  4000                  2	
+ 0234  00                    2	
+ 0235  8E                    2	
+ 0236  00                    2	
+ 0237  00                    2	
+ 0238  3A02                  2			_DESC	<IdtEntry57-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 023A  4000                  2	
+ 023C  00                    2	
+ 023D  8E                    2	
+ 023E  00                    2	
+ 023F  00                    2	
+ 0240  4402                  2			_DESC	<IdtEntry58-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0242  4000                  2	
+ 0244  00                    2	
+ 0245  8E                    2	
+ 0246  00                    2	
+ 0247  00                    2	
+ 0248  4E02                  2			_DESC	<IdtEntry59-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 024A  4000                  2	
+ 024C  00                    2	
+ 024D  8E                    2	
+ 024E  00                    2	
+ 024F  00                    2	
+ 0250  5802                  2			_DESC	<IdtEntry60-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0252  4000                  2	
+ 0254  00                    2	
+ 0255  8E                    2	
+ 0256  00                    2	
+ 0257  00                    2	
+ 0258  6202                  2			_DESC	<IdtEntry61-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 025A  4000                  2	
+ 025C  00                    2	
+ 025D  8E                    2	
+ 025E  00                    2	
+ 025F  00                    2	
+ 0260  6C02                  2			_DESC	<IdtEntry62-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0262  4000                  2	
+ 0264  00                    2	
+ 0265  8E                    2	
+ 0266  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-13
+
+
+ 0267  00                    2	
+ 0268  7602                  2			_DESC	<IdtEntry63-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 026A  4000                  2	
+ 026C  00                    2	
+ 026D  8E                    2	
+ 026E  00                    2	
+ 026F  00                    2	
+ 0270  8002                  2			_DESC	<IdtEntry64-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0272  4000                  2	
+ 0274  00                    2	
+ 0275  8E                    2	
+ 0276  00                    2	
+ 0277  00                    2	
+ 0278  8A02                  2			_DESC	<IdtEntry65-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 027A  4000                  2	
+ 027C  00                    2	
+ 027D  8E                    2	
+ 027E  00                    2	
+ 027F  00                    2	
+ 0280  9402                  2			_DESC	<IdtEntry66-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0282  4000                  2	
+ 0284  00                    2	
+ 0285  8E                    2	
+ 0286  00                    2	
+ 0287  00                    2	
+ 0288  9E02                  2			_DESC	<IdtEntry67-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 028A  4000                  2	
+ 028C  00                    2	
+ 028D  8E                    2	
+ 028E  00                    2	
+ 028F  00                    2	
+ 0290  A802                  2			_DESC	<IdtEntry68-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0292  4000                  2	
+ 0294  00                    2	
+ 0295  8E                    2	
+ 0296  00                    2	
+ 0297  00                    2	
+ 0298  B202                  2			_DESC	<IdtEntry69-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 029A  4000                  2	
+ 029C  00                    2	
+ 029D  8E                    2	
+ 029E  00                    2	
+ 029F  00                    2	
+ 02A0  BC02                  2			_DESC	<IdtEntry70-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02A2  4000                  2	
+ 02A4  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-14
+
+
+ 02A5  8E                    2	
+ 02A6  00                    2	
+ 02A7  00                    2	
+ 02A8  C602                  2			_DESC	<IdtEntry71-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02AA  4000                  2	
+ 02AC  00                    2	
+ 02AD  8E                    2	
+ 02AE  00                    2	
+ 02AF  00                    2	
+ 02B0  D002                  2			_DESC	<IdtEntry72-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02B2  4000                  2	
+ 02B4  00                    2	
+ 02B5  8E                    2	
+ 02B6  00                    2	
+ 02B7  00                    2	
+ 02B8  DA02                  2			_DESC	<IdtEntry73-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02BA  4000                  2	
+ 02BC  00                    2	
+ 02BD  8E                    2	
+ 02BE  00                    2	
+ 02BF  00                    2	
+ 02C0  E402                  2			_DESC	<IdtEntry74-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02C2  4000                  2	
+ 02C4  00                    2	
+ 02C5  8E                    2	
+ 02C6  00                    2	
+ 02C7  00                    2	
+ 02C8  EE02                  2			_DESC	<IdtEntry75-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02CA  4000                  2	
+ 02CC  00                    2	
+ 02CD  8E                    2	
+ 02CE  00                    2	
+ 02CF  00                    2	
+ 02D0  F802                  2			_DESC	<IdtEntry76-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02D2  4000                  2	
+ 02D4  00                    2	
+ 02D5  8E                    2	
+ 02D6  00                    2	
+ 02D7  00                    2	
+ 02D8  0203                  2			_DESC	<IdtEntry77-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02DA  4000                  2	
+ 02DC  00                    2	
+ 02DD  8E                    2	
+ 02DE  00                    2	
+ 02DF  00                    2	
+ 02E0  0C03                  2			_DESC	<IdtEntry78-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-15
+
+
+ 02E2  4000                  2	
+ 02E4  00                    2	
+ 02E5  8E                    2	
+ 02E6  00                    2	
+ 02E7  00                    2	
+ 02E8  1603                  2			_DESC	<IdtEntry79-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02EA  4000                  2	
+ 02EC  00                    2	
+ 02ED  8E                    2	
+ 02EE  00                    2	
+ 02EF  00                    2	
+ 02F0  2003                  2			_DESC	<IdtEntry80-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02F2  4000                  2	
+ 02F4  00                    2	
+ 02F5  8E                    2	
+ 02F6  00                    2	
+ 02F7  00                    2	
+ 02F8  2A03                  2			_DESC	<IdtEntry81-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 02FA  4000                  2	
+ 02FC  00                    2	
+ 02FD  8E                    2	
+ 02FE  00                    2	
+ 02FF  00                    2	
+ 0300  3403                  2			_DESC	<IdtEntry82-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0302  4000                  2	
+ 0304  00                    2	
+ 0305  8E                    2	
+ 0306  00                    2	
+ 0307  00                    2	
+ 0308  3E03                  2			_DESC	<IdtEntry83-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 030A  4000                  2	
+ 030C  00                    2	
+ 030D  8E                    2	
+ 030E  00                    2	
+ 030F  00                    2	
+ 0310  4803                  2			_DESC	<IdtEntry84-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0312  4000                  2	
+ 0314  00                    2	
+ 0315  8E                    2	
+ 0316  00                    2	
+ 0317  00                    2	
+ 0318  5203                  2			_DESC	<IdtEntry85-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 031A  4000                  2	
+ 031C  00                    2	
+ 031D  8E                    2	
+ 031E  00                    2	
+ 031F  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-16
+
+
+ 0320  5C03                  2			_DESC	<IdtEntry86-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0322  4000                  2	
+ 0324  00                    2	
+ 0325  8E                    2	
+ 0326  00                    2	
+ 0327  00                    2	
+ 0328  6603                  2			_DESC	<IdtEntry87-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 032A  4000                  2	
+ 032C  00                    2	
+ 032D  8E                    2	
+ 032E  00                    2	
+ 032F  00                    2	
+ 0330  7003                  2			_DESC	<IdtEntry88-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0332  4000                  2	
+ 0334  00                    2	
+ 0335  8E                    2	
+ 0336  00                    2	
+ 0337  00                    2	
+ 0338  7A03                  2			_DESC	<IdtEntry89-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 033A  4000                  2	
+ 033C  00                    2	
+ 033D  8E                    2	
+ 033E  00                    2	
+ 033F  00                    2	
+ 0340  8403                  2			_DESC	<IdtEntry90-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0342  4000                  2	
+ 0344  00                    2	
+ 0345  8E                    2	
+ 0346  00                    2	
+ 0347  00                    2	
+ 0348  8E03                  2			_DESC	<IdtEntry91-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 034A  4000                  2	
+ 034C  00                    2	
+ 034D  8E                    2	
+ 034E  00                    2	
+ 034F  00                    2	
+ 0350  9803                  2			_DESC	<IdtEntry92-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0352  4000                  2	
+ 0354  00                    2	
+ 0355  8E                    2	
+ 0356  00                    2	
+ 0357  00                    2	
+ 0358  A203                  2			_DESC	<IdtEntry93-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 035A  4000                  2	
+ 035C  00                    2	
+ 035D  8E                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-17
+
+
+ 035E  00                    2	
+ 035F  00                    2	
+ 0360  AC03                  2			_DESC	<IdtEntry94-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0362  4000                  2	
+ 0364  00                    2	
+ 0365  8E                    2	
+ 0366  00                    2	
+ 0367  00                    2	
+ 0368  B603                  2			_DESC	<IdtEntry95-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 036A  4000                  2	
+ 036C  00                    2	
+ 036D  8E                    2	
+ 036E  00                    2	
+ 036F  00                    2	
+ 0370  C003                  2			_DESC	<IdtEntry96-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0372  4000                  2	
+ 0374  00                    2	
+ 0375  8E                    2	
+ 0376  00                    2	
+ 0377  00                    2	
+ 0378  CA03                  2			_DESC	<IdtEntry97-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 037A  4000                  2	
+ 037C  00                    2	
+ 037D  8E                    2	
+ 037E  00                    2	
+ 037F  00                    2	
+ 0380  D403                  2			_DESC	<IdtEntry98-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 0382  4000                  2	
+ 0384  00                    2	
+ 0385  8E                    2	
+ 0386  00                    2	
+ 0387  00                    2	
+ 0388  DE03                  2			_DESC	<IdtEntry99-TextGxOffse
+				t0,SEG_GX_CODE,0,8eh,0,0> 
+ 038A  4000                  2	
+ 038C  00                    2	
+ 038D  8E                    2	
+ 038E  00                    2	
+ 038F  00                    2	
+ 0390  E803                  2			_DESC	<IdtEntry100-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0392  4000                  2	
+ 0394  00                    2	
+ 0395  8E                    2	
+ 0396  00                    2	
+ 0397  00                    2	
+ 0398  F203                  2			_DESC	<IdtEntry101-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 039A  4000                  2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-18
+
+
+ 039C  00                    2	
+ 039D  8E                    2	
+ 039E  00                    2	
+ 039F  00                    2	
+ 03A0  FC03                  2			_DESC	<IdtEntry102-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03A2  4000                  2	
+ 03A4  00                    2	
+ 03A5  8E                    2	
+ 03A6  00                    2	
+ 03A7  00                    2	
+ 03A8  0604                  2			_DESC	<IdtEntry103-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03AA  4000                  2	
+ 03AC  00                    2	
+ 03AD  8E                    2	
+ 03AE  00                    2	
+ 03AF  00                    2	
+ 03B0  1004                  2			_DESC	<IdtEntry104-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03B2  4000                  2	
+ 03B4  00                    2	
+ 03B5  8E                    2	
+ 03B6  00                    2	
+ 03B7  00                    2	
+ 03B8  1A04                  2			_DESC	<IdtEntry105-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03BA  4000                  2	
+ 03BC  00                    2	
+ 03BD  8E                    2	
+ 03BE  00                    2	
+ 03BF  00                    2	
+ 03C0  2404                  2			_DESC	<IdtEntry106-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03C2  4000                  2	
+ 03C4  00                    2	
+ 03C5  8E                    2	
+ 03C6  00                    2	
+ 03C7  00                    2	
+ 03C8  2E04                  2			_DESC	<IdtEntry107-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03CA  4000                  2	
+ 03CC  00                    2	
+ 03CD  8E                    2	
+ 03CE  00                    2	
+ 03CF  00                    2	
+ 03D0  3804                  2			_DESC	<IdtEntry108-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03D2  4000                  2	
+ 03D4  00                    2	
+ 03D5  8E                    2	
+ 03D6  00                    2	
+ 03D7  00                    2	
+ 03D8  4204                  2			_DESC	<IdtEntry109-TextGxOffs
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-19
+
+
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03DA  4000                  2	
+ 03DC  00                    2	
+ 03DD  8E                    2	
+ 03DE  00                    2	
+ 03DF  00                    2	
+ 03E0  4C04                  2			_DESC	<IdtEntry110-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03E2  4000                  2	
+ 03E4  00                    2	
+ 03E5  8E                    2	
+ 03E6  00                    2	
+ 03E7  00                    2	
+ 03E8  5604                  2			_DESC	<IdtEntry111-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03EA  4000                  2	
+ 03EC  00                    2	
+ 03ED  8E                    2	
+ 03EE  00                    2	
+ 03EF  00                    2	
+ 03F0  6004                  2			_DESC	<IdtEntry112-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03F2  4000                  2	
+ 03F4  00                    2	
+ 03F5  8E                    2	
+ 03F6  00                    2	
+ 03F7  00                    2	
+ 03F8  6A04                  2			_DESC	<IdtEntry113-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 03FA  4000                  2	
+ 03FC  00                    2	
+ 03FD  8E                    2	
+ 03FE  00                    2	
+ 03FF  00                    2	
+ 0400  7404                  2			_DESC	<IdtEntry114-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0402  4000                  2	
+ 0404  00                    2	
+ 0405  8E                    2	
+ 0406  00                    2	
+ 0407  00                    2	
+ 0408  7E04                  2			_DESC	<IdtEntry115-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 040A  4000                  2	
+ 040C  00                    2	
+ 040D  8E                    2	
+ 040E  00                    2	
+ 040F  00                    2	
+ 0410  8804                  2			_DESC	<IdtEntry116-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0412  4000                  2	
+ 0414  00                    2	
+ 0415  8E                    2	
+ 0416  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-20
+
+
+ 0417  00                    2	
+ 0418  9204                  2			_DESC	<IdtEntry117-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 041A  4000                  2	
+ 041C  00                    2	
+ 041D  8E                    2	
+ 041E  00                    2	
+ 041F  00                    2	
+ 0420  9C04                  2			_DESC	<IdtEntry118-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0422  4000                  2	
+ 0424  00                    2	
+ 0425  8E                    2	
+ 0426  00                    2	
+ 0427  00                    2	
+ 0428  A604                  2			_DESC	<IdtEntry119-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 042A  4000                  2	
+ 042C  00                    2	
+ 042D  8E                    2	
+ 042E  00                    2	
+ 042F  00                    2	
+ 0430  B004                  2			_DESC	<IdtEntry120-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0432  4000                  2	
+ 0434  00                    2	
+ 0435  8E                    2	
+ 0436  00                    2	
+ 0437  00                    2	
+ 0438  BA04                  2			_DESC	<IdtEntry121-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 043A  4000                  2	
+ 043C  00                    2	
+ 043D  8E                    2	
+ 043E  00                    2	
+ 043F  00                    2	
+ 0440  C404                  2			_DESC	<IdtEntry122-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0442  4000                  2	
+ 0444  00                    2	
+ 0445  8E                    2	
+ 0446  00                    2	
+ 0447  00                    2	
+ 0448  CE04                  2			_DESC	<IdtEntry123-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 044A  4000                  2	
+ 044C  00                    2	
+ 044D  8E                    2	
+ 044E  00                    2	
+ 044F  00                    2	
+ 0450  D804                  2			_DESC	<IdtEntry124-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0452  4000                  2	
+ 0454  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-21
+
+
+ 0455  8E                    2	
+ 0456  00                    2	
+ 0457  00                    2	
+ 0458  E204                  2			_DESC	<IdtEntry125-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 045A  4000                  2	
+ 045C  00                    2	
+ 045D  8E                    2	
+ 045E  00                    2	
+ 045F  00                    2	
+ 0460  EC04                  2			_DESC	<IdtEntry126-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0462  4000                  2	
+ 0464  00                    2	
+ 0465  8E                    2	
+ 0466  00                    2	
+ 0467  00                    2	
+ 0468  F604                  2			_DESC	<IdtEntry127-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 046A  4000                  2	
+ 046C  00                    2	
+ 046D  8E                    2	
+ 046E  00                    2	
+ 046F  00                    2	
+ 0470  0005                  2			_DESC	<IdtEntry128-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0472  4000                  2	
+ 0474  00                    2	
+ 0475  8E                    2	
+ 0476  00                    2	
+ 0477  00                    2	
+ 0478  0A05                  2			_DESC	<IdtEntry129-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 047A  4000                  2	
+ 047C  00                    2	
+ 047D  8E                    2	
+ 047E  00                    2	
+ 047F  00                    2	
+ 0480  1405                  2			_DESC	<IdtEntry130-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0482  4000                  2	
+ 0484  00                    2	
+ 0485  8E                    2	
+ 0486  00                    2	
+ 0487  00                    2	
+ 0488  1E05                  2			_DESC	<IdtEntry131-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 048A  4000                  2	
+ 048C  00                    2	
+ 048D  8E                    2	
+ 048E  00                    2	
+ 048F  00                    2	
+ 0490  2805                  2			_DESC	<IdtEntry132-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-22
+
+
+ 0492  4000                  2	
+ 0494  00                    2	
+ 0495  8E                    2	
+ 0496  00                    2	
+ 0497  00                    2	
+ 0498  3205                  2			_DESC	<IdtEntry133-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 049A  4000                  2	
+ 049C  00                    2	
+ 049D  8E                    2	
+ 049E  00                    2	
+ 049F  00                    2	
+ 04A0  3C05                  2			_DESC	<IdtEntry134-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04A2  4000                  2	
+ 04A4  00                    2	
+ 04A5  8E                    2	
+ 04A6  00                    2	
+ 04A7  00                    2	
+ 04A8  4605                  2			_DESC	<IdtEntry135-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04AA  4000                  2	
+ 04AC  00                    2	
+ 04AD  8E                    2	
+ 04AE  00                    2	
+ 04AF  00                    2	
+ 04B0  5005                  2			_DESC	<IdtEntry136-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04B2  4000                  2	
+ 04B4  00                    2	
+ 04B5  8E                    2	
+ 04B6  00                    2	
+ 04B7  00                    2	
+ 04B8  5A05                  2			_DESC	<IdtEntry137-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04BA  4000                  2	
+ 04BC  00                    2	
+ 04BD  8E                    2	
+ 04BE  00                    2	
+ 04BF  00                    2	
+ 04C0  6405                  2			_DESC	<IdtEntry138-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04C2  4000                  2	
+ 04C4  00                    2	
+ 04C5  8E                    2	
+ 04C6  00                    2	
+ 04C7  00                    2	
+ 04C8  6E05                  2			_DESC	<IdtEntry139-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04CA  4000                  2	
+ 04CC  00                    2	
+ 04CD  8E                    2	
+ 04CE  00                    2	
+ 04CF  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-23
+
+
+ 04D0  7805                  2			_DESC	<IdtEntry140-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04D2  4000                  2	
+ 04D4  00                    2	
+ 04D5  8E                    2	
+ 04D6  00                    2	
+ 04D7  00                    2	
+ 04D8  8205                  2			_DESC	<IdtEntry141-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04DA  4000                  2	
+ 04DC  00                    2	
+ 04DD  8E                    2	
+ 04DE  00                    2	
+ 04DF  00                    2	
+ 04E0  8C05                  2			_DESC	<IdtEntry142-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04E2  4000                  2	
+ 04E4  00                    2	
+ 04E5  8E                    2	
+ 04E6  00                    2	
+ 04E7  00                    2	
+ 04E8  9605                  2			_DESC	<IdtEntry143-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04EA  4000                  2	
+ 04EC  00                    2	
+ 04ED  8E                    2	
+ 04EE  00                    2	
+ 04EF  00                    2	
+ 04F0  A005                  2			_DESC	<IdtEntry144-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04F2  4000                  2	
+ 04F4  00                    2	
+ 04F5  8E                    2	
+ 04F6  00                    2	
+ 04F7  00                    2	
+ 04F8  AA05                  2			_DESC	<IdtEntry145-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 04FA  4000                  2	
+ 04FC  00                    2	
+ 04FD  8E                    2	
+ 04FE  00                    2	
+ 04FF  00                    2	
+ 0500  B405                  2			_DESC	<IdtEntry146-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0502  4000                  2	
+ 0504  00                    2	
+ 0505  8E                    2	
+ 0506  00                    2	
+ 0507  00                    2	
+ 0508  BE05                  2			_DESC	<IdtEntry147-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 050A  4000                  2	
+ 050C  00                    2	
+ 050D  8E                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-24
+
+
+ 050E  00                    2	
+ 050F  00                    2	
+ 0510  C805                  2			_DESC	<IdtEntry148-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0512  4000                  2	
+ 0514  00                    2	
+ 0515  8E                    2	
+ 0516  00                    2	
+ 0517  00                    2	
+ 0518  D205                  2			_DESC	<IdtEntry149-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 051A  4000                  2	
+ 051C  00                    2	
+ 051D  8E                    2	
+ 051E  00                    2	
+ 051F  00                    2	
+ 0520  DC05                  2			_DESC	<IdtEntry150-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0522  4000                  2	
+ 0524  00                    2	
+ 0525  8E                    2	
+ 0526  00                    2	
+ 0527  00                    2	
+ 0528  E605                  2			_DESC	<IdtEntry151-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 052A  4000                  2	
+ 052C  00                    2	
+ 052D  8E                    2	
+ 052E  00                    2	
+ 052F  00                    2	
+ 0530  F005                  2			_DESC	<IdtEntry152-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0532  4000                  2	
+ 0534  00                    2	
+ 0535  8E                    2	
+ 0536  00                    2	
+ 0537  00                    2	
+ 0538  FA05                  2			_DESC	<IdtEntry153-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 053A  4000                  2	
+ 053C  00                    2	
+ 053D  8E                    2	
+ 053E  00                    2	
+ 053F  00                    2	
+ 0540  0406                  2			_DESC	<IdtEntry154-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0542  4000                  2	
+ 0544  00                    2	
+ 0545  8E                    2	
+ 0546  00                    2	
+ 0547  00                    2	
+ 0548  0E06                  2			_DESC	<IdtEntry155-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 054A  4000                  2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-25
+
+
+ 054C  00                    2	
+ 054D  8E                    2	
+ 054E  00                    2	
+ 054F  00                    2	
+ 0550  1806                  2			_DESC	<IdtEntry156-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0552  4000                  2	
+ 0554  00                    2	
+ 0555  8E                    2	
+ 0556  00                    2	
+ 0557  00                    2	
+ 0558  2206                  2			_DESC	<IdtEntry157-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 055A  4000                  2	
+ 055C  00                    2	
+ 055D  8E                    2	
+ 055E  00                    2	
+ 055F  00                    2	
+ 0560  2C06                  2			_DESC	<IdtEntry158-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0562  4000                  2	
+ 0564  00                    2	
+ 0565  8E                    2	
+ 0566  00                    2	
+ 0567  00                    2	
+ 0568  3606                  2			_DESC	<IdtEntry159-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 056A  4000                  2	
+ 056C  00                    2	
+ 056D  8E                    2	
+ 056E  00                    2	
+ 056F  00                    2	
+ 0570  4006                  2			_DESC	<IdtEntry160-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0572  4000                  2	
+ 0574  00                    2	
+ 0575  8E                    2	
+ 0576  00                    2	
+ 0577  00                    2	
+ 0578  4A06                  2			_DESC	<IdtEntry161-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 057A  4000                  2	
+ 057C  00                    2	
+ 057D  8E                    2	
+ 057E  00                    2	
+ 057F  00                    2	
+ 0580  5406                  2			_DESC	<IdtEntry162-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0582  4000                  2	
+ 0584  00                    2	
+ 0585  8E                    2	
+ 0586  00                    2	
+ 0587  00                    2	
+ 0588  5E06                  2			_DESC	<IdtEntry163-TextGxOffs
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-26
+
+
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 058A  4000                  2	
+ 058C  00                    2	
+ 058D  8E                    2	
+ 058E  00                    2	
+ 058F  00                    2	
+ 0590  6806                  2			_DESC	<IdtEntry164-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0592  4000                  2	
+ 0594  00                    2	
+ 0595  8E                    2	
+ 0596  00                    2	
+ 0597  00                    2	
+ 0598  7206                  2			_DESC	<IdtEntry165-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 059A  4000                  2	
+ 059C  00                    2	
+ 059D  8E                    2	
+ 059E  00                    2	
+ 059F  00                    2	
+ 05A0  7C06                  2			_DESC	<IdtEntry166-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05A2  4000                  2	
+ 05A4  00                    2	
+ 05A5  8E                    2	
+ 05A6  00                    2	
+ 05A7  00                    2	
+ 05A8  8606                  2			_DESC	<IdtEntry167-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05AA  4000                  2	
+ 05AC  00                    2	
+ 05AD  8E                    2	
+ 05AE  00                    2	
+ 05AF  00                    2	
+ 05B0  9006                  2			_DESC	<IdtEntry168-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05B2  4000                  2	
+ 05B4  00                    2	
+ 05B5  8E                    2	
+ 05B6  00                    2	
+ 05B7  00                    2	
+ 05B8  9A06                  2			_DESC	<IdtEntry169-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05BA  4000                  2	
+ 05BC  00                    2	
+ 05BD  8E                    2	
+ 05BE  00                    2	
+ 05BF  00                    2	
+ 05C0  A406                  2			_DESC	<IdtEntry170-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05C2  4000                  2	
+ 05C4  00                    2	
+ 05C5  8E                    2	
+ 05C6  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-27
+
+
+ 05C7  00                    2	
+ 05C8  AE06                  2			_DESC	<IdtEntry171-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05CA  4000                  2	
+ 05CC  00                    2	
+ 05CD  8E                    2	
+ 05CE  00                    2	
+ 05CF  00                    2	
+ 05D0  B806                  2			_DESC	<IdtEntry172-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05D2  4000                  2	
+ 05D4  00                    2	
+ 05D5  8E                    2	
+ 05D6  00                    2	
+ 05D7  00                    2	
+ 05D8  C206                  2			_DESC	<IdtEntry173-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05DA  4000                  2	
+ 05DC  00                    2	
+ 05DD  8E                    2	
+ 05DE  00                    2	
+ 05DF  00                    2	
+ 05E0  CC06                  2			_DESC	<IdtEntry174-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05E2  4000                  2	
+ 05E4  00                    2	
+ 05E5  8E                    2	
+ 05E6  00                    2	
+ 05E7  00                    2	
+ 05E8  D606                  2			_DESC	<IdtEntry175-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05EA  4000                  2	
+ 05EC  00                    2	
+ 05ED  8E                    2	
+ 05EE  00                    2	
+ 05EF  00                    2	
+ 05F0  E006                  2			_DESC	<IdtEntry176-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05F2  4000                  2	
+ 05F4  00                    2	
+ 05F5  8E                    2	
+ 05F6  00                    2	
+ 05F7  00                    2	
+ 05F8  EA06                  2			_DESC	<IdtEntry177-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 05FA  4000                  2	
+ 05FC  00                    2	
+ 05FD  8E                    2	
+ 05FE  00                    2	
+ 05FF  00                    2	
+ 0600  F406                  2			_DESC	<IdtEntry178-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0602  4000                  2	
+ 0604  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-28
+
+
+ 0605  8E                    2	
+ 0606  00                    2	
+ 0607  00                    2	
+ 0608  FE06                  2			_DESC	<IdtEntry179-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 060A  4000                  2	
+ 060C  00                    2	
+ 060D  8E                    2	
+ 060E  00                    2	
+ 060F  00                    2	
+ 0610  0807                  2			_DESC	<IdtEntry180-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0612  4000                  2	
+ 0614  00                    2	
+ 0615  8E                    2	
+ 0616  00                    2	
+ 0617  00                    2	
+ 0618  1207                  2			_DESC	<IdtEntry181-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 061A  4000                  2	
+ 061C  00                    2	
+ 061D  8E                    2	
+ 061E  00                    2	
+ 061F  00                    2	
+ 0620  1C07                  2			_DESC	<IdtEntry182-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0622  4000                  2	
+ 0624  00                    2	
+ 0625  8E                    2	
+ 0626  00                    2	
+ 0627  00                    2	
+ 0628  2607                  2			_DESC	<IdtEntry183-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 062A  4000                  2	
+ 062C  00                    2	
+ 062D  8E                    2	
+ 062E  00                    2	
+ 062F  00                    2	
+ 0630  3007                  2			_DESC	<IdtEntry184-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0632  4000                  2	
+ 0634  00                    2	
+ 0635  8E                    2	
+ 0636  00                    2	
+ 0637  00                    2	
+ 0638  3A07                  2			_DESC	<IdtEntry185-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 063A  4000                  2	
+ 063C  00                    2	
+ 063D  8E                    2	
+ 063E  00                    2	
+ 063F  00                    2	
+ 0640  4407                  2			_DESC	<IdtEntry186-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-29
+
+
+ 0642  4000                  2	
+ 0644  00                    2	
+ 0645  8E                    2	
+ 0646  00                    2	
+ 0647  00                    2	
+ 0648  4E07                  2			_DESC	<IdtEntry187-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 064A  4000                  2	
+ 064C  00                    2	
+ 064D  8E                    2	
+ 064E  00                    2	
+ 064F  00                    2	
+ 0650  5807                  2			_DESC	<IdtEntry188-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0652  4000                  2	
+ 0654  00                    2	
+ 0655  8E                    2	
+ 0656  00                    2	
+ 0657  00                    2	
+ 0658  6207                  2			_DESC	<IdtEntry189-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 065A  4000                  2	
+ 065C  00                    2	
+ 065D  8E                    2	
+ 065E  00                    2	
+ 065F  00                    2	
+ 0660  6C07                  2			_DESC	<IdtEntry190-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0662  4000                  2	
+ 0664  00                    2	
+ 0665  8E                    2	
+ 0666  00                    2	
+ 0667  00                    2	
+ 0668  7607                  2			_DESC	<IdtEntry191-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 066A  4000                  2	
+ 066C  00                    2	
+ 066D  8E                    2	
+ 066E  00                    2	
+ 066F  00                    2	
+ 0670  8007                  2			_DESC	<IdtEntry192-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0672  4000                  2	
+ 0674  00                    2	
+ 0675  8E                    2	
+ 0676  00                    2	
+ 0677  00                    2	
+ 0678  8A07                  2			_DESC	<IdtEntry193-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 067A  4000                  2	
+ 067C  00                    2	
+ 067D  8E                    2	
+ 067E  00                    2	
+ 067F  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-30
+
+
+ 0680  9407                  2			_DESC	<IdtEntry194-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0682  4000                  2	
+ 0684  00                    2	
+ 0685  8E                    2	
+ 0686  00                    2	
+ 0687  00                    2	
+ 0688  9E07                  2			_DESC	<IdtEntry195-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 068A  4000                  2	
+ 068C  00                    2	
+ 068D  8E                    2	
+ 068E  00                    2	
+ 068F  00                    2	
+ 0690  A807                  2			_DESC	<IdtEntry196-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0692  4000                  2	
+ 0694  00                    2	
+ 0695  8E                    2	
+ 0696  00                    2	
+ 0697  00                    2	
+ 0698  B207                  2			_DESC	<IdtEntry197-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 069A  4000                  2	
+ 069C  00                    2	
+ 069D  8E                    2	
+ 069E  00                    2	
+ 069F  00                    2	
+ 06A0  BC07                  2			_DESC	<IdtEntry198-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06A2  4000                  2	
+ 06A4  00                    2	
+ 06A5  8E                    2	
+ 06A6  00                    2	
+ 06A7  00                    2	
+ 06A8  C607                  2			_DESC	<IdtEntry199-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06AA  4000                  2	
+ 06AC  00                    2	
+ 06AD  8E                    2	
+ 06AE  00                    2	
+ 06AF  00                    2	
+ 06B0  D007                  2			_DESC	<IdtEntry200-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06B2  4000                  2	
+ 06B4  00                    2	
+ 06B5  8E                    2	
+ 06B6  00                    2	
+ 06B7  00                    2	
+ 06B8  DA07                  2			_DESC	<IdtEntry201-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06BA  4000                  2	
+ 06BC  00                    2	
+ 06BD  8E                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-31
+
+
+ 06BE  00                    2	
+ 06BF  00                    2	
+ 06C0  E407                  2			_DESC	<IdtEntry202-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06C2  4000                  2	
+ 06C4  00                    2	
+ 06C5  8E                    2	
+ 06C6  00                    2	
+ 06C7  00                    2	
+ 06C8  EE07                  2			_DESC	<IdtEntry203-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06CA  4000                  2	
+ 06CC  00                    2	
+ 06CD  8E                    2	
+ 06CE  00                    2	
+ 06CF  00                    2	
+ 06D0  F807                  2			_DESC	<IdtEntry204-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06D2  4000                  2	
+ 06D4  00                    2	
+ 06D5  8E                    2	
+ 06D6  00                    2	
+ 06D7  00                    2	
+ 06D8  0208                  2			_DESC	<IdtEntry205-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06DA  4000                  2	
+ 06DC  00                    2	
+ 06DD  8E                    2	
+ 06DE  00                    2	
+ 06DF  00                    2	
+ 06E0  0C08                  2			_DESC	<IdtEntry206-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06E2  4000                  2	
+ 06E4  00                    2	
+ 06E5  8E                    2	
+ 06E6  00                    2	
+ 06E7  00                    2	
+ 06E8  1608                  2			_DESC	<IdtEntry207-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06EA  4000                  2	
+ 06EC  00                    2	
+ 06ED  8E                    2	
+ 06EE  00                    2	
+ 06EF  00                    2	
+ 06F0  2008                  2			_DESC	<IdtEntry208-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06F2  4000                  2	
+ 06F4  00                    2	
+ 06F5  8E                    2	
+ 06F6  00                    2	
+ 06F7  00                    2	
+ 06F8  2A08                  2			_DESC	<IdtEntry209-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 06FA  4000                  2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-32
+
+
+ 06FC  00                    2	
+ 06FD  8E                    2	
+ 06FE  00                    2	
+ 06FF  00                    2	
+ 0700  3408                  2			_DESC	<IdtEntry210-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0702  4000                  2	
+ 0704  00                    2	
+ 0705  8E                    2	
+ 0706  00                    2	
+ 0707  00                    2	
+ 0708  3E08                  2			_DESC	<IdtEntry211-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 070A  4000                  2	
+ 070C  00                    2	
+ 070D  8E                    2	
+ 070E  00                    2	
+ 070F  00                    2	
+ 0710  4808                  2			_DESC	<IdtEntry212-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0712  4000                  2	
+ 0714  00                    2	
+ 0715  8E                    2	
+ 0716  00                    2	
+ 0717  00                    2	
+ 0718  5208                  2			_DESC	<IdtEntry213-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 071A  4000                  2	
+ 071C  00                    2	
+ 071D  8E                    2	
+ 071E  00                    2	
+ 071F  00                    2	
+ 0720  5C08                  2			_DESC	<IdtEntry214-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0722  4000                  2	
+ 0724  00                    2	
+ 0725  8E                    2	
+ 0726  00                    2	
+ 0727  00                    2	
+ 0728  6608                  2			_DESC	<IdtEntry215-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 072A  4000                  2	
+ 072C  00                    2	
+ 072D  8E                    2	
+ 072E  00                    2	
+ 072F  00                    2	
+ 0730  7008                  2			_DESC	<IdtEntry216-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0732  4000                  2	
+ 0734  00                    2	
+ 0735  8E                    2	
+ 0736  00                    2	
+ 0737  00                    2	
+ 0738  7A08                  2			_DESC	<IdtEntry217-TextGxOffs
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-33
+
+
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 073A  4000                  2	
+ 073C  00                    2	
+ 073D  8E                    2	
+ 073E  00                    2	
+ 073F  00                    2	
+ 0740  8408                  2			_DESC	<IdtEntry218-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0742  4000                  2	
+ 0744  00                    2	
+ 0745  8E                    2	
+ 0746  00                    2	
+ 0747  00                    2	
+ 0748  8E08                  2			_DESC	<IdtEntry219-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 074A  4000                  2	
+ 074C  00                    2	
+ 074D  8E                    2	
+ 074E  00                    2	
+ 074F  00                    2	
+ 0750  9808                  2			_DESC	<IdtEntry220-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0752  4000                  2	
+ 0754  00                    2	
+ 0755  8E                    2	
+ 0756  00                    2	
+ 0757  00                    2	
+ 0758  A208                  2			_DESC	<IdtEntry221-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 075A  4000                  2	
+ 075C  00                    2	
+ 075D  8E                    2	
+ 075E  00                    2	
+ 075F  00                    2	
+ 0760  AC08                  2			_DESC	<IdtEntry222-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0762  4000                  2	
+ 0764  00                    2	
+ 0765  8E                    2	
+ 0766  00                    2	
+ 0767  00                    2	
+ 0768  B608                  2			_DESC	<IdtEntry223-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 076A  4000                  2	
+ 076C  00                    2	
+ 076D  8E                    2	
+ 076E  00                    2	
+ 076F  00                    2	
+ 0770  C008                  2			_DESC	<IdtEntry224-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0772  4000                  2	
+ 0774  00                    2	
+ 0775  8E                    2	
+ 0776  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-34
+
+
+ 0777  00                    2	
+ 0778  CA08                  2			_DESC	<IdtEntry225-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 077A  4000                  2	
+ 077C  00                    2	
+ 077D  8E                    2	
+ 077E  00                    2	
+ 077F  00                    2	
+ 0780  D408                  2			_DESC	<IdtEntry226-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0782  4000                  2	
+ 0784  00                    2	
+ 0785  8E                    2	
+ 0786  00                    2	
+ 0787  00                    2	
+ 0788  DE08                  2			_DESC	<IdtEntry227-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 078A  4000                  2	
+ 078C  00                    2	
+ 078D  8E                    2	
+ 078E  00                    2	
+ 078F  00                    2	
+ 0790  E808                  2			_DESC	<IdtEntry228-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0792  4000                  2	
+ 0794  00                    2	
+ 0795  8E                    2	
+ 0796  00                    2	
+ 0797  00                    2	
+ 0798  F208                  2			_DESC	<IdtEntry229-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 079A  4000                  2	
+ 079C  00                    2	
+ 079D  8E                    2	
+ 079E  00                    2	
+ 079F  00                    2	
+ 07A0  FC08                  2			_DESC	<IdtEntry230-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07A2  4000                  2	
+ 07A4  00                    2	
+ 07A5  8E                    2	
+ 07A6  00                    2	
+ 07A7  00                    2	
+ 07A8  0609                  2			_DESC	<IdtEntry231-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07AA  4000                  2	
+ 07AC  00                    2	
+ 07AD  8E                    2	
+ 07AE  00                    2	
+ 07AF  00                    2	
+ 07B0  1009                  2			_DESC	<IdtEntry232-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07B2  4000                  2	
+ 07B4  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-35
+
+
+ 07B5  8E                    2	
+ 07B6  00                    2	
+ 07B7  00                    2	
+ 07B8  1A09                  2			_DESC	<IdtEntry233-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07BA  4000                  2	
+ 07BC  00                    2	
+ 07BD  8E                    2	
+ 07BE  00                    2	
+ 07BF  00                    2	
+ 07C0  2409                  2			_DESC	<IdtEntry234-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07C2  4000                  2	
+ 07C4  00                    2	
+ 07C5  8E                    2	
+ 07C6  00                    2	
+ 07C7  00                    2	
+ 07C8  2E09                  2			_DESC	<IdtEntry235-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07CA  4000                  2	
+ 07CC  00                    2	
+ 07CD  8E                    2	
+ 07CE  00                    2	
+ 07CF  00                    2	
+ 07D0  3809                  2			_DESC	<IdtEntry236-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07D2  4000                  2	
+ 07D4  00                    2	
+ 07D5  8E                    2	
+ 07D6  00                    2	
+ 07D7  00                    2	
+ 07D8  4209                  2			_DESC	<IdtEntry237-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07DA  4000                  2	
+ 07DC  00                    2	
+ 07DD  8E                    2	
+ 07DE  00                    2	
+ 07DF  00                    2	
+ 07E0  4C09                  2			_DESC	<IdtEntry238-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07E2  4000                  2	
+ 07E4  00                    2	
+ 07E5  8E                    2	
+ 07E6  00                    2	
+ 07E7  00                    2	
+ 07E8  5609                  2			_DESC	<IdtEntry239-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07EA  4000                  2	
+ 07EC  00                    2	
+ 07ED  8E                    2	
+ 07EE  00                    2	
+ 07EF  00                    2	
+ 07F0  6009                  2			_DESC	<IdtEntry240-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-36
+
+
+ 07F2  4000                  2	
+ 07F4  00                    2	
+ 07F5  8E                    2	
+ 07F6  00                    2	
+ 07F7  00                    2	
+ 07F8  6A09                  2			_DESC	<IdtEntry241-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 07FA  4000                  2	
+ 07FC  00                    2	
+ 07FD  8E                    2	
+ 07FE  00                    2	
+ 07FF  00                    2	
+ 0800  7409                  2			_DESC	<IdtEntry242-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0802  4000                  2	
+ 0804  00                    2	
+ 0805  8E                    2	
+ 0806  00                    2	
+ 0807  00                    2	
+ 0808  7E09                  2			_DESC	<IdtEntry243-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 080A  4000                  2	
+ 080C  00                    2	
+ 080D  8E                    2	
+ 080E  00                    2	
+ 080F  00                    2	
+ 0810  8809                  2			_DESC	<IdtEntry244-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0812  4000                  2	
+ 0814  00                    2	
+ 0815  8E                    2	
+ 0816  00                    2	
+ 0817  00                    2	
+ 0818  9209                  2			_DESC	<IdtEntry245-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 081A  4000                  2	
+ 081C  00                    2	
+ 081D  8E                    2	
+ 081E  00                    2	
+ 081F  00                    2	
+ 0820  9C09                  2			_DESC	<IdtEntry246-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0822  4000                  2	
+ 0824  00                    2	
+ 0825  8E                    2	
+ 0826  00                    2	
+ 0827  00                    2	
+ 0828  A609                  2			_DESC	<IdtEntry247-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 082A  4000                  2	
+ 082C  00                    2	
+ 082D  8E                    2	
+ 082E  00                    2	
+ 082F  00                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-37
+
+
+ 0830  B009                  2			_DESC	<IdtEntry248-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0832  4000                  2	
+ 0834  00                    2	
+ 0835  8E                    2	
+ 0836  00                    2	
+ 0837  00                    2	
+ 0838  BA09                  2			_DESC	<IdtEntry249-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 083A  4000                  2	
+ 083C  00                    2	
+ 083D  8E                    2	
+ 083E  00                    2	
+ 083F  00                    2	
+ 0840  C409                  2			_DESC	<IdtEntry250-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0842  4000                  2	
+ 0844  00                    2	
+ 0845  8E                    2	
+ 0846  00                    2	
+ 0847  00                    2	
+ 0848  CE09                  2			_DESC	<IdtEntry251-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 084A  4000                  2	
+ 084C  00                    2	
+ 084D  8E                    2	
+ 084E  00                    2	
+ 084F  00                    2	
+ 0850  D809                  2			_DESC	<IdtEntry252-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0852  4000                  2	
+ 0854  00                    2	
+ 0855  8E                    2	
+ 0856  00                    2	
+ 0857  00                    2	
+ 0858  E209                  2			_DESC	<IdtEntry253-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 085A  4000                  2	
+ 085C  00                    2	
+ 085D  8E                    2	
+ 085E  00                    2	
+ 085F  00                    2	
+ 0860  EC09                  2			_DESC	<IdtEntry254-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 0862  4000                  2	
+ 0864  00                    2	
+ 0865  8E                    2	
+ 0866  00                    2	
+ 0867  00                    2	
+ 0868  F609                  2			_DESC	<IdtEntry255-TextGxOffs
+				et0,SEG_GX_CODE,0,8eh,0,0> 
+ 086A  4000                  2	
+ 086C  00                    2	
+ 086D  8E                    2	
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-38
+
+
+ 086E  00                    2	
+ 086F  00                    2	
+ = 0800				_IDT_SIZE	=	($ - IdtBase)
+						align	4
+ 0870				GdtPtr		label	fword		; GDT b
+				ase & limit
+ 0870  004F			GdtPtrLimit	dw	_GDT_SIZE-1
+ 0872  0000 ---- R		GdtPtrBase	dd	GdtBase
+ 0876				IdtPtr		label	fword		; prote
+				ct mode IDT
+ 0876  07FF			IdtPtrLimit	dw	_IDT_SIZE-1
+ 0878  00000000			IdtPtrBase	dd	0h
+ 087C				IdtRealPtr	label	fword		; real 
+				mode IDT
+ 087C  03FF			IdtRealPtrLimit dw	4*256-1
+ 087E  00000000			IdtRealPtrBase	dd	0h
+				;** segment register save area, used by kernel 
+				**
+ 0882  0000			RealModeSegDS	dw	?		; initi
+				al value are set by init routine
+ 0884  0000			RealModeSegES	dw	?
+ 0886  0000			RealModeSegSS	dw	?
+				; protect mode save area
+ 0888  0048			ProtModeSegDS	dw	SEG_GX_DATA	; defau
+				lt segment selector
+ 088A  0048			ProtModeSegES	dw	SEG_GX_DATA
+ 088C  0048			ProtModeSegSS	dw	SEG_GX_DATA
+				;
+ 088E  47 58 20 45 6E 64	EndStr		db	'GX End....', 0dh, 0ah,
+				 '$'
+       2E 2E 2E 2E 0D 0A	
+       24			
+				
+ 089B				_DATA		ends
+									
+						; 386 call-gate for system call
+				
+ 0000				STACK		segment
+ 0000				StackBottom	label	byte
+ 0000  1000[					db	4096 dup(?)
+	   ??			
+			 ]	
+				
+ 1000  00000000			StackTop	dd	?
+ 1004				STACK		ends
+				
+						assume	cs:_TEXT, ds:DGROUP, ss
+				:DGROUP
+ 0000				_TEXT		segment
+				;** MACRO _GotoProtMode <dst>
+				;** desc : Enter protect mode and goto <dst>
+				;** 	CS := _TEXT_GX,   DS, ES, SS := DGROUP
+				;** 	SS:(ESP) points to same addr before and
+				 after mode switching
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-39
+
+
+				_GotoProtMode	macro	dst
+						push	word ptr SEG_GX_CODE
+					;; simulate 16-bit mode far call
+						push	word ptr (offset dst - 
+				offset TextGxOffset0)
+						jmp	near ptr GotoProtMode
+						endm
+				;** actual mode switching code **
+						align	4
+ 0000				GotoProtMode	proc	far
+ 0000  8C 1E 0882 R				mov	RealModeSegDS, ds
+					; save real mode segment
+ 0004  8C 06 0884 R				mov	RealModeSegES, es
+ 0008  8C 16 0886 R				mov	RealModeSegSS, ss
+ 000C  66| 50					push	eax		
+					; save eax
+ 000E  66					db	66h		
+					; 32-bit form LGDT inst
+ 000F  0F 01 16 0870 R				lgdt	GdtPtr
+ 0014  66					db	66h		
+					; 32-bit form LGDT inst
+ 0015  0F 01 1E 0876 R				lidt	IdtPtr
+ 001A  0F 20 C0					mov	eax, cr0	
+					; protection enable
+ 001D  0C 01					or	al, 1		
+					; set bit-0 (PE)
+ 001F  0F 22 C0					mov	cr0, eax
+ 0022  EB 00					jmp	short GotoProtMode1
+					; flush instruction queue
+						align	4
+ 0024  B8 0010			GotoProtMode1:	mov	ax, SEG_LDT	
+					; setup LDT
+ 0027  0F 00 D0					lldt	ax
+ 002A  8E 1E 0888 R				mov	ds, ProtModeSegDS
+					; setup protect mode segment
+ 002E  8E 06 088A R				mov	es, ProtModeSegES
+ 0032  8E 16 088C R				mov	ss, ProtModeSegSS
+ 0036  66| 58					pop	eax
+ 0038  CB					ret			
+					; 16bit-mode far return
+ 0039				GotoProtMode	endp
+				
+				;** MACRO _GotoRealMode <dst>
+				;** desc : back to real mode and goto <dst>
+				;** 	CS := _TEXT,   DS, ES, SS := DGROUP
+				;** 	SS:(E)SP points to same addr before and
+				 after mode switching
+				_GotoRealMode	macro	dst
+						push	word ptr (offset dst)
+						db	66h, 0eah	
+					; use16 jmp far ptr GotoRealMode
+						dw	offset GotoRealMode, SE
+				G_64K_CODE
+						endm
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-40
+
+
+				;** MACRO _CallRealMode <dst>
+				;** desc : call real mode routine at <_TEXT>:<d
+				st>
+				;** 	<dst> routine must be return with 16bit
+				-near-ret instruction
+				_CallRealMode	macro	dst
+						local	ProtReturnAddr
+						push	word ptr SEG_GX_CODE
+					;; simulate 32-bit mode far call
+						push	word ptr (offset ProtRe
+				turnAddr - offset TextGxOffset0)
+						push	word ptr (offset GotoPr
+				otMode)	;; return addr
+						push	word ptr (offset dst)
+						db	66h, 0eah	
+					;; use16 jmp far ptr GotoRealMode
+						dw	offset GotoRealMode, SE
+				G_64K_CODE
+						align	4
+				ProtReturnAddr	label	near
+						endm
+				;** actual mode switching code **
+ 0039  87 DB 90					align	4
+ 003C				GotoRealMode	proc	near
+ 003C  9C					pushf
+ 003D  FA					cli
+ 003E  8C 1E 0888 R				mov	ProtModeSegDS, ds
+					; save protect mode segment
+ 0042  8C 06 088A R				mov	ProtModeSegES, es
+ 0046  8C 16 088C R				mov	ProtModeSegSS, ss
+ 004A  66| 50					push	eax		
+					; save eax
+ 004C  B8 0038					mov	ax, SEG_64K_DATA
+					; setup segment descriptor cache
+ 004F  8E D8					mov	ds, ax
+ 0051  8E C0					mov	es, ax
+ 0053  8E D0					mov	ss, ax
+ 0055  66					db	66h		
+					; 32-bit form LIDT inst
+ 0056  0F 01 1E 087C R				lidt	IdtRealPtr	
+					; load real mode IDT
+ 005B  0F 20 C0					mov	eax, cr0	
+					; protection disable
+ 005E  24 FE					and	al, 0feh	
+					; clear bit-0 (PE)
+ 0060  0F 22 C0					mov	cr0, eax
+ 0063  EA					db	0eah		
+					; jmp far ptr GotoRealMode1
+ 0064  0068 R ---- R				dw	offset GotoRealMode1, _
+				TEXT	; flush queue & setup CS
+						align	4
+ 0068  8E 1E 0882 R		GotoRealMode1:	mov	ds, RealModeSegDS
+					; setup real mode segment
+ 006C  8E 06 0884 R				mov	es, RealModeSegES
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-41
+
+
+ 0070  8E 16 0886 R				mov	ss, RealModeSegSS
+ 0074  66| 58					pop	eax
+ 0076  9D					popf
+ 0077  C3					ret			
+					; near return
+ 0078				GotoRealMode	endp
+				;** Main routine **
+ 0078  B8 ---- R		begin:		mov	ax, DGROUP
+ 007B  8E D8					mov	ds, ax
+ 007D  8E D0					mov	ss, ax
+ 007F  8D 26 1000 R				lea	sp, StackTop
+ 0083  FA					cli
+ 0084  E8 00A5 R				call	ProtectSetup	
+					; setup misc data structure
+ 0087  E8 01E8 R				call	EnableA20	
+					; enable A20 line
+						_GotoProtMode	ProtSampCode
+ 008A  68 0040               1			push	word ptr SEG_GX_CODE
+					; 
+ 008D  68 0A28               1			push	word ptr (offset ProtSa
+				mpCode - offset TextGxOffset0) 
+ 0090  E9 0000 R             1			jmp	near ptr GotoProtMode 
+ 0093  FB			GxTerminate:	sti
+ 0094  BA 088E R				mov	dx, offset EndStr
+					; ending message
+ 0097  B4 09					mov	ah, 9h
+ 0099  CD 21					int	21h
+				
+ 009B  B8 4C00					mov	ax, 4c00h	
+					; program terminate
+ 009E  CD 21					int	21h
+				;
+ 00A0				KeyInput	proc	near		
+					; read char without echo back
+ 00A0  B4 08					mov	ah, 08h
+ 00A2  CD 21					int	21h		
+					; result char --> AL
+ 00A4  C3					ret			
+					; return to protect mode
+ 00A5				KeyInput	endp
+				
+				;== ProtectSetup : Setup misc data for protect 
+				mode management
+ 00A5				ProtectSetup	proc	near
+				;** setup for LGDT, LIDT instruction
+ 00A5  66| 33 DB				xor	ebx, ebx	
+					; compute linear address of GDT base
+ 00A8  8C DB					mov	bx, ds
+ 00AA  66| C1 E3 04				shl	ebx, 4
+ 00AE  67| 66| 8D 83 0000			lea	eax, GdtBase[ebx]
+       0000 R			
+ 00B6  66| A3 0872 R				mov	[GdtPtrBase], eax
+ 00BA  67| 66| 8D 83 0000			lea	eax, IdtBase[ebx]
+					; linear address of IDT base
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-42
+
+
+       0070 R			
+ 00C2  66| A3 0878 R				mov	[IdtPtrBase], eax
+				;** setup each segment base
+				_CompLinearAddr	macro	seg,off		
+					;; compute lineaar address, seg:off ==>
+				 eax
+					ifb	<off>
+						xor	eax, eax
+					  ifnb	<seg>
+						mov	ax, seg
+						shl	eax, 4
+					  endif
+					else
+						xor	eax, eax
+						mov	ax, seg
+						shl	eax, 4
+						lea	eax, off[eax]
+					endif
+						endm
+				_SetDescBase	macro	seg,off,dst	
+					;; setup each field
+						_CompLinearAddr	seg,off	
+					;; linear addr ==> eax
+						mov	[dst]._BAS_0_15, ax
+						shr	eax, 16
+						mov	[dst]._BAS_16_23, al
+						mov	[dst]._BAS_24_31, ah
+						endm
+				;** setup each descriptor in GDT **
+						_SetDescBase	DGROUP, GdtBase
+				, GdtDescGdt
+ 00C6  66| 33 C0             2			xor	eax, eax 
+ 00C9  B8 ---- R             2			mov	ax, DGROUP 
+ 00CC  66| C1 E0 04          2			shl	eax, 4 
+ 00D0  67| 66| 8D 80 0000    2			lea	eax, GdtBase[eax] 
+ 00D8  A3 000A R             1			mov	[GdtDescGdt]._BAS_0_15,
+				 ax 
+ 00DB  66| C1 E8 10          1			shr	eax, 16 
+ 00DF  A2 000C R             1			mov	[GdtDescGdt]._BAS_16_23
+				, al 
+ 00E2  88 26 000F R          1			mov	[GdtDescGdt]._BAS_24_31
+				, ah 
+						_SetDescBase	DGROUP, LdtBase
+				, GdtDescLdt
+ 00E6  66| 33 C0             2			xor	eax, eax 
+ 00E9  B8 ---- R             2			mov	ax, DGROUP 
+ 00EC  66| C1 E0 04          2			shl	eax, 4 
+ 00F0  67| 66| 8D 80 0000    2			lea	eax, LdtBase[eax] 
+ 00F8  A3 0012 R             1			mov	[GdtDescLdt]._BAS_0_15,
+				 ax 
+ 00FB  66| C1 E8 10          1			shr	eax, 16 
+ 00FF  A2 0014 R             1			mov	[GdtDescLdt]._BAS_16_23
+				, al 
+ 0102  88 26 0017 R          1			mov	[GdtDescLdt]._BAS_24_31
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-43
+
+
+				, ah 
+						_SetDescBase	DGROUP, LdtBase
+				, GdtDescLdtAl
+ 0106  66| 33 C0             2			xor	eax, eax 
+ 0109  B8 ---- R             2			mov	ax, DGROUP 
+ 010C  66| C1 E0 04          2			shl	eax, 4 
+ 0110  67| 66| 8D 80 0000    2			lea	eax, LdtBase[eax] 
+ 0118  A3 001A R             1			mov	[GdtDescLdtAl]._BAS_0_1
+				5, ax 
+ 011B  66| C1 E8 10          1			shr	eax, 16 
+ 011F  A2 001C R             1			mov	[GdtDescLdtAl]._BAS_16_
+				23, al 
+ 0122  88 26 001F R          1			mov	[GdtDescLdtAl]._BAS_24_
+				31, ah 
+						_SetDescBase	DGROUP, IdtBase
+				, GdtDescIdt
+ 0126  66| 33 C0             2			xor	eax, eax 
+ 0129  B8 ---- R             2			mov	ax, DGROUP 
+ 012C  66| C1 E0 04          2			shl	eax, 4 
+ 0130  67| 66| 8D 80 0000    2			lea	eax, IdtBase[eax] 
+ 0138  A3 0022 R             1			mov	[GdtDescIdt]._BAS_0_15,
+				 ax 
+ 013B  66| C1 E8 10          1			shr	eax, 16 
+ 013F  A2 0024 R             1			mov	[GdtDescIdt]._BAS_16_23
+				, al 
+ 0142  88 26 0027 R          1			mov	[GdtDescIdt]._BAS_24_31
+				, ah 
+						_SetDescBase	,,GdtDescFlat
+ 0146  66| 33 C0             2			xor	eax, eax 
+ 0149  A3 002A R             1			mov	[GdtDescFlat]._BAS_0_15
+				, ax 
+ 014C  66| C1 E8 10          1			shr	eax, 16 
+ 0150  A2 002C R             1			mov	[GdtDescFlat]._BAS_16_2
+				3, al 
+ 0153  88 26 002F R          1			mov	[GdtDescFlat]._BAS_24_3
+				1, ah 
+						_SetDescBase	_TEXT, , GdtDes
+				c1MCode
+ 0157  66| 33 C0             2			xor	eax, eax 
+ 015A  B8 ---- R             2			mov	ax, _TEXT 
+ 015D  66| C1 E0 04          2			shl	eax, 4 
+ 0161  A3 0032 R             1			mov	[GdtDesc1MCode]._BAS_0_
+				15, ax 
+ 0164  66| C1 E8 10          1			shr	eax, 16 
+ 0168  A2 0034 R             1			mov	[GdtDesc1MCode]._BAS_16
+				_23, al 
+ 016B  88 26 0037 R          1			mov	[GdtDesc1MCode]._BAS_24
+				_31, ah 
+						_SetDescBase	DGROUP, , GdtDe
+				sc1MData
+ 016F  66| 33 C0             2			xor	eax, eax 
+ 0172  B8 ---- R             2			mov	ax, DGROUP 
+ 0175  66| C1 E0 04          2			shl	eax, 4 
+ 0179  A3 003A R             1			mov	[GdtDesc1MData]._BAS_0_
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-44
+
+
+				15, ax 
+ 017C  66| C1 E8 10          1			shr	eax, 16 
+ 0180  A2 003C R             1			mov	[GdtDesc1MData]._BAS_16
+				_23, al 
+ 0183  88 26 003F R          1			mov	[GdtDesc1MData]._BAS_24
+				_31, ah 
+						_SetDescBase	_TEXT_GX, , Gdt
+				DescGxCode
+ 0187  66| 33 C0             2			xor	eax, eax 
+ 018A  B8 ---- R             2			mov	ax, _TEXT_GX 
+ 018D  66| C1 E0 04          2			shl	eax, 4 
+ 0191  A3 0042 R             1			mov	[GdtDescGxCode]._BAS_0_
+				15, ax 
+ 0194  66| C1 E8 10          1			shr	eax, 16 
+ 0198  A2 0044 R             1			mov	[GdtDescGxCode]._BAS_16
+				_23, al 
+ 019B  88 26 0047 R          1			mov	[GdtDescGxCode]._BAS_24
+				_31, ah 
+						_SetDescBase	DGROUP, , GdtDe
+				scGxData
+ 019F  66| 33 C0             2			xor	eax, eax 
+ 01A2  B8 ---- R             2			mov	ax, DGROUP 
+ 01A5  66| C1 E0 04          2			shl	eax, 4 
+ 01A9  A3 004A R             1			mov	[GdtDescGxData]._BAS_0_
+				15, ax 
+ 01AC  66| C1 E8 10          1			shr	eax, 16 
+ 01B0  A2 004C R             1			mov	[GdtDescGxData]._BAS_16
+				_23, al 
+ 01B3  88 26 004F R          1			mov	[GdtDescGxData]._BAS_24
+				_31, ah 
+						_SetDescBase	_TEXT_USER, ,Ld
+				tDescUserCode
+ 01B7  66| 33 C0             2			xor	eax, eax 
+ 01BA  B8 ---- R             2			mov	ax, _TEXT_USER 
+ 01BD  66| C1 E0 04          2			shl	eax, 4 
+ 01C1  A3 0052 R             1			mov	[LdtDescUserCode]._BAS_
+				0_15, ax 
+ 01C4  66| C1 E8 10          1			shr	eax, 16 
+ 01C8  A2 0054 R             1			mov	[LdtDescUserCode]._BAS_
+				16_23, al 
+ 01CB  88 26 0057 R          1			mov	[LdtDescUserCode]._BAS_
+				24_31, ah 
+						_SetDescBase	_DATA_USER, ,Ld
+				tDescUserData
+ 01CF  66| 33 C0             2			xor	eax, eax 
+ 01D2  B8 ---- R             2			mov	ax, _DATA_USER 
+ 01D5  66| C1 E0 04          2			shl	eax, 4 
+ 01D9  A3 005A R             1			mov	[LdtDescUserData]._BAS_
+				0_15, ax 
+ 01DC  66| C1 E8 10          1			shr	eax, 16 
+ 01E0  A2 005C R             1			mov	[LdtDescUserData]._BAS_
+				16_23, al 
+ 01E3  88 26 005F R          1			mov	[LdtDescUserData]._BAS_
+				24_31, ah 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-45
+
+
+ 01E7  C3					ret
+ 01E8				ProtectSetup    endp
+				;
+ 01E8				EnableA20	proc	near
+					if _SYSTEM_PCAT
+ 01E8  B0 D1					mov	al, 0d1h	
+					; this is buggy method, sorry
+ 01EA  E6 64					out	064h, al
+ 01EC  B9 FFFF					mov	cx, -1
+ 01EF  E2 FE					loop	$
+ 01F1  B0 FF					mov	al, 0ffh
+ 01F3  E6 64					out	064h, al
+ 01F5  B9 FFFF					mov	cx, -1
+ 01F8  E2 FE					loop	$
+					endif
+ 01FA  C3					ret
+ 01FB				EnableA20	endp
+				
+				;** Real mode interface routine, call by 'ProtI
+				ntHandler' **
+				;   get interrupt number, issue INT ??h, return
+				 to protect mode
+ 01FB				RealIntHandler	proc	near
+ 01FB  50					push	ax
+ 01FC  67| 8A 4424 10				mov	al, 2+6+8[esp]	
+					; get interrupt vector number
+								; 2 := 'push ax
+				'
+								; 6 := '_CallRe
+				alMode' return information
+								; 8 := 'pushed 
+				2 segment registers
+ 0201  2E: A2 021A R				mov	byte ptr cs:RIHIntVecto
+				r, al
+ 0205  EB 11					jmp	short RealIntHandler1
+					; flush instruction queue
+ 0207  0010[					db	16 dup (0)
+	   00			
+			 ]	
+				
+ 0217  90					align	4
+ 0218				RealIntHandler1:
+ 0218  58					pop	ax
+ 0219  CD					db	0cdh		
+					; INT ??h
+ 021A  00			RIHIntVector	db	?
+ 021B  C3					ret			
+					; near return
+ 021C				RealIntHandler	endp
+				
+ 021C				_TEXT		ends
+				
+						assume	cs:_TEXT_GX
+ 0000				_TEXT_GX	segment
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-46
+
+
+				;** Protect modo Interrupt handler **
+				_ProtIntHandler	macro	n
+				IdtEntry&n&:	push	dword ptr n	
+					; push interrupt number
+						jmp	near ptr ProtIntHandler
+					; re-issue it in real mode
+						endm
+ = 0000				_IdtEntryNumber =	0
+					rept	256			;; prep
+				are for INT 00h -- INT 0FFh
+						_ProtIntHandler	%_IdtEntryNumbe
+				r
+				_IdtEntryNumber =	_IdtEntryNumber + 1
+					endm
+ 0000  68 00000000           2	IdtEntry0:	push	dword ptr 0	
+					; push interrupt number 
+ 0005  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 000A  68 00000001           2	IdtEntry1:	push	dword ptr 1	
+					; push interrupt number 
+ 000F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0014  68 00000002           2	IdtEntry2:	push	dword ptr 2	
+					; push interrupt number 
+ 0019  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 001E  68 00000003           2	IdtEntry3:	push	dword ptr 3	
+					; push interrupt number 
+ 0023  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0028  68 00000004           2	IdtEntry4:	push	dword ptr 4	
+					; push interrupt number 
+ 002D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0032  68 00000005           2	IdtEntry5:	push	dword ptr 5	
+					; push interrupt number 
+ 0037  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 003C  68 00000006           2	IdtEntry6:	push	dword ptr 6	
+					; push interrupt number 
+ 0041  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0046  68 00000007           2	IdtEntry7:	push	dword ptr 7	
+					; push interrupt number 
+ 004B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0050  68 00000008           2	IdtEntry8:	push	dword ptr 8	
+					; push interrupt number 
+ 0055  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 005A  68 00000009           2	IdtEntry9:	push	dword ptr 9	
+					; push interrupt number 
+ 005F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-47
+
+
+ 0064  68 0000000A           2	IdtEntry10:	push	dword ptr 10	
+					; push interrupt number 
+ 0069  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 006E  68 0000000B           2	IdtEntry11:	push	dword ptr 11	
+					; push interrupt number 
+ 0073  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0078  68 0000000C           2	IdtEntry12:	push	dword ptr 12	
+					; push interrupt number 
+ 007D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0082  68 0000000D           2	IdtEntry13:	push	dword ptr 13	
+					; push interrupt number 
+ 0087  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 008C  68 0000000E           2	IdtEntry14:	push	dword ptr 14	
+					; push interrupt number 
+ 0091  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0096  68 0000000F           2	IdtEntry15:	push	dword ptr 15	
+					; push interrupt number 
+ 009B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00A0  68 00000010           2	IdtEntry16:	push	dword ptr 16	
+					; push interrupt number 
+ 00A5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00AA  68 00000011           2	IdtEntry17:	push	dword ptr 17	
+					; push interrupt number 
+ 00AF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00B4  68 00000012           2	IdtEntry18:	push	dword ptr 18	
+					; push interrupt number 
+ 00B9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00BE  68 00000013           2	IdtEntry19:	push	dword ptr 19	
+					; push interrupt number 
+ 00C3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00C8  68 00000014           2	IdtEntry20:	push	dword ptr 20	
+					; push interrupt number 
+ 00CD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00D2  68 00000015           2	IdtEntry21:	push	dword ptr 21	
+					; push interrupt number 
+ 00D7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00DC  68 00000016           2	IdtEntry22:	push	dword ptr 22	
+					; push interrupt number 
+ 00E1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00E6  68 00000017           2	IdtEntry23:	push	dword ptr 23	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-48
+
+
+ 00EB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00F0  68 00000018           2	IdtEntry24:	push	dword ptr 24	
+					; push interrupt number 
+ 00F5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 00FA  68 00000019           2	IdtEntry25:	push	dword ptr 25	
+					; push interrupt number 
+ 00FF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0104  68 0000001A           2	IdtEntry26:	push	dword ptr 26	
+					; push interrupt number 
+ 0109  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 010E  68 0000001B           2	IdtEntry27:	push	dword ptr 27	
+					; push interrupt number 
+ 0113  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0118  68 0000001C           2	IdtEntry28:	push	dword ptr 28	
+					; push interrupt number 
+ 011D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0122  68 0000001D           2	IdtEntry29:	push	dword ptr 29	
+					; push interrupt number 
+ 0127  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 012C  68 0000001E           2	IdtEntry30:	push	dword ptr 30	
+					; push interrupt number 
+ 0131  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0136  68 0000001F           2	IdtEntry31:	push	dword ptr 31	
+					; push interrupt number 
+ 013B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0140  68 00000020           2	IdtEntry32:	push	dword ptr 32	
+					; push interrupt number 
+ 0145  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 014A  68 00000021           2	IdtEntry33:	push	dword ptr 33	
+					; push interrupt number 
+ 014F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0154  68 00000022           2	IdtEntry34:	push	dword ptr 34	
+					; push interrupt number 
+ 0159  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 015E  68 00000023           2	IdtEntry35:	push	dword ptr 35	
+					; push interrupt number 
+ 0163  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0168  68 00000024           2	IdtEntry36:	push	dword ptr 36	
+					; push interrupt number 
+ 016D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-49
+
+
+ 0172  68 00000025           2	IdtEntry37:	push	dword ptr 37	
+					; push interrupt number 
+ 0177  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 017C  68 00000026           2	IdtEntry38:	push	dword ptr 38	
+					; push interrupt number 
+ 0181  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0186  68 00000027           2	IdtEntry39:	push	dword ptr 39	
+					; push interrupt number 
+ 018B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0190  68 00000028           2	IdtEntry40:	push	dword ptr 40	
+					; push interrupt number 
+ 0195  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 019A  68 00000029           2	IdtEntry41:	push	dword ptr 41	
+					; push interrupt number 
+ 019F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01A4  68 0000002A           2	IdtEntry42:	push	dword ptr 42	
+					; push interrupt number 
+ 01A9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01AE  68 0000002B           2	IdtEntry43:	push	dword ptr 43	
+					; push interrupt number 
+ 01B3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01B8  68 0000002C           2	IdtEntry44:	push	dword ptr 44	
+					; push interrupt number 
+ 01BD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01C2  68 0000002D           2	IdtEntry45:	push	dword ptr 45	
+					; push interrupt number 
+ 01C7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01CC  68 0000002E           2	IdtEntry46:	push	dword ptr 46	
+					; push interrupt number 
+ 01D1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01D6  68 0000002F           2	IdtEntry47:	push	dword ptr 47	
+					; push interrupt number 
+ 01DB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01E0  68 00000030           2	IdtEntry48:	push	dword ptr 48	
+					; push interrupt number 
+ 01E5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01EA  68 00000031           2	IdtEntry49:	push	dword ptr 49	
+					; push interrupt number 
+ 01EF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01F4  68 00000032           2	IdtEntry50:	push	dword ptr 50	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-50
+
+
+ 01F9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 01FE  68 00000033           2	IdtEntry51:	push	dword ptr 51	
+					; push interrupt number 
+ 0203  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0208  68 00000034           2	IdtEntry52:	push	dword ptr 52	
+					; push interrupt number 
+ 020D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0212  68 00000035           2	IdtEntry53:	push	dword ptr 53	
+					; push interrupt number 
+ 0217  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 021C  68 00000036           2	IdtEntry54:	push	dword ptr 54	
+					; push interrupt number 
+ 0221  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0226  68 00000037           2	IdtEntry55:	push	dword ptr 55	
+					; push interrupt number 
+ 022B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0230  68 00000038           2	IdtEntry56:	push	dword ptr 56	
+					; push interrupt number 
+ 0235  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 023A  68 00000039           2	IdtEntry57:	push	dword ptr 57	
+					; push interrupt number 
+ 023F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0244  68 0000003A           2	IdtEntry58:	push	dword ptr 58	
+					; push interrupt number 
+ 0249  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 024E  68 0000003B           2	IdtEntry59:	push	dword ptr 59	
+					; push interrupt number 
+ 0253  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0258  68 0000003C           2	IdtEntry60:	push	dword ptr 60	
+					; push interrupt number 
+ 025D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0262  68 0000003D           2	IdtEntry61:	push	dword ptr 61	
+					; push interrupt number 
+ 0267  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 026C  68 0000003E           2	IdtEntry62:	push	dword ptr 62	
+					; push interrupt number 
+ 0271  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0276  68 0000003F           2	IdtEntry63:	push	dword ptr 63	
+					; push interrupt number 
+ 027B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-51
+
+
+ 0280  68 00000040           2	IdtEntry64:	push	dword ptr 64	
+					; push interrupt number 
+ 0285  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 028A  68 00000041           2	IdtEntry65:	push	dword ptr 65	
+					; push interrupt number 
+ 028F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0294  68 00000042           2	IdtEntry66:	push	dword ptr 66	
+					; push interrupt number 
+ 0299  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 029E  68 00000043           2	IdtEntry67:	push	dword ptr 67	
+					; push interrupt number 
+ 02A3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02A8  68 00000044           2	IdtEntry68:	push	dword ptr 68	
+					; push interrupt number 
+ 02AD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02B2  68 00000045           2	IdtEntry69:	push	dword ptr 69	
+					; push interrupt number 
+ 02B7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02BC  68 00000046           2	IdtEntry70:	push	dword ptr 70	
+					; push interrupt number 
+ 02C1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02C6  68 00000047           2	IdtEntry71:	push	dword ptr 71	
+					; push interrupt number 
+ 02CB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02D0  68 00000048           2	IdtEntry72:	push	dword ptr 72	
+					; push interrupt number 
+ 02D5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02DA  68 00000049           2	IdtEntry73:	push	dword ptr 73	
+					; push interrupt number 
+ 02DF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02E4  68 0000004A           2	IdtEntry74:	push	dword ptr 74	
+					; push interrupt number 
+ 02E9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02EE  68 0000004B           2	IdtEntry75:	push	dword ptr 75	
+					; push interrupt number 
+ 02F3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 02F8  68 0000004C           2	IdtEntry76:	push	dword ptr 76	
+					; push interrupt number 
+ 02FD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0302  68 0000004D           2	IdtEntry77:	push	dword ptr 77	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-52
+
+
+ 0307  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 030C  68 0000004E           2	IdtEntry78:	push	dword ptr 78	
+					; push interrupt number 
+ 0311  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0316  68 0000004F           2	IdtEntry79:	push	dword ptr 79	
+					; push interrupt number 
+ 031B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0320  68 00000050           2	IdtEntry80:	push	dword ptr 80	
+					; push interrupt number 
+ 0325  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 032A  68 00000051           2	IdtEntry81:	push	dword ptr 81	
+					; push interrupt number 
+ 032F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0334  68 00000052           2	IdtEntry82:	push	dword ptr 82	
+					; push interrupt number 
+ 0339  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 033E  68 00000053           2	IdtEntry83:	push	dword ptr 83	
+					; push interrupt number 
+ 0343  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0348  68 00000054           2	IdtEntry84:	push	dword ptr 84	
+					; push interrupt number 
+ 034D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0352  68 00000055           2	IdtEntry85:	push	dword ptr 85	
+					; push interrupt number 
+ 0357  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 035C  68 00000056           2	IdtEntry86:	push	dword ptr 86	
+					; push interrupt number 
+ 0361  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0366  68 00000057           2	IdtEntry87:	push	dword ptr 87	
+					; push interrupt number 
+ 036B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0370  68 00000058           2	IdtEntry88:	push	dword ptr 88	
+					; push interrupt number 
+ 0375  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 037A  68 00000059           2	IdtEntry89:	push	dword ptr 89	
+					; push interrupt number 
+ 037F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0384  68 0000005A           2	IdtEntry90:	push	dword ptr 90	
+					; push interrupt number 
+ 0389  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-53
+
+
+ 038E  68 0000005B           2	IdtEntry91:	push	dword ptr 91	
+					; push interrupt number 
+ 0393  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0398  68 0000005C           2	IdtEntry92:	push	dword ptr 92	
+					; push interrupt number 
+ 039D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03A2  68 0000005D           2	IdtEntry93:	push	dword ptr 93	
+					; push interrupt number 
+ 03A7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03AC  68 0000005E           2	IdtEntry94:	push	dword ptr 94	
+					; push interrupt number 
+ 03B1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03B6  68 0000005F           2	IdtEntry95:	push	dword ptr 95	
+					; push interrupt number 
+ 03BB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03C0  68 00000060           2	IdtEntry96:	push	dword ptr 96	
+					; push interrupt number 
+ 03C5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03CA  68 00000061           2	IdtEntry97:	push	dword ptr 97	
+					; push interrupt number 
+ 03CF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03D4  68 00000062           2	IdtEntry98:	push	dword ptr 98	
+					; push interrupt number 
+ 03D9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03DE  68 00000063           2	IdtEntry99:	push	dword ptr 99	
+					; push interrupt number 
+ 03E3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03E8  68 00000064           2	IdtEntry100:	push	dword ptr 100	
+					; push interrupt number 
+ 03ED  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03F2  68 00000065           2	IdtEntry101:	push	dword ptr 101	
+					; push interrupt number 
+ 03F7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 03FC  68 00000066           2	IdtEntry102:	push	dword ptr 102	
+					; push interrupt number 
+ 0401  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0406  68 00000067           2	IdtEntry103:	push	dword ptr 103	
+					; push interrupt number 
+ 040B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0410  68 00000068           2	IdtEntry104:	push	dword ptr 104	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-54
+
+
+ 0415  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 041A  68 00000069           2	IdtEntry105:	push	dword ptr 105	
+					; push interrupt number 
+ 041F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0424  68 0000006A           2	IdtEntry106:	push	dword ptr 106	
+					; push interrupt number 
+ 0429  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 042E  68 0000006B           2	IdtEntry107:	push	dword ptr 107	
+					; push interrupt number 
+ 0433  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0438  68 0000006C           2	IdtEntry108:	push	dword ptr 108	
+					; push interrupt number 
+ 043D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0442  68 0000006D           2	IdtEntry109:	push	dword ptr 109	
+					; push interrupt number 
+ 0447  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 044C  68 0000006E           2	IdtEntry110:	push	dword ptr 110	
+					; push interrupt number 
+ 0451  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0456  68 0000006F           2	IdtEntry111:	push	dword ptr 111	
+					; push interrupt number 
+ 045B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0460  68 00000070           2	IdtEntry112:	push	dword ptr 112	
+					; push interrupt number 
+ 0465  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 046A  68 00000071           2	IdtEntry113:	push	dword ptr 113	
+					; push interrupt number 
+ 046F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0474  68 00000072           2	IdtEntry114:	push	dword ptr 114	
+					; push interrupt number 
+ 0479  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 047E  68 00000073           2	IdtEntry115:	push	dword ptr 115	
+					; push interrupt number 
+ 0483  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0488  68 00000074           2	IdtEntry116:	push	dword ptr 116	
+					; push interrupt number 
+ 048D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0492  68 00000075           2	IdtEntry117:	push	dword ptr 117	
+					; push interrupt number 
+ 0497  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-55
+
+
+ 049C  68 00000076           2	IdtEntry118:	push	dword ptr 118	
+					; push interrupt number 
+ 04A1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04A6  68 00000077           2	IdtEntry119:	push	dword ptr 119	
+					; push interrupt number 
+ 04AB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04B0  68 00000078           2	IdtEntry120:	push	dword ptr 120	
+					; push interrupt number 
+ 04B5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04BA  68 00000079           2	IdtEntry121:	push	dword ptr 121	
+					; push interrupt number 
+ 04BF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04C4  68 0000007A           2	IdtEntry122:	push	dword ptr 122	
+					; push interrupt number 
+ 04C9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04CE  68 0000007B           2	IdtEntry123:	push	dword ptr 123	
+					; push interrupt number 
+ 04D3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04D8  68 0000007C           2	IdtEntry124:	push	dword ptr 124	
+					; push interrupt number 
+ 04DD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04E2  68 0000007D           2	IdtEntry125:	push	dword ptr 125	
+					; push interrupt number 
+ 04E7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04EC  68 0000007E           2	IdtEntry126:	push	dword ptr 126	
+					; push interrupt number 
+ 04F1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 04F6  68 0000007F           2	IdtEntry127:	push	dword ptr 127	
+					; push interrupt number 
+ 04FB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0500  68 00000080           2	IdtEntry128:	push	dword ptr 128	
+					; push interrupt number 
+ 0505  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 050A  68 00000081           2	IdtEntry129:	push	dword ptr 129	
+					; push interrupt number 
+ 050F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0514  68 00000082           2	IdtEntry130:	push	dword ptr 130	
+					; push interrupt number 
+ 0519  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 051E  68 00000083           2	IdtEntry131:	push	dword ptr 131	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-56
+
+
+ 0523  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0528  68 00000084           2	IdtEntry132:	push	dword ptr 132	
+					; push interrupt number 
+ 052D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0532  68 00000085           2	IdtEntry133:	push	dword ptr 133	
+					; push interrupt number 
+ 0537  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 053C  68 00000086           2	IdtEntry134:	push	dword ptr 134	
+					; push interrupt number 
+ 0541  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0546  68 00000087           2	IdtEntry135:	push	dword ptr 135	
+					; push interrupt number 
+ 054B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0550  68 00000088           2	IdtEntry136:	push	dword ptr 136	
+					; push interrupt number 
+ 0555  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 055A  68 00000089           2	IdtEntry137:	push	dword ptr 137	
+					; push interrupt number 
+ 055F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0564  68 0000008A           2	IdtEntry138:	push	dword ptr 138	
+					; push interrupt number 
+ 0569  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 056E  68 0000008B           2	IdtEntry139:	push	dword ptr 139	
+					; push interrupt number 
+ 0573  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0578  68 0000008C           2	IdtEntry140:	push	dword ptr 140	
+					; push interrupt number 
+ 057D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0582  68 0000008D           2	IdtEntry141:	push	dword ptr 141	
+					; push interrupt number 
+ 0587  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 058C  68 0000008E           2	IdtEntry142:	push	dword ptr 142	
+					; push interrupt number 
+ 0591  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0596  68 0000008F           2	IdtEntry143:	push	dword ptr 143	
+					; push interrupt number 
+ 059B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05A0  68 00000090           2	IdtEntry144:	push	dword ptr 144	
+					; push interrupt number 
+ 05A5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-57
+
+
+ 05AA  68 00000091           2	IdtEntry145:	push	dword ptr 145	
+					; push interrupt number 
+ 05AF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05B4  68 00000092           2	IdtEntry146:	push	dword ptr 146	
+					; push interrupt number 
+ 05B9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05BE  68 00000093           2	IdtEntry147:	push	dword ptr 147	
+					; push interrupt number 
+ 05C3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05C8  68 00000094           2	IdtEntry148:	push	dword ptr 148	
+					; push interrupt number 
+ 05CD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05D2  68 00000095           2	IdtEntry149:	push	dword ptr 149	
+					; push interrupt number 
+ 05D7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05DC  68 00000096           2	IdtEntry150:	push	dword ptr 150	
+					; push interrupt number 
+ 05E1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05E6  68 00000097           2	IdtEntry151:	push	dword ptr 151	
+					; push interrupt number 
+ 05EB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05F0  68 00000098           2	IdtEntry152:	push	dword ptr 152	
+					; push interrupt number 
+ 05F5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 05FA  68 00000099           2	IdtEntry153:	push	dword ptr 153	
+					; push interrupt number 
+ 05FF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0604  68 0000009A           2	IdtEntry154:	push	dword ptr 154	
+					; push interrupt number 
+ 0609  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 060E  68 0000009B           2	IdtEntry155:	push	dword ptr 155	
+					; push interrupt number 
+ 0613  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0618  68 0000009C           2	IdtEntry156:	push	dword ptr 156	
+					; push interrupt number 
+ 061D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0622  68 0000009D           2	IdtEntry157:	push	dword ptr 157	
+					; push interrupt number 
+ 0627  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 062C  68 0000009E           2	IdtEntry158:	push	dword ptr 158	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-58
+
+
+ 0631  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0636  68 0000009F           2	IdtEntry159:	push	dword ptr 159	
+					; push interrupt number 
+ 063B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0640  68 000000A0           2	IdtEntry160:	push	dword ptr 160	
+					; push interrupt number 
+ 0645  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 064A  68 000000A1           2	IdtEntry161:	push	dword ptr 161	
+					; push interrupt number 
+ 064F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0654  68 000000A2           2	IdtEntry162:	push	dword ptr 162	
+					; push interrupt number 
+ 0659  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 065E  68 000000A3           2	IdtEntry163:	push	dword ptr 163	
+					; push interrupt number 
+ 0663  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0668  68 000000A4           2	IdtEntry164:	push	dword ptr 164	
+					; push interrupt number 
+ 066D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0672  68 000000A5           2	IdtEntry165:	push	dword ptr 165	
+					; push interrupt number 
+ 0677  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 067C  68 000000A6           2	IdtEntry166:	push	dword ptr 166	
+					; push interrupt number 
+ 0681  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0686  68 000000A7           2	IdtEntry167:	push	dword ptr 167	
+					; push interrupt number 
+ 068B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0690  68 000000A8           2	IdtEntry168:	push	dword ptr 168	
+					; push interrupt number 
+ 0695  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 069A  68 000000A9           2	IdtEntry169:	push	dword ptr 169	
+					; push interrupt number 
+ 069F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06A4  68 000000AA           2	IdtEntry170:	push	dword ptr 170	
+					; push interrupt number 
+ 06A9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06AE  68 000000AB           2	IdtEntry171:	push	dword ptr 171	
+					; push interrupt number 
+ 06B3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-59
+
+
+ 06B8  68 000000AC           2	IdtEntry172:	push	dword ptr 172	
+					; push interrupt number 
+ 06BD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06C2  68 000000AD           2	IdtEntry173:	push	dword ptr 173	
+					; push interrupt number 
+ 06C7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06CC  68 000000AE           2	IdtEntry174:	push	dword ptr 174	
+					; push interrupt number 
+ 06D1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06D6  68 000000AF           2	IdtEntry175:	push	dword ptr 175	
+					; push interrupt number 
+ 06DB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06E0  68 000000B0           2	IdtEntry176:	push	dword ptr 176	
+					; push interrupt number 
+ 06E5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06EA  68 000000B1           2	IdtEntry177:	push	dword ptr 177	
+					; push interrupt number 
+ 06EF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06F4  68 000000B2           2	IdtEntry178:	push	dword ptr 178	
+					; push interrupt number 
+ 06F9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 06FE  68 000000B3           2	IdtEntry179:	push	dword ptr 179	
+					; push interrupt number 
+ 0703  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0708  68 000000B4           2	IdtEntry180:	push	dword ptr 180	
+					; push interrupt number 
+ 070D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0712  68 000000B5           2	IdtEntry181:	push	dword ptr 181	
+					; push interrupt number 
+ 0717  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 071C  68 000000B6           2	IdtEntry182:	push	dword ptr 182	
+					; push interrupt number 
+ 0721  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0726  68 000000B7           2	IdtEntry183:	push	dword ptr 183	
+					; push interrupt number 
+ 072B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0730  68 000000B8           2	IdtEntry184:	push	dword ptr 184	
+					; push interrupt number 
+ 0735  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 073A  68 000000B9           2	IdtEntry185:	push	dword ptr 185	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-60
+
+
+ 073F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0744  68 000000BA           2	IdtEntry186:	push	dword ptr 186	
+					; push interrupt number 
+ 0749  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 074E  68 000000BB           2	IdtEntry187:	push	dword ptr 187	
+					; push interrupt number 
+ 0753  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0758  68 000000BC           2	IdtEntry188:	push	dword ptr 188	
+					; push interrupt number 
+ 075D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0762  68 000000BD           2	IdtEntry189:	push	dword ptr 189	
+					; push interrupt number 
+ 0767  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 076C  68 000000BE           2	IdtEntry190:	push	dword ptr 190	
+					; push interrupt number 
+ 0771  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0776  68 000000BF           2	IdtEntry191:	push	dword ptr 191	
+					; push interrupt number 
+ 077B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0780  68 000000C0           2	IdtEntry192:	push	dword ptr 192	
+					; push interrupt number 
+ 0785  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 078A  68 000000C1           2	IdtEntry193:	push	dword ptr 193	
+					; push interrupt number 
+ 078F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0794  68 000000C2           2	IdtEntry194:	push	dword ptr 194	
+					; push interrupt number 
+ 0799  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 079E  68 000000C3           2	IdtEntry195:	push	dword ptr 195	
+					; push interrupt number 
+ 07A3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07A8  68 000000C4           2	IdtEntry196:	push	dword ptr 196	
+					; push interrupt number 
+ 07AD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07B2  68 000000C5           2	IdtEntry197:	push	dword ptr 197	
+					; push interrupt number 
+ 07B7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07BC  68 000000C6           2	IdtEntry198:	push	dword ptr 198	
+					; push interrupt number 
+ 07C1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-61
+
+
+ 07C6  68 000000C7           2	IdtEntry199:	push	dword ptr 199	
+					; push interrupt number 
+ 07CB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07D0  68 000000C8           2	IdtEntry200:	push	dword ptr 200	
+					; push interrupt number 
+ 07D5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07DA  68 000000C9           2	IdtEntry201:	push	dword ptr 201	
+					; push interrupt number 
+ 07DF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07E4  68 000000CA           2	IdtEntry202:	push	dword ptr 202	
+					; push interrupt number 
+ 07E9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07EE  68 000000CB           2	IdtEntry203:	push	dword ptr 203	
+					; push interrupt number 
+ 07F3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 07F8  68 000000CC           2	IdtEntry204:	push	dword ptr 204	
+					; push interrupt number 
+ 07FD  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0802  68 000000CD           2	IdtEntry205:	push	dword ptr 205	
+					; push interrupt number 
+ 0807  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 080C  68 000000CE           2	IdtEntry206:	push	dword ptr 206	
+					; push interrupt number 
+ 0811  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0816  68 000000CF           2	IdtEntry207:	push	dword ptr 207	
+					; push interrupt number 
+ 081B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0820  68 000000D0           2	IdtEntry208:	push	dword ptr 208	
+					; push interrupt number 
+ 0825  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 082A  68 000000D1           2	IdtEntry209:	push	dword ptr 209	
+					; push interrupt number 
+ 082F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0834  68 000000D2           2	IdtEntry210:	push	dword ptr 210	
+					; push interrupt number 
+ 0839  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 083E  68 000000D3           2	IdtEntry211:	push	dword ptr 211	
+					; push interrupt number 
+ 0843  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0848  68 000000D4           2	IdtEntry212:	push	dword ptr 212	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-62
+
+
+ 084D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0852  68 000000D5           2	IdtEntry213:	push	dword ptr 213	
+					; push interrupt number 
+ 0857  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 085C  68 000000D6           2	IdtEntry214:	push	dword ptr 214	
+					; push interrupt number 
+ 0861  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0866  68 000000D7           2	IdtEntry215:	push	dword ptr 215	
+					; push interrupt number 
+ 086B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0870  68 000000D8           2	IdtEntry216:	push	dword ptr 216	
+					; push interrupt number 
+ 0875  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 087A  68 000000D9           2	IdtEntry217:	push	dword ptr 217	
+					; push interrupt number 
+ 087F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0884  68 000000DA           2	IdtEntry218:	push	dword ptr 218	
+					; push interrupt number 
+ 0889  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 088E  68 000000DB           2	IdtEntry219:	push	dword ptr 219	
+					; push interrupt number 
+ 0893  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0898  68 000000DC           2	IdtEntry220:	push	dword ptr 220	
+					; push interrupt number 
+ 089D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08A2  68 000000DD           2	IdtEntry221:	push	dword ptr 221	
+					; push interrupt number 
+ 08A7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08AC  68 000000DE           2	IdtEntry222:	push	dword ptr 222	
+					; push interrupt number 
+ 08B1  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08B6  68 000000DF           2	IdtEntry223:	push	dword ptr 223	
+					; push interrupt number 
+ 08BB  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08C0  68 000000E0           2	IdtEntry224:	push	dword ptr 224	
+					; push interrupt number 
+ 08C5  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08CA  68 000000E1           2	IdtEntry225:	push	dword ptr 225	
+					; push interrupt number 
+ 08CF  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-63
+
+
+ 08D4  68 000000E2           2	IdtEntry226:	push	dword ptr 226	
+					; push interrupt number 
+ 08D9  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08DE  68 000000E3           2	IdtEntry227:	push	dword ptr 227	
+					; push interrupt number 
+ 08E3  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08E8  68 000000E4           2	IdtEntry228:	push	dword ptr 228	
+					; push interrupt number 
+ 08ED  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08F2  68 000000E5           2	IdtEntry229:	push	dword ptr 229	
+					; push interrupt number 
+ 08F7  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 08FC  68 000000E6           2	IdtEntry230:	push	dword ptr 230	
+					; push interrupt number 
+ 0901  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0906  68 000000E7           2	IdtEntry231:	push	dword ptr 231	
+					; push interrupt number 
+ 090B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0910  68 000000E8           2	IdtEntry232:	push	dword ptr 232	
+					; push interrupt number 
+ 0915  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 091A  68 000000E9           2	IdtEntry233:	push	dword ptr 233	
+					; push interrupt number 
+ 091F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0924  68 000000EA           2	IdtEntry234:	push	dword ptr 234	
+					; push interrupt number 
+ 0929  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 092E  68 000000EB           2	IdtEntry235:	push	dword ptr 235	
+					; push interrupt number 
+ 0933  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0938  68 000000EC           2	IdtEntry236:	push	dword ptr 236	
+					; push interrupt number 
+ 093D  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0942  68 000000ED           2	IdtEntry237:	push	dword ptr 237	
+					; push interrupt number 
+ 0947  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 094C  68 000000EE           2	IdtEntry238:	push	dword ptr 238	
+					; push interrupt number 
+ 0951  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0956  68 000000EF           2	IdtEntry239:	push	dword ptr 239	
+					; push interrupt number 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-64
+
+
+ 095B  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0960  68 000000F0           2	IdtEntry240:	push	dword ptr 240	
+					; push interrupt number 
+ 0965  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 096A  68 000000F1           2	IdtEntry241:	push	dword ptr 241	
+					; push interrupt number 
+ 096F  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0974  68 000000F2           2	IdtEntry242:	push	dword ptr 242	
+					; push interrupt number 
+ 0979  E9 00000A00 R         2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 097E  68 000000F3           2	IdtEntry243:	push	dword ptr 243	
+					; push interrupt number 
+ 0983  EB 7B 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0988  68 000000F4           2	IdtEntry244:	push	dword ptr 244	
+					; push interrupt number 
+ 098D  EB 71 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0992  68 000000F5           2	IdtEntry245:	push	dword ptr 245	
+					; push interrupt number 
+ 0997  EB 67 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 099C  68 000000F6           2	IdtEntry246:	push	dword ptr 246	
+					; push interrupt number 
+ 09A1  EB 5D 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09A6  68 000000F7           2	IdtEntry247:	push	dword ptr 247	
+					; push interrupt number 
+ 09AB  EB 53 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09B0  68 000000F8           2	IdtEntry248:	push	dword ptr 248	
+					; push interrupt number 
+ 09B5  EB 49 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09BA  68 000000F9           2	IdtEntry249:	push	dword ptr 249	
+					; push interrupt number 
+ 09BF  EB 3F 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09C4  68 000000FA           2	IdtEntry250:	push	dword ptr 250	
+					; push interrupt number 
+ 09C9  EB 35 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09CE  68 000000FB           2	IdtEntry251:	push	dword ptr 251	
+					; push interrupt number 
+ 09D3  EB 2B 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09D8  68 000000FC           2	IdtEntry252:	push	dword ptr 252	
+					; push interrupt number 
+ 09DD  EB 21 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-65
+
+
+ 09E2  68 000000FD           2	IdtEntry253:	push	dword ptr 253	
+					; push interrupt number 
+ 09E7  EB 17 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09EC  68 000000FE           2	IdtEntry254:	push	dword ptr 254	
+					; push interrupt number 
+ 09F1  EB 0D 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 09F6  68 000000FF           2	IdtEntry255:	push	dword ptr 255	
+					; push interrupt number 
+ 09FB  EB 03 90 90 90        2			jmp	near ptr ProtIntHandler
+					; re-issue it in real mode 
+ 0A00				ProtIntHandler	proc	near		
+					; protect mode interrupt handler
+ 0A00  1E					push	ds
+ 0A01  06					push	es
+						_CallRealMode	RealIntHandler
+					; re-issue it in real mode
+ 0A02  66| 68 0040           1			push	word ptr SEG_GX_CODE
+					; 
+ 0A06  66| 68 0A18           1			push	word ptr (offset ??0000
+				 - offset TextGxOffset0) 
+ 0A0A  66| 68 0000 R         1			push	word ptr (offset GotoPr
+				otMode)	; 
+ 0A0E  66| 68 01FB R         1			push	word ptr (offset RealIn
+				tHandler) 
+ 0A12  66 EA                 1			db	66h, 0eah	
+					; 
+ 0A14  003C R 0030           1			dw	offset GotoRealMode, SE
+				G_64K_CODE 
+ 0A18                        1	??0000	label	near 
+ 0A18  07					pop	es
+ 0A19  1F					pop	ds
+ 0A1A  83 C4 04					add	esp, 4
+ 0A1D  CF					iretd
+ 0A1E				ProtIntHandler	endp
+				
+				;** Protect mode System call handler **
+ 0A1E				SystemCall	proc	far
+						_GotoRealMode	GxTerminate
+					; terminate immediately
+ 0A1E  66| 68 0093 R         1			push	word ptr (offset GxTerm
+				inate) 
+ 0A22  66 EA                 1			db	66h, 0eah	
+					; use16 jmp far ptr GotoRealMode 
+ 0A24  003C R 0030           1			dw	offset GotoRealMode, SE
+				G_64K_CODE 
+ 0A28				SystemCall	endp
+				
+				;** Protect mode sample **
+ 0A28  FB			ProtSampCode:	sti
+ 0A29  B3 0A					mov	bl, 10
+ 0A2B				loop1:		_CallRealMode KeyInput	
+					; read char without echo back
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Page     1-66
+
+
+ 0A2B  66| 68 0040           1			push	word ptr SEG_GX_CODE
+					; 
+ 0A2F  66| 68 0A44           1			push	word ptr (offset ??0001
+				 - offset TextGxOffset0) 
+ 0A33  66| 68 0000 R         1			push	word ptr (offset GotoPr
+				otMode)	; 
+ 0A37  66| 68 00A0 R         1			push	word ptr (offset KeyInp
+				ut) 
+ 0A3B  66 EA                 1			db	66h, 0eah	
+					; 
+ 0A3D  003C R 0030           1			dw	offset GotoRealMode, SE
+				G_64K_CODE 
+ 0A41  87 DB 90              1			align	4 
+ 0A44                        1	??0001	label	near 
+ 0A44  B1 0A					mov	cl, 10
+ 0A46  8A D0					mov	dl, al
+ 0A48  B4 02					mov	ah, 02h
+ 0A4A  CD 21			loop2:		int	21h		
+					; write char, direct call to MS-DOS
+ 0A4C  FE C2					inc	dl
+ 0A4E  FE C9					dec	cl
+ 0A50  75 F8					jne	loop2
+ 0A52  B2 0D					mov	dl, 0dh		
+					; out CR/LF
+ 0A54  CD 21					int	21h
+ 0A56  B2 0A					mov	dl, 0ah
+ 0A58  CD 21					int	21h
+ 0A5A  FE CB					dec	bl		
+					; outer loop done?
+ 0A5C  75 CD					jne	loop1
+				;
+						_SystemCallGate		
+					; program end
+ 0A5E  EA 00 00 00 00        1			db	0eah, 0, 0, 0, 0; jmp f
+				ar SEG_SYSCALL:0 
+ 0A63  0014                  1			dw	SEG_SYSCALL 
+				;
+ 0A65				_TEXT_GX	ends
+						end	begin
+
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-1
+
+
+Macros:
+
+		N a m e			Lines
+
+_CALLREALMODE  . . . . . . . . .  	   8
+_COMPLINEARADDR  . . . . . . . .  	  12
+_GOTOPROTMODE  . . . . . . . . .  	   3
+_GOTOREALMODE  . . . . . . . . .  	   3
+_IDTENTRYMACRO . . . . . . . . .  	   1
+_PROTINTHANDLER  . . . . . . . .  	   2
+_SETDESCBASE . . . . . . . . . .  	   5
+_SYSTEMCALLGATE  . . . . . . . .  	   2
+
+Structures and Records:
+
+                N a m e                 Width   # fields
+                                        Shift   Width   Mask    Initial
+
+_DESC  . . . . . . . . . . . . .  	0008	0006
+  _LIM_0_15  . . . . . . . . . .  	0000
+  _BAS_0_15  . . . . . . . . . .  	0002
+  _BAS_16_23 . . . . . . . . . .  	0004
+  _ACCESS  . . . . . . . . . . .  	0005
+  _GRAN  . . . . . . . . . . . .  	0006
+  _BAS_24_31 . . . . . . . . . .  	0007
+
+Segments and Groups:
+
+                N a m e         	Size	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	16 Bit	089B	PARA	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	16 Bit	1004	PARA	STACK	
+_DATA_USER . . . . . . . . . . .  	32 Bit	0000	PARA	PUBLIC	
+_TEXT  . . . . . . . . . . . . .  	16 Bit	021C	PARA	PUBLIC	'CODE'
+_TEXT_GX . . . . . . . . . . . .  	32 Bit	0A65	PARA	PUBLIC	
+_TEXT_USER . . . . . . . . . . .  	32 Bit	0000	PARA	PUBLIC	
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGIN  . . . . . . . . . . . . .  	L NEAR	0078	_TEXT
+
+ENABLEA20  . . . . . . . . . . .  	N PROC	01E8	_TEXT	Length = 0013
+ENDSTR . . . . . . . . . . . . .  	L BYTE	088E	_DATA
+
+GDTBASE  . . . . . . . . . . . .  	L BYTE	0000	_DATA
+GDTDESC1MCODE  . . . . . . . . .  	L QWORD	0030	_DATA
+GDTDESC1MDATA  . . . . . . . . .  	L QWORD	0038	_DATA
+GDTDESCFLAT  . . . . . . . . . .  	L QWORD	0028	_DATA
+GDTDESCGDT . . . . . . . . . . .  	L QWORD	0008	_DATA
+GDTDESCGXCODE  . . . . . . . . .  	L QWORD	0040	_DATA
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-2
+
+
+GDTDESCGXDATA  . . . . . . . . .  	L QWORD	0048	_DATA
+GDTDESCIDT . . . . . . . . . . .  	L QWORD	0020	_DATA
+GDTDESCLDT . . . . . . . . . . .  	L QWORD	0010	_DATA
+GDTDESCLDTAL . . . . . . . . . .  	L QWORD	0018	_DATA
+GDTDESCNULL  . . . . . . . . . .  	L QWORD	0000	_DATA
+GDTPTR . . . . . . . . . . . . .  	L FWORD	0870	_DATA
+GDTPTRBASE . . . . . . . . . . .  	L DWORD	0872	_DATA
+GDTPTRLIMIT  . . . . . . . . . .  	L WORD	0870	_DATA
+GOTOPROTMODE . . . . . . . . . .  	F PROC	0000	_TEXT	Length = 0039
+GOTOPROTMODE1  . . . . . . . . .  	L NEAR	0024	_TEXT
+GOTOREALMODE . . . . . . . . . .  	N PROC	003C	_TEXT	Length = 003C
+GOTOREALMODE1  . . . . . . . . .  	L NEAR	0068	_TEXT
+GXTERMINATE  . . . . . . . . . .  	L NEAR	0093	_TEXT
+
+IDTBASE  . . . . . . . . . . . .  	L BYTE	0070	_DATA
+IDTENTRY0  . . . . . . . . . . .  	L NEAR	0000	_TEXT_GX
+IDTENTRY1  . . . . . . . . . . .  	L NEAR	000A	_TEXT_GX
+IDTENTRY10 . . . . . . . . . . .  	L NEAR	0064	_TEXT_GX
+IDTENTRY100  . . . . . . . . . .  	L NEAR	03E8	_TEXT_GX
+IDTENTRY101  . . . . . . . . . .  	L NEAR	03F2	_TEXT_GX
+IDTENTRY102  . . . . . . . . . .  	L NEAR	03FC	_TEXT_GX
+IDTENTRY103  . . . . . . . . . .  	L NEAR	0406	_TEXT_GX
+IDTENTRY104  . . . . . . . . . .  	L NEAR	0410	_TEXT_GX
+IDTENTRY105  . . . . . . . . . .  	L NEAR	041A	_TEXT_GX
+IDTENTRY106  . . . . . . . . . .  	L NEAR	0424	_TEXT_GX
+IDTENTRY107  . . . . . . . . . .  	L NEAR	042E	_TEXT_GX
+IDTENTRY108  . . . . . . . . . .  	L NEAR	0438	_TEXT_GX
+IDTENTRY109  . . . . . . . . . .  	L NEAR	0442	_TEXT_GX
+IDTENTRY11 . . . . . . . . . . .  	L NEAR	006E	_TEXT_GX
+IDTENTRY110  . . . . . . . . . .  	L NEAR	044C	_TEXT_GX
+IDTENTRY111  . . . . . . . . . .  	L NEAR	0456	_TEXT_GX
+IDTENTRY112  . . . . . . . . . .  	L NEAR	0460	_TEXT_GX
+IDTENTRY113  . . . . . . . . . .  	L NEAR	046A	_TEXT_GX
+IDTENTRY114  . . . . . . . . . .  	L NEAR	0474	_TEXT_GX
+IDTENTRY115  . . . . . . . . . .  	L NEAR	047E	_TEXT_GX
+IDTENTRY116  . . . . . . . . . .  	L NEAR	0488	_TEXT_GX
+IDTENTRY117  . . . . . . . . . .  	L NEAR	0492	_TEXT_GX
+IDTENTRY118  . . . . . . . . . .  	L NEAR	049C	_TEXT_GX
+IDTENTRY119  . . . . . . . . . .  	L NEAR	04A6	_TEXT_GX
+IDTENTRY12 . . . . . . . . . . .  	L NEAR	0078	_TEXT_GX
+IDTENTRY120  . . . . . . . . . .  	L NEAR	04B0	_TEXT_GX
+IDTENTRY121  . . . . . . . . . .  	L NEAR	04BA	_TEXT_GX
+IDTENTRY122  . . . . . . . . . .  	L NEAR	04C4	_TEXT_GX
+IDTENTRY123  . . . . . . . . . .  	L NEAR	04CE	_TEXT_GX
+IDTENTRY124  . . . . . . . . . .  	L NEAR	04D8	_TEXT_GX
+IDTENTRY125  . . . . . . . . . .  	L NEAR	04E2	_TEXT_GX
+IDTENTRY126  . . . . . . . . . .  	L NEAR	04EC	_TEXT_GX
+IDTENTRY127  . . . . . . . . . .  	L NEAR	04F6	_TEXT_GX
+IDTENTRY128  . . . . . . . . . .  	L NEAR	0500	_TEXT_GX
+IDTENTRY129  . . . . . . . . . .  	L NEAR	050A	_TEXT_GX
+IDTENTRY13 . . . . . . . . . . .  	L NEAR	0082	_TEXT_GX
+IDTENTRY130  . . . . . . . . . .  	L NEAR	0514	_TEXT_GX
+IDTENTRY131  . . . . . . . . . .  	L NEAR	051E	_TEXT_GX
+IDTENTRY132  . . . . . . . . . .  	L NEAR	0528	_TEXT_GX
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-3
+
+
+IDTENTRY133  . . . . . . . . . .  	L NEAR	0532	_TEXT_GX
+IDTENTRY134  . . . . . . . . . .  	L NEAR	053C	_TEXT_GX
+IDTENTRY135  . . . . . . . . . .  	L NEAR	0546	_TEXT_GX
+IDTENTRY136  . . . . . . . . . .  	L NEAR	0550	_TEXT_GX
+IDTENTRY137  . . . . . . . . . .  	L NEAR	055A	_TEXT_GX
+IDTENTRY138  . . . . . . . . . .  	L NEAR	0564	_TEXT_GX
+IDTENTRY139  . . . . . . . . . .  	L NEAR	056E	_TEXT_GX
+IDTENTRY14 . . . . . . . . . . .  	L NEAR	008C	_TEXT_GX
+IDTENTRY140  . . . . . . . . . .  	L NEAR	0578	_TEXT_GX
+IDTENTRY141  . . . . . . . . . .  	L NEAR	0582	_TEXT_GX
+IDTENTRY142  . . . . . . . . . .  	L NEAR	058C	_TEXT_GX
+IDTENTRY143  . . . . . . . . . .  	L NEAR	0596	_TEXT_GX
+IDTENTRY144  . . . . . . . . . .  	L NEAR	05A0	_TEXT_GX
+IDTENTRY145  . . . . . . . . . .  	L NEAR	05AA	_TEXT_GX
+IDTENTRY146  . . . . . . . . . .  	L NEAR	05B4	_TEXT_GX
+IDTENTRY147  . . . . . . . . . .  	L NEAR	05BE	_TEXT_GX
+IDTENTRY148  . . . . . . . . . .  	L NEAR	05C8	_TEXT_GX
+IDTENTRY149  . . . . . . . . . .  	L NEAR	05D2	_TEXT_GX
+IDTENTRY15 . . . . . . . . . . .  	L NEAR	0096	_TEXT_GX
+IDTENTRY150  . . . . . . . . . .  	L NEAR	05DC	_TEXT_GX
+IDTENTRY151  . . . . . . . . . .  	L NEAR	05E6	_TEXT_GX
+IDTENTRY152  . . . . . . . . . .  	L NEAR	05F0	_TEXT_GX
+IDTENTRY153  . . . . . . . . . .  	L NEAR	05FA	_TEXT_GX
+IDTENTRY154  . . . . . . . . . .  	L NEAR	0604	_TEXT_GX
+IDTENTRY155  . . . . . . . . . .  	L NEAR	060E	_TEXT_GX
+IDTENTRY156  . . . . . . . . . .  	L NEAR	0618	_TEXT_GX
+IDTENTRY157  . . . . . . . . . .  	L NEAR	0622	_TEXT_GX
+IDTENTRY158  . . . . . . . . . .  	L NEAR	062C	_TEXT_GX
+IDTENTRY159  . . . . . . . . . .  	L NEAR	0636	_TEXT_GX
+IDTENTRY16 . . . . . . . . . . .  	L NEAR	00A0	_TEXT_GX
+IDTENTRY160  . . . . . . . . . .  	L NEAR	0640	_TEXT_GX
+IDTENTRY161  . . . . . . . . . .  	L NEAR	064A	_TEXT_GX
+IDTENTRY162  . . . . . . . . . .  	L NEAR	0654	_TEXT_GX
+IDTENTRY163  . . . . . . . . . .  	L NEAR	065E	_TEXT_GX
+IDTENTRY164  . . . . . . . . . .  	L NEAR	0668	_TEXT_GX
+IDTENTRY165  . . . . . . . . . .  	L NEAR	0672	_TEXT_GX
+IDTENTRY166  . . . . . . . . . .  	L NEAR	067C	_TEXT_GX
+IDTENTRY167  . . . . . . . . . .  	L NEAR	0686	_TEXT_GX
+IDTENTRY168  . . . . . . . . . .  	L NEAR	0690	_TEXT_GX
+IDTENTRY169  . . . . . . . . . .  	L NEAR	069A	_TEXT_GX
+IDTENTRY17 . . . . . . . . . . .  	L NEAR	00AA	_TEXT_GX
+IDTENTRY170  . . . . . . . . . .  	L NEAR	06A4	_TEXT_GX
+IDTENTRY171  . . . . . . . . . .  	L NEAR	06AE	_TEXT_GX
+IDTENTRY172  . . . . . . . . . .  	L NEAR	06B8	_TEXT_GX
+IDTENTRY173  . . . . . . . . . .  	L NEAR	06C2	_TEXT_GX
+IDTENTRY174  . . . . . . . . . .  	L NEAR	06CC	_TEXT_GX
+IDTENTRY175  . . . . . . . . . .  	L NEAR	06D6	_TEXT_GX
+IDTENTRY176  . . . . . . . . . .  	L NEAR	06E0	_TEXT_GX
+IDTENTRY177  . . . . . . . . . .  	L NEAR	06EA	_TEXT_GX
+IDTENTRY178  . . . . . . . . . .  	L NEAR	06F4	_TEXT_GX
+IDTENTRY179  . . . . . . . . . .  	L NEAR	06FE	_TEXT_GX
+IDTENTRY18 . . . . . . . . . . .  	L NEAR	00B4	_TEXT_GX
+IDTENTRY180  . . . . . . . . . .  	L NEAR	0708	_TEXT_GX
+IDTENTRY181  . . . . . . . . . .  	L NEAR	0712	_TEXT_GX
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-4
+
+
+IDTENTRY182  . . . . . . . . . .  	L NEAR	071C	_TEXT_GX
+IDTENTRY183  . . . . . . . . . .  	L NEAR	0726	_TEXT_GX
+IDTENTRY184  . . . . . . . . . .  	L NEAR	0730	_TEXT_GX
+IDTENTRY185  . . . . . . . . . .  	L NEAR	073A	_TEXT_GX
+IDTENTRY186  . . . . . . . . . .  	L NEAR	0744	_TEXT_GX
+IDTENTRY187  . . . . . . . . . .  	L NEAR	074E	_TEXT_GX
+IDTENTRY188  . . . . . . . . . .  	L NEAR	0758	_TEXT_GX
+IDTENTRY189  . . . . . . . . . .  	L NEAR	0762	_TEXT_GX
+IDTENTRY19 . . . . . . . . . . .  	L NEAR	00BE	_TEXT_GX
+IDTENTRY190  . . . . . . . . . .  	L NEAR	076C	_TEXT_GX
+IDTENTRY191  . . . . . . . . . .  	L NEAR	0776	_TEXT_GX
+IDTENTRY192  . . . . . . . . . .  	L NEAR	0780	_TEXT_GX
+IDTENTRY193  . . . . . . . . . .  	L NEAR	078A	_TEXT_GX
+IDTENTRY194  . . . . . . . . . .  	L NEAR	0794	_TEXT_GX
+IDTENTRY195  . . . . . . . . . .  	L NEAR	079E	_TEXT_GX
+IDTENTRY196  . . . . . . . . . .  	L NEAR	07A8	_TEXT_GX
+IDTENTRY197  . . . . . . . . . .  	L NEAR	07B2	_TEXT_GX
+IDTENTRY198  . . . . . . . . . .  	L NEAR	07BC	_TEXT_GX
+IDTENTRY199  . . . . . . . . . .  	L NEAR	07C6	_TEXT_GX
+IDTENTRY2  . . . . . . . . . . .  	L NEAR	0014	_TEXT_GX
+IDTENTRY20 . . . . . . . . . . .  	L NEAR	00C8	_TEXT_GX
+IDTENTRY200  . . . . . . . . . .  	L NEAR	07D0	_TEXT_GX
+IDTENTRY201  . . . . . . . . . .  	L NEAR	07DA	_TEXT_GX
+IDTENTRY202  . . . . . . . . . .  	L NEAR	07E4	_TEXT_GX
+IDTENTRY203  . . . . . . . . . .  	L NEAR	07EE	_TEXT_GX
+IDTENTRY204  . . . . . . . . . .  	L NEAR	07F8	_TEXT_GX
+IDTENTRY205  . . . . . . . . . .  	L NEAR	0802	_TEXT_GX
+IDTENTRY206  . . . . . . . . . .  	L NEAR	080C	_TEXT_GX
+IDTENTRY207  . . . . . . . . . .  	L NEAR	0816	_TEXT_GX
+IDTENTRY208  . . . . . . . . . .  	L NEAR	0820	_TEXT_GX
+IDTENTRY209  . . . . . . . . . .  	L NEAR	082A	_TEXT_GX
+IDTENTRY21 . . . . . . . . . . .  	L NEAR	00D2	_TEXT_GX
+IDTENTRY210  . . . . . . . . . .  	L NEAR	0834	_TEXT_GX
+IDTENTRY211  . . . . . . . . . .  	L NEAR	083E	_TEXT_GX
+IDTENTRY212  . . . . . . . . . .  	L NEAR	0848	_TEXT_GX
+IDTENTRY213  . . . . . . . . . .  	L NEAR	0852	_TEXT_GX
+IDTENTRY214  . . . . . . . . . .  	L NEAR	085C	_TEXT_GX
+IDTENTRY215  . . . . . . . . . .  	L NEAR	0866	_TEXT_GX
+IDTENTRY216  . . . . . . . . . .  	L NEAR	0870	_TEXT_GX
+IDTENTRY217  . . . . . . . . . .  	L NEAR	087A	_TEXT_GX
+IDTENTRY218  . . . . . . . . . .  	L NEAR	0884	_TEXT_GX
+IDTENTRY219  . . . . . . . . . .  	L NEAR	088E	_TEXT_GX
+IDTENTRY22 . . . . . . . . . . .  	L NEAR	00DC	_TEXT_GX
+IDTENTRY220  . . . . . . . . . .  	L NEAR	0898	_TEXT_GX
+IDTENTRY221  . . . . . . . . . .  	L NEAR	08A2	_TEXT_GX
+IDTENTRY222  . . . . . . . . . .  	L NEAR	08AC	_TEXT_GX
+IDTENTRY223  . . . . . . . . . .  	L NEAR	08B6	_TEXT_GX
+IDTENTRY224  . . . . . . . . . .  	L NEAR	08C0	_TEXT_GX
+IDTENTRY225  . . . . . . . . . .  	L NEAR	08CA	_TEXT_GX
+IDTENTRY226  . . . . . . . . . .  	L NEAR	08D4	_TEXT_GX
+IDTENTRY227  . . . . . . . . . .  	L NEAR	08DE	_TEXT_GX
+IDTENTRY228  . . . . . . . . . .  	L NEAR	08E8	_TEXT_GX
+IDTENTRY229  . . . . . . . . . .  	L NEAR	08F2	_TEXT_GX
+IDTENTRY23 . . . . . . . . . . .  	L NEAR	00E6	_TEXT_GX
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-5
+
+
+IDTENTRY230  . . . . . . . . . .  	L NEAR	08FC	_TEXT_GX
+IDTENTRY231  . . . . . . . . . .  	L NEAR	0906	_TEXT_GX
+IDTENTRY232  . . . . . . . . . .  	L NEAR	0910	_TEXT_GX
+IDTENTRY233  . . . . . . . . . .  	L NEAR	091A	_TEXT_GX
+IDTENTRY234  . . . . . . . . . .  	L NEAR	0924	_TEXT_GX
+IDTENTRY235  . . . . . . . . . .  	L NEAR	092E	_TEXT_GX
+IDTENTRY236  . . . . . . . . . .  	L NEAR	0938	_TEXT_GX
+IDTENTRY237  . . . . . . . . . .  	L NEAR	0942	_TEXT_GX
+IDTENTRY238  . . . . . . . . . .  	L NEAR	094C	_TEXT_GX
+IDTENTRY239  . . . . . . . . . .  	L NEAR	0956	_TEXT_GX
+IDTENTRY24 . . . . . . . . . . .  	L NEAR	00F0	_TEXT_GX
+IDTENTRY240  . . . . . . . . . .  	L NEAR	0960	_TEXT_GX
+IDTENTRY241  . . . . . . . . . .  	L NEAR	096A	_TEXT_GX
+IDTENTRY242  . . . . . . . . . .  	L NEAR	0974	_TEXT_GX
+IDTENTRY243  . . . . . . . . . .  	L NEAR	097E	_TEXT_GX
+IDTENTRY244  . . . . . . . . . .  	L NEAR	0988	_TEXT_GX
+IDTENTRY245  . . . . . . . . . .  	L NEAR	0992	_TEXT_GX
+IDTENTRY246  . . . . . . . . . .  	L NEAR	099C	_TEXT_GX
+IDTENTRY247  . . . . . . . . . .  	L NEAR	09A6	_TEXT_GX
+IDTENTRY248  . . . . . . . . . .  	L NEAR	09B0	_TEXT_GX
+IDTENTRY249  . . . . . . . . . .  	L NEAR	09BA	_TEXT_GX
+IDTENTRY25 . . . . . . . . . . .  	L NEAR	00FA	_TEXT_GX
+IDTENTRY250  . . . . . . . . . .  	L NEAR	09C4	_TEXT_GX
+IDTENTRY251  . . . . . . . . . .  	L NEAR	09CE	_TEXT_GX
+IDTENTRY252  . . . . . . . . . .  	L NEAR	09D8	_TEXT_GX
+IDTENTRY253  . . . . . . . . . .  	L NEAR	09E2	_TEXT_GX
+IDTENTRY254  . . . . . . . . . .  	L NEAR	09EC	_TEXT_GX
+IDTENTRY255  . . . . . . . . . .  	L NEAR	09F6	_TEXT_GX
+IDTENTRY26 . . . . . . . . . . .  	L NEAR	0104	_TEXT_GX
+IDTENTRY27 . . . . . . . . . . .  	L NEAR	010E	_TEXT_GX
+IDTENTRY28 . . . . . . . . . . .  	L NEAR	0118	_TEXT_GX
+IDTENTRY29 . . . . . . . . . . .  	L NEAR	0122	_TEXT_GX
+IDTENTRY3  . . . . . . . . . . .  	L NEAR	001E	_TEXT_GX
+IDTENTRY30 . . . . . . . . . . .  	L NEAR	012C	_TEXT_GX
+IDTENTRY31 . . . . . . . . . . .  	L NEAR	0136	_TEXT_GX
+IDTENTRY32 . . . . . . . . . . .  	L NEAR	0140	_TEXT_GX
+IDTENTRY33 . . . . . . . . . . .  	L NEAR	014A	_TEXT_GX
+IDTENTRY34 . . . . . . . . . . .  	L NEAR	0154	_TEXT_GX
+IDTENTRY35 . . . . . . . . . . .  	L NEAR	015E	_TEXT_GX
+IDTENTRY36 . . . . . . . . . . .  	L NEAR	0168	_TEXT_GX
+IDTENTRY37 . . . . . . . . . . .  	L NEAR	0172	_TEXT_GX
+IDTENTRY38 . . . . . . . . . . .  	L NEAR	017C	_TEXT_GX
+IDTENTRY39 . . . . . . . . . . .  	L NEAR	0186	_TEXT_GX
+IDTENTRY4  . . . . . . . . . . .  	L NEAR	0028	_TEXT_GX
+IDTENTRY40 . . . . . . . . . . .  	L NEAR	0190	_TEXT_GX
+IDTENTRY41 . . . . . . . . . . .  	L NEAR	019A	_TEXT_GX
+IDTENTRY42 . . . . . . . . . . .  	L NEAR	01A4	_TEXT_GX
+IDTENTRY43 . . . . . . . . . . .  	L NEAR	01AE	_TEXT_GX
+IDTENTRY44 . . . . . . . . . . .  	L NEAR	01B8	_TEXT_GX
+IDTENTRY45 . . . . . . . . . . .  	L NEAR	01C2	_TEXT_GX
+IDTENTRY46 . . . . . . . . . . .  	L NEAR	01CC	_TEXT_GX
+IDTENTRY47 . . . . . . . . . . .  	L NEAR	01D6	_TEXT_GX
+IDTENTRY48 . . . . . . . . . . .  	L NEAR	01E0	_TEXT_GX
+IDTENTRY49 . . . . . . . . . . .  	L NEAR	01EA	_TEXT_GX
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-6
+
+
+IDTENTRY5  . . . . . . . . . . .  	L NEAR	0032	_TEXT_GX
+IDTENTRY50 . . . . . . . . . . .  	L NEAR	01F4	_TEXT_GX
+IDTENTRY51 . . . . . . . . . . .  	L NEAR	01FE	_TEXT_GX
+IDTENTRY52 . . . . . . . . . . .  	L NEAR	0208	_TEXT_GX
+IDTENTRY53 . . . . . . . . . . .  	L NEAR	0212	_TEXT_GX
+IDTENTRY54 . . . . . . . . . . .  	L NEAR	021C	_TEXT_GX
+IDTENTRY55 . . . . . . . . . . .  	L NEAR	0226	_TEXT_GX
+IDTENTRY56 . . . . . . . . . . .  	L NEAR	0230	_TEXT_GX
+IDTENTRY57 . . . . . . . . . . .  	L NEAR	023A	_TEXT_GX
+IDTENTRY58 . . . . . . . . . . .  	L NEAR	0244	_TEXT_GX
+IDTENTRY59 . . . . . . . . . . .  	L NEAR	024E	_TEXT_GX
+IDTENTRY6  . . . . . . . . . . .  	L NEAR	003C	_TEXT_GX
+IDTENTRY60 . . . . . . . . . . .  	L NEAR	0258	_TEXT_GX
+IDTENTRY61 . . . . . . . . . . .  	L NEAR	0262	_TEXT_GX
+IDTENTRY62 . . . . . . . . . . .  	L NEAR	026C	_TEXT_GX
+IDTENTRY63 . . . . . . . . . . .  	L NEAR	0276	_TEXT_GX
+IDTENTRY64 . . . . . . . . . . .  	L NEAR	0280	_TEXT_GX
+IDTENTRY65 . . . . . . . . . . .  	L NEAR	028A	_TEXT_GX
+IDTENTRY66 . . . . . . . . . . .  	L NEAR	0294	_TEXT_GX
+IDTENTRY67 . . . . . . . . . . .  	L NEAR	029E	_TEXT_GX
+IDTENTRY68 . . . . . . . . . . .  	L NEAR	02A8	_TEXT_GX
+IDTENTRY69 . . . . . . . . . . .  	L NEAR	02B2	_TEXT_GX
+IDTENTRY7  . . . . . . . . . . .  	L NEAR	0046	_TEXT_GX
+IDTENTRY70 . . . . . . . . . . .  	L NEAR	02BC	_TEXT_GX
+IDTENTRY71 . . . . . . . . . . .  	L NEAR	02C6	_TEXT_GX
+IDTENTRY72 . . . . . . . . . . .  	L NEAR	02D0	_TEXT_GX
+IDTENTRY73 . . . . . . . . . . .  	L NEAR	02DA	_TEXT_GX
+IDTENTRY74 . . . . . . . . . . .  	L NEAR	02E4	_TEXT_GX
+IDTENTRY75 . . . . . . . . . . .  	L NEAR	02EE	_TEXT_GX
+IDTENTRY76 . . . . . . . . . . .  	L NEAR	02F8	_TEXT_GX
+IDTENTRY77 . . . . . . . . . . .  	L NEAR	0302	_TEXT_GX
+IDTENTRY78 . . . . . . . . . . .  	L NEAR	030C	_TEXT_GX
+IDTENTRY79 . . . . . . . . . . .  	L NEAR	0316	_TEXT_GX
+IDTENTRY8  . . . . . . . . . . .  	L NEAR	0050	_TEXT_GX
+IDTENTRY80 . . . . . . . . . . .  	L NEAR	0320	_TEXT_GX
+IDTENTRY81 . . . . . . . . . . .  	L NEAR	032A	_TEXT_GX
+IDTENTRY82 . . . . . . . . . . .  	L NEAR	0334	_TEXT_GX
+IDTENTRY83 . . . . . . . . . . .  	L NEAR	033E	_TEXT_GX
+IDTENTRY84 . . . . . . . . . . .  	L NEAR	0348	_TEXT_GX
+IDTENTRY85 . . . . . . . . . . .  	L NEAR	0352	_TEXT_GX
+IDTENTRY86 . . . . . . . . . . .  	L NEAR	035C	_TEXT_GX
+IDTENTRY87 . . . . . . . . . . .  	L NEAR	0366	_TEXT_GX
+IDTENTRY88 . . . . . . . . . . .  	L NEAR	0370	_TEXT_GX
+IDTENTRY89 . . . . . . . . . . .  	L NEAR	037A	_TEXT_GX
+IDTENTRY9  . . . . . . . . . . .  	L NEAR	005A	_TEXT_GX
+IDTENTRY90 . . . . . . . . . . .  	L NEAR	0384	_TEXT_GX
+IDTENTRY91 . . . . . . . . . . .  	L NEAR	038E	_TEXT_GX
+IDTENTRY92 . . . . . . . . . . .  	L NEAR	0398	_TEXT_GX
+IDTENTRY93 . . . . . . . . . . .  	L NEAR	03A2	_TEXT_GX
+IDTENTRY94 . . . . . . . . . . .  	L NEAR	03AC	_TEXT_GX
+IDTENTRY95 . . . . . . . . . . .  	L NEAR	03B6	_TEXT_GX
+IDTENTRY96 . . . . . . . . . . .  	L NEAR	03C0	_TEXT_GX
+IDTENTRY97 . . . . . . . . . . .  	L NEAR	03CA	_TEXT_GX
+IDTENTRY98 . . . . . . . . . . .  	L NEAR	03D4	_TEXT_GX
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-7
+
+
+IDTENTRY99 . . . . . . . . . . .  	L NEAR	03DE	_TEXT_GX
+IDTPTR . . . . . . . . . . . . .  	L FWORD	0876	_DATA
+IDTPTRBASE . . . . . . . . . . .  	L DWORD	0878	_DATA
+IDTPTRLIMIT  . . . . . . . . . .  	L WORD	0876	_DATA
+IDTREALPTR . . . . . . . . . . .  	L FWORD	087C	_DATA
+IDTREALPTRBASE . . . . . . . . .  	L DWORD	087E	_DATA
+IDTREALPTRLIMIT  . . . . . . . .  	L WORD	087C	_DATA
+
+KEYINPUT . . . . . . . . . . . .  	N PROC	00A0	_TEXT	Length = 0005
+
+LDTBASE  . . . . . . . . . . . .  	L BYTE	0050	_DATA
+LDTDESCSYSCALL . . . . . . . . .  	L QWORD	0060	_DATA
+LDTDESCUSERCODE  . . . . . . . .  	L QWORD	0050	_DATA
+LDTDESCUSERDATA  . . . . . . . .  	L QWORD	0058	_DATA
+LOOP1  . . . . . . . . . . . . .  	L NEAR	0A2B	_TEXT_GX
+LOOP2  . . . . . . . . . . . . .  	L NEAR	0A4A	_TEXT_GX
+
+PROTECTSETUP . . . . . . . . . .  	N PROC	00A5	_TEXT	Length = 0143
+PROTINTHANDLER . . . . . . . . .  	N PROC	0A00	_TEXT_GX	Length = 001E
+PROTMODESEGDS  . . . . . . . . .  	L WORD	0888	_DATA
+PROTMODESEGES  . . . . . . . . .  	L WORD	088A	_DATA
+PROTMODESEGSS  . . . . . . . . .  	L WORD	088C	_DATA
+PROTSAMPCODE . . . . . . . . . .  	L NEAR	0A28	_TEXT_GX
+
+REALINTHANDLER . . . . . . . . .  	N PROC	01FB	_TEXT	Length = 0021
+REALINTHANDLER1  . . . . . . . .  	L NEAR	0218	_TEXT
+REALMODESEGDS  . . . . . . . . .  	L WORD	0882	_DATA
+REALMODESEGES  . . . . . . . . .  	L WORD	0884	_DATA
+REALMODESEGSS  . . . . . . . . .  	L WORD	0886	_DATA
+RIHINTVECTOR . . . . . . . . . .  	L BYTE	021A	_TEXT
+
+SEG_64K_CODE . . . . . . . . . .  	NUMBER	0030	
+SEG_64K_DATA . . . . . . . . . .  	NUMBER	0038	
+SEG_ALIAS  . . . . . . . . . . .  	NUMBER	0008	
+SEG_FLAT . . . . . . . . . . . .  	NUMBER	0028	
+SEG_GDT  . . . . . . . . . . . .  	NUMBER	0008	
+SEG_GX_CODE  . . . . . . . . . .  	NUMBER	0040	
+SEG_GX_DATA  . . . . . . . . . .  	NUMBER	0048	
+SEG_IDT  . . . . . . . . . . . .  	NUMBER	0020	
+SEG_LDT  . . . . . . . . . . . .  	NUMBER	0010	
+SEG_LDT_AL . . . . . . . . . . .  	NUMBER	0018	
+SEG_NULL . . . . . . . . . . . .  	NUMBER	0000	
+SEG_SYSCALL  . . . . . . . . . .  	NUMBER	0014	
+SEG_USER_CODE  . . . . . . . . .  	NUMBER	0004	
+SEG_USER_TEXT  . . . . . . . . .  	NUMBER	000C	
+STACKBOTTOM  . . . . . . . . . .  	L BYTE	0000	STACK
+STACKTOP . . . . . . . . . . . .  	L DWORD	1000	STACK
+SYSTEMCALL . . . . . . . . . . .  	F PROC	0A1E	_TEXT_GX	Length = 000A
+
+TEXTGXOFFSET0  . . . . . . . . .  	L BYTE	0000	_TEXT_GX
+
+??0000 . . . . . . . . . . . . .  	L NEAR	0A18	_TEXT_GX
+??0001 . . . . . . . . . . . . .  	L NEAR	0A44	_TEXT_GX
+@CPU . . . . . . . . . . . . . .  	TEXT  3471		
+Microsoft (R) Macro Assembler Version 5.10                  5/16/26 11:38:46
+                                                             Symbols-8
+
+
+@FILENAME  . . . . . . . . . . .  	TEXT  gx_ext01		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+_GDT_SIZE  . . . . . . . . . . .  	NUMBER	0050	
+_IDTENTRYNUMBER  . . . . . . . .  	NUMBER	0100	
+_IDT_SIZE  . . . . . . . . . . .  	NUMBER	0800	
+_LDT_SIZE  . . . . . . . . . . .  	NUMBER	0018	
+_SYSTEM_PC9801 . . . . . . . . .  	NUMBER	0000	
+_SYSTEM_PCAT . . . . . . . . . .  	NUMBER	0001	
+
+
+    370 Source  Lines
+   2373 Total   Lines
+    359 Symbols
+
+  47584 + 170044 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors
