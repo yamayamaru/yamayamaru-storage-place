@@ -1,0 +1,5 @@
+hat05.obj
+hat05asm.obj
+ -lib a:\hc386\small\HCc.lib a:\hc386\small\na.lib
+ -STACK 262144
+ -exe hat05
