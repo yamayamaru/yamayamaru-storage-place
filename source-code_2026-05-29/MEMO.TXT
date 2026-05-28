@@ -1,0 +1,133 @@
+int21h
+ax=250ah
+Map Physical Memory at End of Segment
+
+input
+ES       = segment selector in the LDT of segment to modify
+EBX      = physical base address of memory to map;must be a multiple of for kilobytes.
+ECX      = nemover of physical 4-kb memory pages to map
+
+
+output
+if success:
+    Carry flag   = clear
+    EAX          = offset in semgment of maapped memory
+if failure:
+    Carry flag   = set
+    EAX          = error code
+                 = 8,if insufficent memory(to create page tables),or-NOPAGE used
+                 = 9, if invalid segment selector
+                 = 130, if not supported in the DPMI implementation
+
+
+
+The limit of the specified segment is increased by the number of pages mapped,
+and the system page table are set up to map the specified physical pages.
+Since the memory is always mapped at the end of the segment,
+the returned offset of the mapped memory is always equal to the segment limit,
+plus one, before the system call was made.
+
+This function is generally used to setup a segment to access memory mapped hardware devices.
+The usual technique is to allocate a seperate LDT segment descriptor by
+calling int 21h function 48h with a request for zero pages, and then calling this function
+to map in the desired physicl memory. It can also be used to map memory at the end of an existing segment.
+この関数は、一般的にメモリマップドハードウェアデバイスにアクセスするためのセグメントを設定するために使用されます。
+通常の手法としては、まず int 21h 関数 48h をゼロページ要求で呼び出し、
+次にこの関数を呼び出して目的の物理メモリをマッピングすることで、
+個別の LDT セグメント記述子を割り当てます。
+また、既存のセグメントの末尾にメモリをマッピングするためにも使用できます。
+
+
+Under DPMI, this function always work for mapping phsical memory in a zero-sized segment.
+When mapping at the end of an existing segment,
+it return error 130 unless DPMI Device Mapping capability is present.
+Please see Appendix F.
+
+Note the the free segment (INT 21h function 49h) or
+reduce memory allocation (INT 21h cunction 4ah) system calls are allowed on a segment that
+has physical memory mapped in by this function
+
+If a segment that has aliases is modified, the descriptors for all of the aliased segment
+are automatically updte. Segment 000Ch and 0014h are always aliased.
+Addditional aliases can be creaated with system call 2513h
+
+If this call is made for a segment that already has some memory allocated or mapped,
+the linear bsed address of the segment in the LDT segment descriptor may change.
+This side effect is invisible to the application program.
+A moved segment handler can be installed with function 2518h;
+the installed handler is called whenever a segment lineaar base address changes.
+
+Please see also Create Physical Device Pages (function 252bh subfunction2).
+
+This call alwys returns failure if the-NOPAGES swtch is used.
+
+
+
+
+int21h
+ah=48h
+Allocate Segment
+
+input
+EBX        = number of 4kb memory paages to allocate
+
+output
+if success:
+    Carry flag     = clear
+    AX             = segment selector of allocated segment
+if failure:
+    Carry flag     = set
+    EAX            = error code
+                   = 8, if insufficient memory or LDT is maximum size
+    EBX            = number of free pages of physical memory available
+
+Allocates a segment descriptor in the local descriptor table (LDT),
+and returns the segment selector used to reerence the  segment.
+The segment is always created as a writble expand-up dataa segment.
+A memory allocation of zero pages is explicitly allowed,
+in order to allocate an LDT descriptor with the program can the moodify to suit is own needs.
+プログラムが自身のニーズに合わせてLDT記述子をカスタマイズできるように、
+ページ数をゼロに明示的に割り当てることも可能です。
+
+Use the Get Memory Statistics call (function 2520h) to obtain more detailed informtion
+about availble physical momoery.
+使用可能な物理メモリに関するより詳細な情報を取得するには、
+メモリ統計情報取得関数 (関数 2520h) を使用してください。
+
+
+
+
+
+
+
+
+int21h
+ah=49h
+Free Segment
+
+input
+ES     = segment selector of segment to free
+
+
+output
+if success:
+    Carry flag      = clear
+    ES              = 0000h (the null segment selector)
+if failure:
+    Carry flag      = set
+    EAX             = error code
+                    = 9, if invalied segment selector
+
+Frees the specified segment, and frees all the memory pages allocated to the segment.
+The segment must be in the local descriptor table (LDT)
+and may not be one of the hardwired segment setup by 386|DOS-Extender,
+with the exception of the original code and data segments.
+
+If the code or data segment is freed, the program must have
+first moved is stack to another segment and be excecuting out of another segment,
+or the system will crash.
+
+If a segment that haas aliases is freed, only the segment decriptor is freed.
+Memory allocated to the segment is not freed until all of the aliases for the segment are freed.
+Segments 000ch and 0014h (the program code and data segment) are automatically aliased.
+Addtional aliases can be created with the Alias Segment Descriptor call(function 2513h).
