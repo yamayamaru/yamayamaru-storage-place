@@ -1,0 +1,1586 @@
+*****************************************************************************
+目次                                  High C(R) Compiler クイックリファレンス
+*****************************************************************************
+                                                                             
+1.　コンパイラ制御                                                           
+2.　グループ別トグル使用法                                                   
+3.　ライブラリ関数                                                           
+4.　fopenフラグ                                                              
+5.　fprintfオプション                                                        
+                                                                             
+-----------------------------------------------------------------------------
+1.　コンパイラ制御                                                           
+-----------------------------------------------------------------------------
+                                                                             
+　次のテーブルはアルファベット順にHigh Cドライバコマンドラインオプションスイ 
+ッチ、プラグマ、トグル、構成変数、環境変数の一覧をデフォルト付きで紹介しま   
+す。左側のコラムは次のように制御の形式を示します。                           
+                                                                             
+  制御形式:                                                                  
+    C　　　 ドライバコンフィギュレーションファイルを修正することで変更できる 
+    D　　　 ドライバコマンドオプションスイッチ                               
+    H　　　 接頭にHをつけるドライバコマンドラインオプションスイッチ          
+    P　　　 プラグマ                                                         
+    T　　　 トグル。コマンドラインオプションスイッチの場合は-Honあるいは     
+           -Hoff、プラグマの場合は、On、Off、Popと共に使います。             
+    E　　　 MS-DOSの環境変数                                                 
+                                                                             
+- 注意 -                                                                     
+  C、H、Tもドライバコンフィギュレーションファイルhc386set.cnfの中でARGS=行で 
+指定できます。                                                               
+                                                                             
+ 制御デフォルト:                                                             
+   +　　　 デフォルトOnを示す                                                
+   -　　　 デフォルトOffを示す                                               
+   *　　　 デフォルト値に対する記述を参照してください。                      
+                                                                             
+- 注意 -                                                                     
+  "H" ではじまるドライバコマンドラインオプションスイッチは、"H"を付けずにアル
+ファベット順にリストします。たとえば、Hansiはテーブルではansiで表します。制御
+内容の詳細は｢ユーザーズマニュアル｣の｢第二章　プログラマーズガイド｣を参照して 
+ください。                                                                   
+                                                                             
+ オプションスイッチ                                                          
+                                                                             
+　 コマンドラインオプションスイッチを示します。たとえば、オプションスイッチ  
+ 486とcを指定するには、次のとおりです。                                      
+                                                                             
+ hc386 -486 -c program.c                                                     
+                                                                             
+　 次のテーブルの"H"を示すオプションスイッチを指定するには、オプションスイッ 
+ チの先頭に"H"を付けます。                                                   
+                                                                             
+  hc386 -Hansi program.c                                                     
+                                                                             
+- 注意 -                                                                     
+  コマンドラインオプションスイッチの名称は大文字、小文字を区別します。       
+                                                                             
+ プラグマ                                                                    
+                                                                             
+　 プログラムまたはプロファイルのテキストでプラグマを指定します。プラグマ名は
+ 大文字小文字の区別はありません。                                            
+                                                                             
+  pragma Pragma_name;　 　　　　　　　　　　　/* あるいは */                 
+  #pragma Pragma_name;                                                       
+                                                                             
+  pragma Pragma_name(Pragma_parameters);　　　/* あるいは */                 
+  #pragma Pragma_name(Pragma_parameters);                                    
+                                                                             
+ トグル                                                                      
+                                                                             
+　 ドライバコマンドラインオプションスイッチ -Hon または -Hoff、あるいはプラグ
+ マ On, Off, あるいは Popを使い、トグルスイッチをオンまたはオフにしたり、トグ
+ ルの前の値を復帰したりします。トグル名は大文字小文字を区別しません。        
+                                                                             
+  pragma On(Optimize_fp);                                                    
+  pragma Off(Print_ppo);                                                     
+                                                                             
+ 同等:　hc386 -Hon=Optimize_fp -Hoff=Print_ppo program.c                     
+                                                                             
+────────────────────────────────────── 
+　名称　　　　　　　　　　　　　　　内容                                     
+────────────────────────────────────── 
+T　　*　　387　　　　　　　　　 80387浮動小数点コードを生成する。            
+                                デフォルト:ホストマシンに80387コプロセッサを 
+                                搭載しているとonでそれ以外はoff。            
+TD　 -　　486　　　　　　　　　 80486の最適化を可能にする。                  
+T　　-　　1167　　　　　　　　　Weitek ABACUS1167浮動小数点コードを生成する。
+T　　-　　3167　　　　　　　　　Weitek ABACUS3167浮動小数点コードを生成する。
+H　　*　　aipath　　　　　　　　#include <..>ディレクトリサーチパスを設定す  
+                                る。                                         
+P　　　　 Alias　　　　　　　　 デフォルト:\hc\inc\where\hcコンパイラをインス
+                                トールしたディレクトリ。                     
+T　　-　　Align_all_labels　　　グローバル識別子に対する外部名を指定する。   
+T　　-　　Align_labels　　　　　すべてのラベルを4バイト境界に揃える。        
+T　　-　　Align_members　　　 　構造体のメンバーをアラインする。             
+T　　+　　Align_routines　　　　関数の先頭を4バイト環境に揃える。            
+H　　-　　ansi　　　　　　　　　ANSI互換に対するコードをチェックする。       
+C　　*　　ARGS　　　　　　　　　デフォルトコマンドライン引数を指定する。     
+                                デフォルト:指定しない。                      
+T　　-　　Asm　　　　　　　　　 アセンブリリストを生成する。                 
+H　　-　　asm　　　　　　　　　 アセンブリリストを生成する。                 
+C　　*　　ASNAME　　　　　　　　アセンブリリストの名称を指定する。           
+T　　-　　Auto_init_in_code 　　集合型の分離したコードセグメント初期化ブロッ 
+                                クを設定する。                               
+H　　-　　batch=filename　　　　コマンドラインオプションスイッチにバッチファ 
+                                イルを設定する。                             
+D　　-　　c　　　　　　　　　　 リンカの呼び出しを抑制し、オブジェクトモジュ 
+                                ールを生成する。                             
+P　　　　 C_include　　　　 　　includeの条件書式                            
+T　　-　　Callee_pops_when_possible                                          
+　　　　　　　　　　　　　　　　コードを呼び出された関数のエピローグでスタッ 
+                                クから引数をポップするように設定する。       
+P　　　　 Calling_convention　　他の言語、あるいは他のC言語でコンパイルされた
+                                モジュールをC言語から呼び出すことを可能にす  
+                                る。                                         
+P　　　　 Cclass　　　　　　　　コードセグメントのクラスを変更する。         
+C　　*　　CEXT　　　　　　　　　デフォルトC言語の拡張子を指定する。          
+                                デフォルト:".c"                              
+P　　　　 Cgroup　　　　　　　　コードグループ名を指定する。                 
+T　　+　　Char_default_unsigned                                              
+　　　　　　　　　　　　　　　　Onのときは、型charをunsignedに、offのときは、
+                                型charを signedにする。                      
+T　　-　　Char_is_rep　　　　 　charに符号があるかどうかでsigned charまたは  
+                                unsigned charに指定する。                    
+T　　-　　Check_stack　　　　 　スタックオーバーフローに対するチェックをコー 
+                                ドにいれる。                                 
+P　　　　 Code　　　　　　　　　コードセグメントの名称を指定する。           
+T　　-　　Codeview　　　　　　　インテルOMFレコードの代わりにマイクロソフト  
+                                Codeviewレコードをつくる。                   
+P　　　　 Comment　　　　　　　 オブジェクトファイルにOMFコメントレコードを挿
+                                入する。                                     
+T　　-　　Const_in_code　　 　　コード空間にconst変数を設定する。            
+H　　　　 cram　　　　　　　　　保護メモリでコンパイルをおこなう。           
+D　　　　 Dname[=string]　　　　マクロの初期化定義を提供する。               
+P　　　　 Data　　　　　　　　　データメモリ割り当てに対するブロック名を指定 
+                                する。                                       
+P　　　　 Dclass　　　　　　　　データセグメントクラスを変更する。           
+P　　　　 Dgroup　　　　　　　　データグループ名を指定する。                 
+T　　-　　Double_math_only　　　浮動小数点操作を倍精度でおこなう。           
+T　　-　　Double_return　　　 　型floatで戻す非プロットタイプ関数からdoubleを
+                                返す。                                       
+T　　-　　Downshift_file_names                                               
+　　　　　　　　　　　　　　　　プラグマを含んだファイル名を小文字と解釈す   
+                                る。                                         
+D　　-　　E　　　　　　　　　　 C言語マクロプロセッサを呼び出す。            
+T　　-　　EMC87　　　　　　　　 Cyrix EMC87浮動小数点数コードを生成する。    
+T　　-　　Emit_line_records　 　インテルOMF行番レコードをつくる。            
+T　　-　　Emit_line_table　　 　オブジェクトモジュールにデバッギング情報を設 
+                                定する。                                     
+T　　-　　Emit_PL_seg_attrs Phar Lap Software社による認識されるセグメント属性
+                                バイト(SEGDEFレコードの最後に)をつくる。     
+T　　-　　Emit_names　　　　　　関数RのそれぞれのプロローグにRの名称を置く。 
+H　　*　　eol=nn　　　　　　　　行末変換を指定する。デフォルト:#0d0a         
+P　　　　 Epilog_call　　　　 　関数が戻る前に呼び出しをおこなう。           
+D　　-　　f287　　　　　　　　　80287コプロセッサに対するコードを生成する。  
+D　　*　　f387　　　　　　　　　80387コプロセッサに対するコードを生成する。デ
+                                フォルト:ホストマシンが80x87コプロセッサを装 
+                                備しているときは、Onでそれ以外のときはOffで  
+                                す。                                         
+D　　-　　f1167　　　　　　　　 Weitek ABACUS1167コプロセッサに対するコードを
+                                生成する。                                   
+D　　-　　f3167　　　　　　　　 Weitek ABACUS3167コプロセッサに対するコードを
+                                生成する。                                   
+D　　-　　femc87　　　　　　　　Cyrix EMC87浮動小数点コードを生成する。      
+T　　-　　Flexview　　　　　　　DRI Flexviewレコードをつくる                 
+T　　+　　Floating_point　　　　ライブラリ呼び出しではなくネイティブコプロセ 
+                                ッサ浮動小数点コードを呼び出す。             
+T　　-　　FP_tos　　　　　　　　80x87のスタックトップにある値を必要になるまで
+                                残す。                                       
+D　　-　　fsoft　　　　　　　　 浮動小数点ライブラリへの呼び出しを生成する。 
+D　　-　　g　　　　　　　　　　 オブジェクトファイルにデバッグレコード(シンボ
+                                ル、行、形式)を設定する。                    
+H　　*　　gac=format　　　　　　内部識別のため外部オブジェクト名を自動生成す 
+                                る。デフォルト:しない                        
+P　　*　　Global_aliasing_convention                                         
+　　　　　　　　　　　　　　　　内部識別のため外部オブジェクト名を自動生成す 
+                                る。デフォルト:しない                        
+C　　　　 HCDEBUG　　　　　　　 コマンドラインオプションスイッチ-gが指定され 
+                                たときに、コンパイルに渡されるオプションスイ 
+                                ッチを指定する。                             
+CE　　　　HCDIR　　　　　　　　 コンパイラがインストールされたディレクトリを 
+                                指定する。                                   
+P　　*　　Hshift　　　　　　　　巨大なオブジェクトでセグメントが拡張すること 
+                                を指定する。デフォルト:0                     
+D　　*　　Idir　　　　　　　　　インクルードプラグマにサーチパスを指定する。 
+                                デフォルト:しない                            
+P　　　　 Include　　　　　　　 コンパイルの単位で別のファイルのソースをイン 
+                                クルードする。                               
+T　　+　　Int_function_warnings                                              
+　　　　　　　　　　　　　　　　intを返す関数がexpressionで戻り値がない、ある
+                                いはreturn;のときに、警告メッセージを抑制す  
+                                る。                                         
+CPE　*　　Ipath　　　　　　　　 インクルードプラグマに対してサーチパスを指定 
+                                する。デフォルト:なし                        
+H　　*　　ipname=NAME　　　　 　インクルードファイルに対してディレクトリサー 
+                                チパスにMS-DOS環境変数に名称を付ける。デフォ 
+                                ルト:IPATH                                   
+H　　-　　kanji　　　　　　　　 文字列の2バイト漢字文字を可能にする。        
+H　　-　　keep　　　　　　　　　オブジェクトファイルを削除しない。           
+D　　　　 Ldir　　　　　　　　　ライブラリを配置するためサーチするディレクト 
+                                リを指定する。                               
+D　　　　 llib　　　　　　　　　リンクでインクルードされるライブラリを指定す 
+                                る。                                         
+H　　*　　lines=n　　　　　　　 ソースリスト出力に対してページ当たりの行数を 
+                                指定する。                                   
+C　　　　 LINKDEBUG　　　　　　 コマンドラインオプションスイッチ-gが指定され 
+                                たときに、リンカに渡されるオプションスイッチ 
+                                を指定する。                                 
+C　　*　　LINKNAME　　　　　　　リンクを指定する。デフォルト:386link         
+T　　-　　List　　　　　　　　　標準出力にリストを出力する。                 
+H　　　　 list[=filename]　　　 ソースリストをおこなうファイルを指定する。   
+P　　　　 Literals　　　　　　　リテラルセグメントを指定する。               
+T　　+　　Literals_in_code　　　コード空間のリテラルを置く。                 
+T　　-　　Long_enums　　　　　　メモリのintサイズ領域にenum変数をマップする。
+D　　*　　Mmodel　　　　　　　　メモリモデルを指定する。デフォルト:small     
+H　　-　　make　　　　　　　　　メイクファイルのために依存エントリを書き出   
+                                す。                                         
+T　　-　　Make_externs_global 　メモリクラスexternでオブジェクトのローカル宣 
+                                言をグローバルにする。                       
+P　　　　 Memory_model　　　　　メモリモデルを指定する。                     
+T　　-　　MS_OBJ　　　　　　　　マイクロソフトMASMアセンブラと同じフォーマッ 
+                                トで".obj"ファイルをつくる                   
+H　　+　　noobject　　　　　　　オブジェクトファイルの生成を抑制する。       
+H　　-　　nopro　　　　　　　　 リードすべきプロファイルを指定しない。       
+H　　-　　nosilent　　　　　　　コンパイルメッセージを出力する。             
+HE　 -　　noswap　　　　　　　　ドライバ自身がメモリからスワップすることを止 
+                                める。                                       
+D　　　　 o filename　　　　　　最終的な実行ファイルの名称を指定する。       
+H　　*　　object[=filename]　　 リンクされることを必要としないオブジェクトフ 
+                                ァイル名を指定する。デフォルト:".obj"        
+P　　　　 Off　　　　　　　　　 トグルをOffにする。                          
+H　　　　 off=toggle　　　　　　トグルをOffにする。                          
+P　　　　 On　　　　　　　　　　トグルをOnにする。                           
+H　　　　 on=toggle　　　　　 　トグルをOnにする。                           
+T　　-　　Optimize_for_space　　速度に効果のあるより大きさに効果のあるコード 
+                                を生成する。                                 
+T　　+　　Optimize_FP　　　　 　使われていないスタックフレームレジスタbpの設 
+                                定と復帰を省く。                             
+T　　+　　Optimize_xjmp　 　　　クロスジャンピング最適化を可能にする。       
+T　　+　　Optimize_xjmp_space 　時間消費を考えず領域をムダ遣いせずにクロスジ 
+                                ャンピング最適化を可能にする。               
+T　　-　　OS2_OBJ　　　　　　 　マイクロソフトMASMアセンブラと同じフォーマッ 
+                                ト(OS/2　2.0　32ビット制限)で".obj"ファイルを
+                                つくる。                                     
+D　　　　 P　　　　　　　　　　 プリプロセッサを実行し、".i"ファイルを生成す 
+                                る。                                         
+P　　　　 Page　　　　　　　　　トグルListがOnのときはリストにページイジェク 
+                                トを挿入する。                               
+T　　+　　Parm_warnings　 　　　関数の引数が宣言された正しい引数の型とマッチ 
+                                しないときはいつも警告する。                 
+T　　-　　PCC　　　　　　　　　 ANSI制限を緩和する                           
+H　　-　　pcc　　　　　 　　　　ANSI制限を緩和する                           
+T　　-　　PCC_msgs　　　　　　　PCCレベル診断のみをつくる。                  
+T　　-　　Pointers_compatible 　ポインタの値に非互換ポインタ変数に代入される 
+                                ことを警告付きで許可する。                   
+T　　-　　Pointers_compatible_with_ints                                      
+　　　　　　　　　　　　　　　　どんな形式のポインタでもintに互換性があるよう
+                                にする。                                     
+P　　　　 Pop　　　　　　　　　 トグルの先の状態を元に戻す。                 
+T　　+　　Postpone_arg_pops 　　次の関数の呼び出しがあるまで、ポップした引数 
+                                をおいて置く。                               
+T　　-　　Print_ppo　 　　　　　プリプロセッサの出力を標準出力にライトする。 
+T　　-　　Print_protos　　　　　標準出力にそれぞれの関数に対するプロトタイプ 
+                                関数ヘッダをライトする。                     
+T　　-　　Print_reg_vars　　　　レジスタにマッピングされた変数をプリントす   
+                                る。                                         
+H　　*　　pro=filename　　　　　プロファイル名を指定する。デフォルト:hc.pro  
+C　　*　　profile　　　　　　　 プロファイル名を指定する。デフォルト:hc.pro  
+P　　　　 Prolog_call　　 　　　それぞれ関数のプロローグの後に呼び出しをおこ 
+                                なう。                                       
+T　　-　　Prototype_conversion_warn                                          
+　　　　　　　　　　　　　　　　プロトタイプ宣言のせいで関数の引数を変換する 
+                                ときに、警告します。                         
+T　　+　　Prototype_override_warnings                                        
+　　　　　　　　　　　　　　　　プロトタイプを使った未定義の関数に対して宣言 
+                                が古い形式の関数定義を無効にするとき、警告し 
+                                ます。                                       
+T　　+　　Public_var_warnings 　エキスポートされる変数すべてに警告メッセージ 
+                                を抑制します。                               
+T　　-　　Push_regsize　　　　　引数を関数に渡す最小の最適化を可能にする。   
+T　　-　　Quiet　　　　　　　　 コンパイルの処理に応じコンパイルの各フェーズ 
+                                を知らせる。                                 
+P　　　　 R_include　　　 　　　プラグマを含んだファイルのディレクトリに関連 
+                                したパス名を取り扱い、コンパイル単位で別のフ 
+                                ァイルのソースをインクルードする。           
+P　　　　 RC_include　　　　　　R_includeの条件形式                          
+T　　-　　Read_only_strings 　　真のリテラルとして文字列リテラルを処理する。 
+T　　+　　Recognize_library 　　ANSIライブラリ関数に対してインラインコードを 
+                                交換する。                                   
+T　　+　　Relative_includes　 　#includeで含まれるファイルのディレクトリに関 
+                                連した#include "filename"のファイル名を探す。
+T　　-　　Remove_BP　　　　 　　スタックフレームレジスタebpの設定/復帰を省   
+                                く。                                         
+H　　-　　retwc　　　　　　　　 エラー数に加えて、戻り値の警告数をインクルー 
+                                ドする。                                     
+P　　　　 Skip　　　　　　　　　トグルListがOnのとき、リストに空行を挿入す   
+                                る。                                         
+P　　　　 Static_segment　　　　定義された変数セグメントを指定する。         
+T　　-　　Struct_by_value_warnings                                           
+　　　　　　　　　　　　　　　　structあるいはunionに値を渡すとき、警告メッセ
+                                ージを生成する。                             
+E　　　　 SWAPTMP　　　　　　　 スワップファイルのディレクトリを指定する。デ 
+                                フォルト:現在のディレクトリ                  
+P　　*　　Title　　　　　　　　 トグルListがOnのとき、それぞれページにタイト 
+                                ルを設定する。デフォルト:なし                
+H　　*　　tmpi1=filename　　　　命令ファイルの場所を指定する。               
+　　　　　　　　　　　　　　　　デフォルト:"tmp1001#.tmp"                    
+H　　*　　tmpi2=filename　　　　中間言語ファイルの場所を指定する。           
+　　　　　　　　　　　　　　　　デフォルト:"tmp2002#.tmp"                    
+H　　　　 tmptp=filename　　　　tree-pagingファイルに対してドライブとファイル
+                                名を指定する。                               
+CE　　　　TOOLSDIR　　　　　　　リンカとアセンブラを含むディレクトリを指定す 
+                                る。                                         
+H　　*　　tpages=n　　　　　　　tree-pageバッファの最大数を指定する。デフォル
+                                ト:ホストによる                              
+T　　-　　Trigraphs　　　　　　 ANSIトリグラフを可能にする。                 
+D　　　　 Uname　　　　　　　　 マクロの初期化定義を削除する。               
+T　　+　　Use_push_CS_call　　　far呼び出しリンケージで"push cs; call P"を使 
+                                う。                                         
+T　　+　　Use_reciprocal_for_divide                                          
+　　　　　　　　　　　　　　　　定数による除算を逆数定数による乗算に変換す   
+                                る。                                         
+T　　+　　Use_short_calls　 　　ローカル関数にsmallコードモデルリンクを使う。
+T　　+　　Use_x87_for_result                                                 
+　　　　　　　　　　　　　　　　80x87スタックのトップで浮動小数点の結果を返  
+                                す。                                         
+C　　*　　USERLIBxxxx=pathname　リンクするライブラリのパス名。デフォルト:なし
+D　　-　　v　　　　　　　　　　 サブプロセスが実行しはじめるとき、サブプロセ 
+                                スの名称を表示する。                         
+H　　*　　Vhost　　　　　　　　 ドライバが呼び出すコンパイラ名。             
+                                デフォルト:hcd386                            
+D　　-　　w　　　　　　　　　　 警告メッセージを抑制する。                   
+H　　-　　+w　　　　　　　　　　明示的にトグルがOffでなければ、警告メッセージ
+                                をだす。                                     
+T　　+　　Warn　　　　　　　　　警告メッセージを可能にする。                 
+P　　　　 WTbase　　　　　　　　WeitekABACUS数値演算コプロセッサのベースアド 
+                                レスを設定する。                             
+P　　　　 WTRSVD1　　　　　　　 非volatile Weitekレジスタをセットする。      
+H　　　　 xref[=filename]　　 　クロスリファレンスのための情報ファイルを生成 
+                                する。                                       
+                                                                             
+-----------------------------------------------------------------------------
+2.　グループ別トグル使用法                                                   
+-----------------------------------------------------------------------------
+                                                                             
+ ハードウェア関連:　ハードウェア仕様に関するトグル                           
+                                                                             
+   387                                                                       
+   486                                                                       
+   1167                                                                      
+   3167                                                                      
+   EMC87                                                                     
+   Floating_point                                                            
+   Use_reciprocal_for_divide                                                 
+   Use_x87_for_result                                                        
+                                                                             
+ 互換性と移植性:　High Cでコンパイルされたプログラムと他の言語、他のCコンパイ
+                ラ間とリンカの互換性を向上し，移植性のよいコードを生成するた 
+                めの援助をおこなうトグル                                     
+                                                                             
+   Align_members                                                             
+   Char_default_unsigned                                                     
+   Char_is_rep                                                               
+   Downshift_file_names                                                      
+   Emit_PL_seg_attrs                                                         
+   Int_function_warnings                                                     
+   Long_enums                                                                
+   Make_externs_global                                                       
+   Parm_warnings                                                             
+   PCC                                                                       
+   PCC_msgs                                                                  
+   Pointers_compatible                                                       
+   Pointers_compatible_with_ints                                             
+   Print_protos                                                              
+   Prototype_conversion_warn                                                 
+   Prototype_override_warnings                                               
+   Recognize_library                                                         
+   Relative_includes                                                         
+   Struct_by_value_warnings                                                  
+   Trigraphs                                                                 
+                                                                             
+ デバッグ:　デバッグ情報を生成するためにコンパイラに指示をおこなうトグル     
+                                                                             
+   Asm                                                                       
+   Check_stack                                                               
+   Codeview                                                                  
+   Emit_line_records                                                         
+   Emit_line_table                                                           
+   Emit_names                                                                
+   Flexview                                                                  
+   List                                                                      
+   MS_OBJ                                                                    
+   OS2_OBJ                                                                   
+   Print_ppo                                                                 
+   Print_reg_vars                                                            
+   Prototype_conversion_warn                                                 
+   Prototype_override_warnings                                               
+                                                                             
+ デバッグ時オフ:                                                             
+                                                                             
+   Callee_pops_when_possible                                                 
+   Optimize_for_space                                                        
+   Optimize_FP                                                               
+   Optimize_xjmp                                                             
+   Optimize_xjmp_space                                                       
+   Postpone_arg_pops                                                         
+                                                                             
+ プログラム開発:　コンパイルでのシステム/アプリケーション仕様を制御するトグル
+                                                                             
+   486                                                                       
+   Relative_includes                                                         
+                                                                             
+ 組み込みアプリケーション:　組み込みアプリケーションを指示するトグル         
+                                                                             
+   Auto_init_in_code                                                         
+   Const_in_code                                                             
+   Literals_in_code                                                          
+   Read_only_strings                                                         
+                                                                             
+ 浮動小数点演算:　浮動小数点演算を制御するトグル                             
+                                                                             
+   387                                                                       
+   1167                                                                      
+   3167                                                                      
+   Double_math_only                                                          
+   Double_return                                                             
+   EMC87                                                                     
+   Floating_point                                                            
+   FP_tos                                                                    
+   Use_reciprocal_for_divide                                                 
+   Use_x87_for_result                                                        
+                                                                             
+ リスト出力:　コンパイラのリスト出力に影響を与えるトグル                     
+                                                                             
+   Asm                                                                       
+   List                                                                      
+   Print_ppo                                                                 
+   Print_protos                                                              
+   Print_reg_vars                                                            
+   Quiet                                                                     
+                                                                             
+ 最適化:　分類された最適化を指定/非指定するトグル                            
+                                                                             
+   Align_all_labels                                                          
+   Align_labels                                                              
+   Aline_routines                                                            
+   Align_members                                                             
+   Callee_pops_when_possible                                                 
+   Double_math_only                                                          
+   Double_return                                                             
+   Fp_tos                                                                    
+   Literals_in_code                                                          
+   Optimize_for_space                                                        
+   Optimize_FP                                                               
+   Optimize_xjmp                                                             
+   Optimize_xjmp_space                                                       
+   Postpone_arg_pops                                                         
+   Push_regsize                                                              
+   Recognize_library                                                         
+   Remove_BP                                                                 
+   Use_push_CS_call                                                          
+   Use_reciprocal_for_divide                                                 
+   Use_short_calls                                                           
+   Use_x87_for_result                                                        
+                                                                             
+ 警告:　コンパイラが生成する警告メッセージの種類を制御するトグル             
+                                                                             
+   Int_function_warnings                                                     
+   Parm_warnings                                                             
+   PCC_msgs                                                                  
+   Prototype_conversion_warn                                                 
+   Prototype_override_warnings                                               
+   Public_var_warnings                                                       
+   Struct_by_value_warnings                                                  
+   Warn                                                                      
+                                                                             
+-----------------------------------------------------------------------------
+3.　ライブラリ関数                                                           
+-----------------------------------------------------------------------------
+                                                                             
+ ANSI　　　　　　―　　　ANSI標準に準拠する                                  
+ _Extra-ANSI　 　―　　　ANSI標準に矛盾しない拡張をおこなう                  
+ 　　　　　　　　　　　　先頭のアンダスコアは必須である                      
+  _Non_ANSI 　 　―　　　ANSI標準に拡張する                                  
+  <optional>　 　―　　　インクルードが必要でないヘッダファイル              
+ <required>　　  ―　　　インクルードが必要なヘッダファイル                  
+ intrinsic　　　 ―　　　コンパイライントリンシック関数、定数                
+                                                                             
+ 　　　　　　 void abort(void);　　　　　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　　　_abs( x);　　　　　　　　　　　　　　　　　　  　intrinsic
+                                                                             
+ 　　　　　　　int abs(int i);　　　　　　　　　　　　　　　　　   <stdlib.h>
+                                                                             
+ 　　　　　　　int _access(char *path, int mode);　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　 double acos(double x);　　　　　　　　　　　　　　　  　 <math.h>
+                                                                             
+ 　　　　　 void * _alloca (size_t space);　　　　　　 　　　　　　<malloc.h>
+                                                                             
+ 　　　　　 char * asctime(const struct tm *timeptr);　　　　　　　　<time.h>
+                                                                             
+ 　　　　　 double asin(double x);　　　　　　　　　　　　　　　  　 <math.h>
+                                                                             
+ 　　　　　　 void assert(int expression);　　　　　　　　　　　   <assert.h>
+                                                                             
+ 　　　　　 double atan(double x);　　　　　　　　　　　　　　　  　 <math.h>
+                                                                             
+ 　　　　　 double atan2(double y, double x);　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　　int atexit(void ( *func)(void));　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　 double atof(const char *npty);　　　　　　　　　　　   <stdlib.h>
+                                                                             
+ 　　　　　　　int atoi(const char *npty);　　　　　　　　　　　   <stdlib.h>
+                                                                             
+ 　　　　 long int atol(const char *npty);　　　　　　　　　　　   <stdlib.h>
+                                                                             
+ 　　　　　　　int _bdos(int funmber ,　　　　　　　　　　　　　  　　<dos.h>
+　　　　　　　　　　　　　 unsigned int dxreg,                               
+　　　　　　　　　　　　　 unsigned int alreg);                              
+                                                                             
+ 　　　　　　void * bsearch(const void *key, const void *base, 　　<stdlib.h>
+　　　　　　　　　　　　　　 size_t nmemb, size_t size,                      
+　　　　　　　　　　　 int (*compar) (const void *datal,                     
+　　　　　　　　　　　　　　　　　　　　　　　const void *data2));           
+                                                                             
+　　　　　　　　　 BUFSIZ　　　　　　　　　　　　　　　　　　　 　　<stdio.h>
+                                                                             
+ 　　　　　　double _cabs(struct complex zebra);　　　　　　 　　　　<math.h>
+                                                                             
+ 　　　　　　void * calloc(size_t nelem,　　　　　　　　　　　　   <stdlib.h>
+　　　　　　　　　　　　　 size_t elsize);                                   
+                                                                             
+ 　　　　　　double ceil(double x);　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+　　　　 　　char * _cgets (char *strptr);　　　 　　　　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　　 int _chdir (char *newpath);　　　　　　　　　　　　<direct.h>
+                                                                             
+ 　　　　　　　 int _chmod (char *path,　　　　　　　　　　　　　　　　<io.h>
+　　　　　　　　　　　　　  int mode);                                       
+                                                                             
+ 　　　　　　　 int _chsize (int handle,　　　　 　　　　　　　　　　　<io.h>
+ 　　　　　　　　　　　　　　long newsize);                                  
+                                                                             
+ 　　　　　　　void clearerr(FILE *stream);　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　clock_t clock(void);　　　　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　　　　　 clock_t　　　　　　　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　　　　　 CLOCKS _PER_SEC　　　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　　　 int _close (int fhandle);　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　　 int _compare(void *p1,　　　　　　 　　　　　　　　 intrinsic
+ 　　　　　　　　　　　　　　void *p2 ,                                      
+ 　　　　　　　　　　　　　　unsigned len);                                  
+                                                                             
+ 　　　　　　double cos(double x);　　　　　　　　　　　　　　　  　 <math.h>
+                                                                             
+ 　　　　　　double cosh(double x);　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　　 int _cprintf (const char *format,...);　　　　　  　<conio.h>
+                                                                             
+ 　　　　　　　 int _cputs (char *strptr);　　　　　　　　　　　  　<conio.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 <sys\types.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<sys\stat.h>
+                                                                             
+ 　　　　　　　 int _creat (char *pathptr,　　　　　　　 　　　　　　　<io.h>
+ 　　　　　　　　　　　　　 int permits);                                    
+                                                                             
+ 　　 unsinged char _crotl(unsigned char value,　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　int amount);                                      
+                                                                             
+ 　　 unsinged char _crotr(unsigned char value,　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　int amount);                                      
+                                                                             
+ 　　　　　　char * ctime(const time_t *timer);　　　　　　　　　　　<time.h>
+                                                                             
+   　　　　　　　　 __DATE__　　　　　　　　　　　　　　　　　　  　intrinsic
+                                                                             
+ 　　　　　 double　difftime(time_t time2,　　　　　　 　　　　　　　<time.h>
+ 　　　　　　　　　　　　　　time_t time1);                                  
+                                                                             
+ 　　　　　　　void _disable(void);　　　　　　　　　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　 div_t div(int number,　　　　　　　　　　 　　　　　   <stdlib.h>
+　 　　　　　　　　　 int denom);                                            
+                                                                             
+ 　　　　　unsigned _dos_allocmem(unsigned size, 　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　　　 unsigend *segment);                    
+                                                                             
+ 　　　　　unsigned _dos_close(int handle);　　　　　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　unsigned _dos_creat(char *path,　　　　　　　　　　　 　　 <dos.h>
+ 　　　　　　　　　　　　　　　unsigned attribute,                           
+ 　　　　　　　　　　　　　　　int *handle);                                 
+                                                                             
+ 　　　　　unsigned _dos_creatnew(char *path,　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　 unsigned attribute,                        
+ 　　　　　　　　　　　　　　　　 int *handle);                              
+                                                                             
+ 　　　　　unsigned _dos_findfirst(char *path,　　　　　　　 　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　　unsigned attributes ,                     
+ 　　　　　　　　　　　　　　　　　struct find_t *buffer);                   
+                                                                             
+  　　　　　unsigned _dos_findnext(struct find_t*);　　　　　　　  　 <dos.h>
+                                                                             
+ 　　　　　unsigned _dos_freemem(unsigned segment);　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　　　void _dos_getdate(struct dosdate_t *date);　 　　  　　<dos.h>
+                                                                             
+   　　　　unsigned _dos_getdiskfree(unsigned drive,　　　　 　　　　 <dos.h>
+　 　　　　　　　　　　　　　　　　　struct diskfree_t *diskinfo);           
+                                                                             
+ 　　　　　　　void _dos_getdrive(unsigned *drive);　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　unsigned _dos_getfileattr(char *path,　　　　　　　　 　　 <dos.h>
+　 　　　　　　　　　　　　　　　　　unsigned *attributes);                  
+                                                                             
+ 　　　　　unsigned _dos_getftime(int handle,　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　 unsigned *date,                            
+ 　　　　　　　　　　　　　　　　 unsigned *time);                           
+                                                                             
+ 　　　　　　　void _dos_gettime(struct dostime_t *time);　 　　  　　<dos.h>
+                                                                             
+ 　　　　　　　void _dos_keep(unsigned retcode,　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　 unsigned memsize);                             
+                                                                             
+ 　　　　　unsigned _dos_open(char *path,　　　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　 unsigned mode,                                 
+ 　　　　　　　　　　　　　　 int *handle);                                  
+                                                                             
+ 　　　　　unsigned _dos_read(int handle,　　　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　 _Far void *buffer,                             
+　　　　　　　 　　　　　　　 unsigned length,                               
+ 　　　　　　　　　　　　　　 unsigned *bytes);                              
+                                                                             
+ 　　　　　unsigned _dos_setblock(unsigned size ,　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　 unsigned segment,                          
+ 　　　　　　　　　　　　　　　　 unsigned *maxsize);                        
+                                                                             
+ 　　　　　unsigned _dos_setdate(struct dosdate_t *date);　 　　  　　<dos.h>
+                                                                             
+ 　　　　　　　void _dos_setdrive(unsigned newdrive,　　　　 　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　 unsigned *drives);                         
+                                                                             
+ 　　　　　unsigned _dos_setfileattr(char *path,　　　　　　 　　　　 <dos.h>
+　 　　　　　　　　　　　　　　　　　unsigned attributes);                   
+                                                                             
+ 　　　　　unsigned _dos_setftime(int handle,　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　　　 unsigned date,                             
+ 　　　　　　　　　　　　　　　　 unsigned time) ;                           
+                                                                             
+ 　　　　　unsigned _dos_settime(struct dostime_t *time);　 　　  　　<dos.h>
+                                                                             
+ 　　　　　unsigned _dos_write(int handle,　　　　　　　　　　 　　　 <dos.h>
+ 　　　　　　　　　　　　　　　_Far void *buffer,                            
+ 　　　　　　　　　　　　　　　unsigned length ,                             
+ 　　　　　　　　　　　　　　　unsigned *bytes);                             
+                                                                             
+ 　　　　　　　 int _dosexterr (struct DOSERROR *buffer);　　　　　　 <dos.h>
+                                                                             
+ 　　　　　　　 int _dup (int handle);　　　　　　　　　　　　 　　　　<io.h>
+                                                                             
+ 　　　　　　　 int _dup2 (int handle1, int handle2);　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　　　　 EDOM　　　　　　　　　　　　　　　　　　 　　　　<math.h>
+                                                                             
+ 　　　　　　　void _enable (void)　　　　　　　　　　　　　 　　　　 <dos.h>
+                                                                             
+ 　　　　　　　 int _eof (int handle);　　　　　　　　　　　 　　　　　<io.h>
+                                                                             
+ 　　　　　　　　　 EOF　　　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　　 ERANGE 　　　　　　　　　　　　　　　　　　　　 <errno.h>
+                                                                             
+ 　　　　　　　　　 errno　　　　　　　　　　　　　　　　　　　　　 <errno.h>
+                                                                             
+ 　　　　　　　 int _execl(char *path,　　　　　　　 　　　　　　 <process.h>
+ 　　　　　　　　　　　　　char *arg0 ,                                      
+ 　　　　　　　　　　　　　char *arg1 ,                                      
+ 　　　　　　　　　　　　　... ,                                             
+ 　　　　　　　　　　　　　char *argN ,                                      
+ 　　　　　　　　　　　　　NULL)                                             
+                                                                             
+ 　　　　　　　 int _execle(char *path,　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *arg0,                                      
+ 　　　　　　　　　　　　　 char *arg1,                                      
+ 　　　　　　　　　　　　　 ... ,                                            
+ 　　　　　　　　　　　　　 char *argN,                                      
+ 　　　　　　　　　　　　　 NULL,                                            
+ 　　　　　　　　　　　　　 char **envp);                                    
+                                                                             
+ 　　　　　　　 int _execlp(　　　　　　　　　　 　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *path,                                      
+ 　　　　　　　　　　　　　 char *arg0,                                      
+ 　　　　　　　　　　　　　 char *arg1,                                      
+ 　　　　　　　　　　　　　 ... ,                                            
+ 　　　　　　　　　　　　　 char *argN,                                      
+ 　　　　　　　　　　　　　 NULL);                                           
+                                                                             
+ 　　　　　　　 int _execlpe(char *path,　　　 　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　　char *arg0,                                     
+ 　　　　　　　　　　　　　　char *arg1,                                     
+ 　　　　　　　　　　　　　　... ,                                           
+ 　　　　　　　　　　　　　　char *argN,                                     
+ 　　　　　　　　　　　　　　NULL,                                           
+ 　　　　　　　　　　　　　　char **envp);                                   
+                                                                             
+ 　　　　　　　 int _execv(char *path,　　　　　　　 　　　　　　 <process.h>
+ 　　　　　　　　　　　　　char **argv);                                     
+                                                                             
+ 　　　　　　　 int _execve(char *path,　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *argv,                                      
+ 　　　　　　　　　　　　　 char **envp);                                    
+                                                                             
+ 　　　　　　　 int _execvp(char *path,　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char **argv);                                    
+                                                                             
+ 　　　　　　　 int _execvpe(char *path,　　　　　　　 　　　　　 <process.h>
+ 　　　　　　　　　　　　　　char **argv,                                    
+ 　　　　　　　　　　　　　　char **envp);                                   
+                                                                             
+ 　　　　　　　void _exit(int status);　　　　　　　　　 　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　void exit(int status);　　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　　　 EXIT_FAILURE　　　 　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　　　 EXIT_SUCCESS　　　 　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　double exp(double x);　 　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　double fabs(double x);　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　　 int fclose(FILE *stream);　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　FILE * _fdopen(int handle,　　　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　const char *type);                                
+                                                                             
+ 　　　　　　　 int feof(FILE *stream);　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int ferror(FILE *stream);　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int fflush(FILE *stream);　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　void _ffree(_Far void *array);　　　　　　 　　　   <malloc.h>
+                                                                             
+ 　　　　　　　 int fgetc(FILE *stream);　　　　　　 　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int _fgetchar (void);　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int fgetpos(FILE *stream,　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　 fpos_t *pos);                                    
+                                                                             
+ 　　　　　　char * fgets(char *s,　　　　　　　　　　　　　　　  　<stdio.h>
+ 　　　　　　　　　　　　 int n,                                             
+ 　　　　　　　　　　　　 FILE *stream);                                     
+                                                                             
+ 　　　　　　　　 __FILE__　　　　　　　　　　　　　　　　　　　  　intrinsic
+                                                                             
+ 　　　　　　　long _filelength (int handle);　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　　　　 FILENAME_MAX　　　　　　　 　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int _fileno(FILE *stream);　　　　　　　　 　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　void _fill_char(void *p,　　　　　　　　 　　　　  　intrinsic
+ 　　　　　　　　　　　　　　　unsigned len,                                 
+ 　　　　　　　　　　　　　　　char fill);                                   
+                                                                             
+ 　　　　　unsigned _find_char(void *p,　　　　　　　 　　　　　  　intrinsic
+ 　　　　　　　　　　　　　　　unsigned search_length ,                      
+ 　　　　　　　　　　　　　　　char search_char);                            
+                                                                             
+ 　　　　　　double floor(double x);　　　　　　　　　　　　　　  　 <math.h>
+                                                                             
+ 　　　　_Far void *_fmalloc(size_t size);　　　　　　　　　　　   <malloc.h>
+                                                                             
+ 　　　　　　double fmod(double x,　　　　　　　　　　　　　　　  　 <math.h>
+ 　　　　　　　　　　　　double y);                                          
+                                                                             
+ 　　　　　　FILE * fopen(const char *pathname,　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　 const char *type);                                 
+                                                                             
+ 　　　　　　　　　 FOPEN_MAX　　　　　　　　　　　　 　　　　　  　<stdio.h>
+                                                                             
+ 　　　　　unsigned _FP_OFF (void _Far *address);　　　　　　　　　 <dos.h>  
+                                                                             
+ 　　　　　　　　　 fpos_t 　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int fprintf(FILE *stream,　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　 const char *format ,...);                        
+                                                                             
+ 　　　　　unsigned _FP_SEG (void _Far *address);　　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　　　 int fputc(int c,FILE *stream);　　　　　　　　　  　<stdio.h>
+                                                                             
+ 　　　　　　　 int _fputchar (int c);　　　　　　　　　　 　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int fputs(const char *s,FILE *stream);　　　　　  　<stdio.h>
+                                                                             
+ 　　　　　size_t fread(void *ptr,　　　　　　　　　　　　　　　  　<stdio.h>
+ 　　　　　　　　　　　 size_t size,                                         
+ 　　　　　　　　　　　 size_t nelem,                                        
+ 　　　　　　　　　　　 FILE *stream);                                       
+                                                                             
+ 　　　　　　　void free(void *ptr);　　　　　　　　　　　　　　   <stdlib.h>
+                                                                             
+ 　　　　　　FILE * freopen(const char *pathname,　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　 const char *type,                                
+ 　　　　　　　　　　　　　 FILE *stream);                                   
+                                                                             
+ 　　　　　　 doube frexp(double x,　　　　　　　　　　　　　　　　　<math.h>
+ 　　　　　　　　　　　　 int *exp);                                         
+                                                                             
+ 　　　　　　　 int fscanf(FILE *stream,　　　　　　　　　　　　  　<stdio.h>
+ 　　　　　　　　　　　　　const char *format);                              
+                                                                             
+ 　　　　　　　 int fseek(FILE *stream,　　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　 long offset,                                       
+ 　　　　　　　　　　　　 int ptrname);                                      
+                                                                             
+ 　　　　　　　 int fsetpos(FILE *stream,　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　 const fpos_t *pos);                              
+                                                                             
+ 　　　　　　FILE * _fsopen(const char *pathname　　　　 　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　 const char *types                                
+ 　　　　　　　　　　　　　 int share_flag);                                 
+                                                                             
+ 　　　　　　　long ftell(FILE *stream);　　　　　 　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　void _ftime (struct timeb *tptr);　　　　　　　　<sys\types.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 <sys\timeb.h>
+                                                                             
+ 　　　　　size_t fwrite(const void *ptr,　　　　　　　　　　　 　　<stdio.h>
+ 　　　　　　　　　　　　size_t size,                                        
+ 　　　　　　　　　　　　size_t nelem,                                       
+ 　　　　　　　　　　　　FILE *stream);                                      
+                                                                             
+ 　　　　　　　 int getc(FILE *stream);　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int _getch (void)　　　　　　　　　　　　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　　 int getchar(void)　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int _getche (void)　　　　　　　　　　 　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　char * _getcwd (char *cwd,　　　　　　　　　　　　　　<direct.h>
+ 　　　　　　　　　　　　　　int maxlen);                                    
+                                                                             
+ 　　　　　　char * getenv(comst char *name);　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　 int _getpid (void);　　　　　　　　　　　　　　　 <process.h>
+                                                                             
+_Far _INTERRPT void (* _getpvect(int intno))(); 　　　 　　　　　　　 <dos.h>
+                                                                             
+_real_int_handler_t _getrvect(int intno);　 　　　　　　　　　　　　  <dos.h>
+                                                                             
+　　　　   　char * gets(char *s); 　 　　　　　　　　　　　　　 　 <stdio.h>
+                                                                             
+ 　　　 struct tm * gmtime(time_t *timer);　　　　　　　　　　　  　 <time.h>
+                                                                             
+ 　　　　　　　　　 HUGE_VAL　　　　　　　　　　　　　　 　　　　　　<math.h>
+                                                                             
+ 　　　　　　double _hypot(double side1,double side2);　　　　　 　　<math.h>
+                                                                             
+ 　　 unsigned char _inb(int port);　　　　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　 unsigned long _ind(int port);　　　　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　　　　　　　　 _inline(...);　　　　　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　　　　　　 int _inp (unsigned port_number);　　　　　 　　　　 <conio.h>
+                                                                             
+ 　　　unsigned int _inpw (unsigned port_number);　　　　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　　void _insb(int port, void *buf, int count);　　　  　intrinsic
+                                                                             
+ 　　　　　　　void _insd(int port, void *buf, int count);　　　  　intrinsic
+                                                                             
+ 　　　　　　　void _insw(int port, void *buf, int count);　　　  　intrinsic
+                                                                             
+ 　　　　　　　 int _int86 (　　　　　　　　　　　　　　　　 　　　　 <dos.h>
+ 　　　　　　　　　　　　　 int intno,                                       
+ 　　　　　　　　　　　　　 union REGS *inreg,                               
+ 　　　　　　　　　　　　　 union REGS *outreg);                             
+                                                                             
+ 　　　　　　　 int _int86x (int intno,　　　　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　union REGS *integ,                              
+ 　　　　　　　　　　　　　　union REGS *outreg ,                            
+ 　　　　　　　　　　　　　　struct SREGS *segregs);                         
+                                                                             
+ 　　　　　　　 int _intdos (union REGS *inreg,　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　union REGS *outreg);                            
+                                                                             
+ 　　　　　　　 int _intdosx (union REGS *inreg,　　　　　　　　 　　 <dos.h>
+ 　　　　　　　　　　　　　　 union REGS *outreg,                            
+ 　　　　　　　　　　　　　　 struct SREGS *segregs);                        
+                                                                             
+ 　　unsigned short _inw(int port);　　　　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　　　　　　　　 _IOFBF　　　　　　　　　　　　　　　　　 　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　　 _IOLBF　　　　　　　　　　　　　　　　　 　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　　 _IONBF　　　　　　　　　　　　　　　　　 　　　 <stdio.h>
+                                                                             
+ 　　　　　　　 int isalnum(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isalpha(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int _isascii(int c);　　　　　　　　　　　　　　 　 <ctype.h>
+                                                                             
+ 　　　　　　　 int _isatty (int handle);　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　　 int iscntrl(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isdigit(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isgraph(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int islower(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int _isodigit(int c);　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isprint(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int ispunct(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isspace(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isupper(int c);　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　　 int isxdigit (int c);　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　char * _itoa (int value,　　　　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　char *target ,                                      
+ 　　　　　　　　　　　　int radix);                                         
+                                                                             
+　　　　　　　　　 jmp_buf　　　　　　　　　　　　　　　 　　　　  <setjmp.h>
+                                                                             
+ 　　　　　　 int _kbhit (void);　　　　　　　　　　　 　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　 int _kill (int pid, int sig);　　　　　　　　　　　　<signal.h>
+                                                                             
+ 　　　　　　long labs(long i);　　　　　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　　 LC_ALL　　　　　　　　　　　　　　　　　　　　 　<locale.h>
+                                                                             
+ 　　　　　　　　 LC_COLLATE　　　　　　　　　　　　　　　　　　 　<locale.h>
+                                                                             
+ 　　　　　　　　 LC_CTYPE　　　　　　　　　　　　　　　　　　　 　<locale.h>
+                                                                             
+ 　　　　　　　　 LC_MONETARY　　　　　　　　　　　　　　　　　　　<locale.h>
+                                                                             
+ 　　　　　　　　 LC_NUMERIC　　　　　　　　　　　　　　　　　　 　<locale.h>
+                                                                             
+ 　　　　　　　　 LC_TIME　　　　　　　　　　　　　　　　　　　　　<locale.h>
+                                                                             
+ 　　　　　　　　 lconv　　　　　　　　　　　　　　　　　　　　　　<locale.h>
+                                                                             
+ 　　　　　double ldexp(double x,　　　　　　　　　　　　　　　　　　<math.h>
+                        int exp);                                            
+                                                                             
+ 　　　　ldiv_t ldiv(long int numerator,　　　　　　　　　　　　   <stdlib.h>
+ 　　　　　　　　　　long int denominator);                                  
+                                                                             
+ 　　　　　　　　 ldiv_t　　　　　　　　　　　　　　　　 　　　　　<stdlib.h>
+                                                                             
+ 　　　　　char * _lfind (char *key,　　　　　　　　　　　　　　   <search.h>
+ 　　　　　　　　　　　　 char *start,                                       
+ 　　　　　　　　　　　　 unsigned int *kount,                               
+ 　　　　　　　　　　　　 unsigned int wid ,                                 
+ 　　　　　　　　　　　　 int (*cmp )(const void *data1,                     
+ 　　　　　　　　　　　　 const void *data2));                               
+                                                                             
+ 　　　　　　　　 __LINE__　　　　　　　　　　　　　　　　　　　  　intrinsic
+                                                                             
+ 　struct lconv * localeconv (void);　　　　　　　　　 　　　　　　<locale.h>
+                                                                             
+ 　　 struct tm * localtime (const time_t *timer);　　　　　　　  　 <time.h>
+                                                                             
+ 　　　　　　 int _locking (int handle,　　　　　　　　　　　 <sys\locking.h>
+ 　　　　　　　　　　　　　 long mode,　　 　　　　　　　　　　　　　　<io.h>
+ 　　　　　　　　　　　　　 long kount);                                     
+                                                                             
+ 　　　　　double log(double x);　　　　　　　　　　　　　　　　 　　<math.h>
+                                                                             
+ 　　　　　double log10(double x);　　　　　　　　　 　　　　　　　　<math.h>
+                                                                             
+  　　　　　　void longjmp(jmp_buf env);　　　　　 　　　　　　　  <setjmp.h>
+ 　　　　　　　　　　　　  int val);                                         
+                                                                             
+ 　 unsigned long _lrotl(unsigned long word,　　　 　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　int amount);                                        
+                                                                             
+ 　 unsigned long _lrotr(unsigned long word,　　　　　 　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　int amount);                                        
+                                                                             
+ 　　　　　　long _lseek (int handle,　　　　　　　　　　　　　　　　　<io.h>
+ 　　　　　　　　　　　　 long from,                                         
+ 　　　　　　　　　　　　 int where);                                        
+                                                                             
+ 　　　　　　　　 L_tmpnam　　　　　　　　　　　　　　　　　　　  　<stdio.h>
+                                                                             
+ 　　　　　char * _ltoa (long value,　　　　　　　　　 　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　char *target,                                     
+ 　　　　　　　　　　　　　int radix);                                       
+                                                                             
+ 　　　　　　void _makepath(char *path,　　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　 char *drive,                                     
+ 　　　　　　　　　　　　　 char *dir,                                       
+ 　　　　　　　　　　　　　 char *fname,                                     
+ 　　　　　　　　　　　　　 char *ext);                                      
+                                                                             
+ 　　　　　void * malloc(size_t size);　　　　　 　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　　　 _max(e-(1), e-(2),...);　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　　　　　　　 _MAXSTRING　　　　　　　　　　　　　　　 　　　　<string.h>
+                                                                             
+ 　　　　　　 int mblen(const char *s, size_t n);　　　　　　 　   <stdlib.h>
+                                                                             
+ 　　　　size_t mbstowcs(wchar_t *pwce, 　　　　　　　　　　　　   <stdlib.h>
+ 　　　　　　　　　　　　const char *s,                                      
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　　 int mbtowc(wchar_t *pwcs,　　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　const char *s,                                      
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　void * _memccpy (void *target,　　　　　　　　　　　　　　<string>
+ 　　　　　　　　　　　　　 void *source,                                    
+ 　　　　　　　　　　　　　 int c,                                           
+ 　　　　　　　　　　　　　 unsigned kount);                                 
+                                                                             
+ 　　　　　void * memchr(const void *s,　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　int c,                                              
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　　void memcmp(const void *s1　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　const void *s2 ,                                    
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　void * memcpy(void *s1,　　　　　　　　 　　　　　　　　<string.h>
+ 　　　　　　　　　　　　const void *s2,                                     
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　　 int _memicmp (void *ptr1,　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　 void *ptr2,                                      
+ 　　　　　　　　　　　　　 unsigned kount);                                 
+                                                                             
+ 　　　　　void * memmove(void *target,　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　 const void *source,                                
+ 　　　　　　　　　　　　 size_t n);                                         
+                                                                             
+ 　　　　　void * memset(void *s,　　　　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　int c,                                              
+ 　　　　　　　　　　　　size_t n);                                          
+                                                                             
+ 　　　　　　　　 _min(e-(1), e-(2),...);　　　　　　　　　　　　　 intrinsic
+                                                                             
+ 　　　　　　 int _mkdir (char *path);　　　　　　　　　　　　　 　<direct.h>
+                                                                             
+ 　　　　　char * _mktemp (char *template);　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　time_t mktime (struct tm *tptr);　　　　　　 　　　　  　 <time.h>
+                                                                             
+ 　　　　　double modf(double value,　　　　　　　　 　　　　　　　　<math.h>
+ 　　　　　　　　　　　double *iptr);                                        
+                                                                             
+ 　　　　　　void _move(void *from,　　　　　　　　　　　　　　　　 intrinsic
+ 　　　　　　　　　　　 void *to,                                            
+ 　　　　　　　　　　　 unsigned len);                                       
+                                                                             
+ 　　　　　　void _movedata (unsigned int from_seg,　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　　unsigned int from_offset,                       
+ 　　　　　　　　　　　　　　unsigned int to_seg,                            
+ 　　　　　　　　　　　　　　unsigned int to_offset,                         
+ 　　　　　　　　　　　　　　unsigned int kount);                            
+                                                                             
+ 　　　　　　void _move_right(void *from　　　　　　　　　　　　  　intrinsic
+ 　　　　　　　　　　　　　　　void *to,                                     
+ 　　　　　　　　　　　　　　　unsigned len);                                
+                                                                             
+ 　　　　　　void _nfree(void *array);　　　　　　　　 　　　　　　<malloc.h>
+                                                                             
+ 　　　　　　void * _nmalloc(size_t size);　　　　　　 　　　　　　<malloc.h>
+                                                                             
+ 　　　　　　　　 NULL　　　　　　　　　　　　　　　　　　 　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 _offsetof(any_struct_type,　　　　　　 　　　　　 intrinsic
+ 　　　　　　　　　　　　　 any_field_name);                                 
+                                                                             
+ 　　　　size_t offsetof(type, identifer); 　　　　　　　　　　　　<stddef.h>
+                                                                             
+ 　　　　　　 int _open (char *pathname,　　　　　　 　　　　　　　 <fcntl.h>
+ 　　　　　　　　　　　　int flags);　　     　　　　　　　　　　　 <types.h>
+                                             　 　　　　　　　　　　  stat.h>
+　　　　　　　　　　　　　　　　　　　　　　   　 　　　　　　　　　   <io.h>
+                                                                             
+ 　　　　　　 int _open (char *pathname,　　　　　　　　　 　　　　 <fcntl.h>
+ 　　　　　　　　　　　　int flags,　　　　　　　　　　　　　　　　 <types.h>
+ 　　　　　　　　　　　　int mode);　　　　　　　　　　　　　　　　　<stat.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　void _outb(int port, int data);　　　　　　　　　　 　 intrinsic
+                                                                             
+ 　　　　　　void _outd(int port, int data);　　　　　　　　　　 　 intrinsic
+                                                                             
+ 　　　　　　int　_outp (unsigned portadr, int data);　　　　　　　 <conio.h>
+                                                                             
+ 　　　　unsigned _outpw (unsigned portadr, int data);　　　　　 　 <conio.h>
+                                                                             
+ 　　　　　　void _outsb(int port, void *buf, int count);　　　　　 intrinsic
+                                                                             
+ 　　　　　　void _outsd(int port, void *buf, int count);　　　　　 intrinsic
+                                                                             
+ 　　　　　　void _outsw(int port, void *buf, int count);　　　　　 intrinsic
+                                                                             
+ 　　　　　　void _outw(int port, int data);　　　　　　　　　　 　 intrinsic
+                                                                             
+ 　　　　　　void perror(const char *s);　　　　　 　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　double pow (double x, double y);　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　 int printf(const char *format, ...); 　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 ptrdiff_t　　　　　　　　　　　 　　　　　　　   <stddef.h>
+                                                                             
+ 　　　　　　 int putc(int c, FILE *stream);　　 　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int _putch (int c);　　　　　　　　　　　　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　 int putchar(int c);　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int _putenv (char *envstring);　　 　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　 int puts (const char *s);　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　void qsort(void *base,　　　　　　　　　　　　　　　　<stdlib.h>
+                        size_t nmemb,                                        
+　　　　　　　　　　　　size_t size,                                         
+　　　　　　　　　　　　int (*cmpar)(const void *data1,                      
+　　　　　　　　　　　　 　　　　　　const void *data2));                    
+                                                                             
+ 　　　　　　 int raise(int n);　　　　　　　　　　　　　　　　　　<signal.h>
+                                                                             
+ 　　　　　　 int rand(void);　　　　　　　　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　　 int _read (int file_handle,　　　　　　　 　　　　  　　 <io.h>
+ 　　　　　　　　　　　　void *bufptr,                                       
+ 　　　　　　　　　　　　unsigned int kount);                                
+                                                                             
+ 　　　　　void * realloc(void *block,　　　　　　 　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　 size_t size);                                      
+                                                                             
+ 　　　　　　 int remove(const char *pathname);　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int rename(const char *old, const char *new);　　　　 <stdio.h>
+                                                                             
+ 　　　　　　void rewind(FILE *stream);　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int _rmdir (char *path);　　　　　　　　　　　　　 　<direct.h>
+                                                                             
+ 　　　　　void * _rmemcpy(void *s1,　　　　　　　　　　　　　　 　<string.h>
+ 　　　　　　　　　　　　　const void *s2,                                   
+ 　　　　　　　　　　　　　size_t n);                                        
+                                                                             
+ 　　unsigned int _rotl(unsigned int word,　　　　 　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　 int amount);                                         
+                                                                             
+ 　　unsigned int _rotr(unsigned int word,　　　　 　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　 int amount);                                         
+                                                                             
+ 　　　　　char * _rstrcpy(char *s1,                                         
+ 　　　　　　　　　　　　　const char *s2);　　　　　　　　　　　　<string.h>
+                                                                             
+ 　　　　　　 int scanf(const char *format, ...);　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　char * _rstrncpy(char *s1,　　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　 const char *s2,                                  
+ 　　　　　　　　　　　　　 size_t n);                                       
+                                                                             
+ 　　　　　　void _searchenv(char *filename,　　　 　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　　char *envvar,                                   
+ 　　　　　　　　　　　　　　char *path);                                    
+                                                                             
+ 　　　　　　　　 SEEK_CURR　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 SEEK_END　　　　　　　　　　　　　　　　　　　 　 <stdio.h>
+                                                                             
+ 　　　　　　　　 SEEK_SET　　　　　　　　　　　　　　　　　　　 　 <stdio.h>
+                                                                             
+ 　　　　　　void _segread (struct SREGS *segregs);　　　　　　　　　 <dos.h>
+                                                                             
+ 　　　　　　void setbuf(FILE *stream, char *buf);　　　　　 　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int setjmp(jmp_buf env);　　　　　　 　　　　　　　　<setjmp.h>
+                                                                             
+ 　　　　　char * setlocale(int category,　　　　　　　　　　　　　<locale.h>
+ 　　　　　　　　　　　　　 const char *locate);                             
+                                                                             
+ 　　　　　　void _setmode(FILE *stream,　　　　　　　　　 　　　　 <stdio.h>
+ 　　　　　　　　　　　　　int mode);                                        
+                                                                             
+ 　　　　　　 int _setpvect(int intno,　　　 　　　　　　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　 _Far _INTERRPT void(*handler)());                
+                                                                             
+ 　　　　　　 int _setrpvectp(int intno,　　　　　　　 　　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　　 _Far _INTERRPT void(*pmhandler)());            
+                                                                             
+ 　　　　　　 int _setrvect(int intno,　　　　　　　　　 　　　　　　 <dos.h>
+ 　　　　　　　　　　　　　 _real_int_handler_t rmhandler);                  
+                                                                             
+ 　　　　　　 int setvbuf(FILE *stream,　　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　 char *buf,                                         
+ 　　　　　　　　　　　　 int mode,                                          
+ 　　　　　　　　　　　　 size_t size);                                      
+                                                                             
+ 　　　　 void(* signal(int sig,　　　　　　　　　　 　　　　　　　<signal.h>
+ 　　　　　　　　　　　 void (*func )(int)))(int);                           
+                                                                             
+ 　　　　　double sin(double x);　　　　　　　　　　　　　　　　 　　<math.h>
+                                                                             
+ 　　　　　double sinh(double x);　　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　　　 size_t　 　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　unsigned _skip_char(void *buf,　　　　　　　 　　　　　  　intrinsic
+ 　　　　　　　　　　　　　　 unsigned search_length ,                       
+ 　　　　　　　　　　　　　　 char search_char);                             
+                                                                             
+ 　　　　　　 int _sopen (char *pathname,　　　　　　　　　　　　　 <fcntl.h>
+ 　　　　　　　　　　　　 int flags,　　 　　　　　　　　　　　　<sys\type.h>
+ 　　　　　　　　　　　　 int shares);　 　　　　　　　　　　　　<sys\stat.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　 <share.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　 int _sopen (char *pathname,　　　　　　　　　　　　　 <fcntl.h>
+ 　　　　　　　　　　　　 int flags,　 　　　　　　　　　　　　 <sys\types.h>
+ 　　　　　　　　　　　　 int shares,　　　　　　　　　　　　　　<sys\stat.h>
+ 　　　　　　　　　　　　 int mode);　 　　　　　　　　　　　　　　 <share.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　 int _spawnl (int mode,　 　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　char *path,                                       
+ 　　　　　　　　　　　　　char *arg0,                                       
+ 　　　　　　　　　　　　　char *arg1,                                       
+ 　　　　　　　　　　　　　... ,                                             
+ 　　　　　　　　　　　　　char *argN,                                       
+ 　　　　　　　　　　　　　NULL);                                            
+                                                                             
+ 　　　　　　 int _spawnle (int mode,　　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *path,                                      
+ 　　　　　　　　　　　　　 char *arg0,                                      
+ 　　　　　　　　　　　　　 char *arg1,                                      
+ 　　　　　　　　　　　　　 ... ,                                            
+ 　　　　　　　　　　　　　 char *argN,                                      
+ 　　　　　　　　　　　　　 NULL,                                            
+ 　　　　　　　　　　　　　 char **envp);                                    
+                                                                             
+ 　　　　　　 int _spawnlp (int mode,　　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *path,                                      
+ 　　　　　　　　　　　　　 char *arg0,                                      
+ 　　　　　　　　　　　　　 char *arg1,                                      
+ 　　　　　　　　　　　　　 ... ,                                            
+ 　　　　　　　　　　　　　 char *argN,                                      
+ 　　　　　　　　　　　　　 NULL);                                           
+                                                                             
+ 　　　　　　 int _spawnlpe (int mode,　　　　　　　 　　　　　　 <process.h>
+ 　　　　　　　　　　　　　　char *path,                                     
+　 　　　　　　　　　　　　　char *arg0,                                     
+   　　　　　　　　　　　　　char *arg1,                                     
+　 　　　　　　　　　　　　　... ,                                           
+　 　　　　　　　　　　　　　char *argN,                                     
+　 　　　　　　　　　　　　　NULL,                                           
+　 　　　　　　　　　　　　　char **envp);                                   
+                                                                             
+ 　　　　　　 int _spawnv (int mode,　　　　　　　 　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　char *path,                                       
+ 　　　　　　　　　　　　　char **argv);                                     
+                                                                             
+ 　　　　　　 int _spawnve (int mode,　　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *path,                                      
+ 　　　　　　　　　　　　　 char **argv,                                     
+ 　　　　　　　　　　　　　 char **envp);                                    
+                                                                             
+ 　　　　　　 int _spawnvp (int mode,　　　　　　　　　　　　　　 <process.h>
+ 　　　　　　　　　　　　　 char *path,                                      
+ 　　　　　　　　　　　　　 char **argv);                                    
+                                                                             
+ 　　　　　　 int _spawnvpe (int mode,　　　　　　　 　　　　　　 <process.h>
+ 　　　　　　　　　　　　　　char *path,                                     
+ 　　　　　　　　　　　　　　char **argv,                                    
+ 　　　　　　　　　　　　　　char **envp);                                   
+                                                                             
+ 　　　　　　void _splitpath (char *path,　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　　 char *drivg,                                   
+ 　　　　　　　　　　　　　　 char *dir,                                     
+ 　　　　　　　　　　　　　　 char *fname,                                   
+ 　　　　　　　　　　　　　　 char *ext);                                    
+                                                                             
+ 　　　　　　 int sprintf(char *s,　　　　　　　　　　　 　　　　　 <stdio.h>
+ 　　　　　　　　　　　　 const char *format, ...);                          
+                                                                             
+ 　　　　　double sqrt(double x);　　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　void srand(unsigned int seed);　　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　unsigned short _srotl (unsigined short word,　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　 int amount);                                     
+                                                                             
+ 　　　　　　 int sscanf(const char *s,　　　　　　　　　　　　　　 <stdio.h>
+   　　　　　　　　　　　const char *format , ...);                          
+                                                                             
+ 　　　　　　 int _stat (char *path,　　　　　　　　　　 　　　 <sys\types.h>
+ 　　　　　　　　　　　　struct stat *buffer);　　　　　 　　　　<sys\stat.h>
+                                                                             
+ 　　　　　　　　 stderr　　　　　　　　　　　 　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 stdin　　　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 stdout　　　　　　　　　　　 　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　char * strcat(char *s1,　　　　　　　　 　　　　　　　　<string.h>
+ 　　　　　　　　　　　　const char *s2);                                    
+                                                                             
+ 　　　　　char * _strcats (int len,　　　　　 　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　 char *s1,                                        
+ 　　　　　　　　　　　　　 const char *s2, ...);                            
+                                                                             
+ 　　　　　char * strchr(const char *s,　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　int c);                                             
+                                                                             
+ 　　　　　　 int strcmp(const char *s1,　　　　　 　　　　　　　　<string.h>
+ 　　　　　　　　　　　　const char *s2);                                    
+                                                                             
+ 　　　　　　 int _strcmpi (const char *s1,　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　 const char *s2);                                 
+                                                                             
+ 　　　　　　 int _stricmp(const char *s1,　　　　　　　 　　　　　<string.h>
+ 　　　　　　　　　　　　　const char *s2);                                  
+                                                                             
+ 　　　　　　 int strcoll(const char *s1, const char *s2);　 　　　<string.h>
+                                                                             
+ 　　　　　char * strcpy(char *s1,　　　　　　　　　　　　　 　　　<string.h>
+ 　　　　　　　　　　　　const char *s2);                                    
+                                                                             
+ 　　　　　size_t strcspn(const char *s1,　　　　　　　　　　　　　<string.h>
+   　　　　　　　　　　　 const char *s2);                                   
+                                                                             
+ 　　　　　char * _strdate(char *sptr);　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　char * _strdup (const char *strptr);　　　　　　　　　　<string.h>
+                                                                             
+ 　　　　　char * strerror(int errnum);　　　　　　　　　　　　　　<string.h>
+                                                                             
+ 　　　　　char * _strerror(char *string);　　　　　　　　　　　   <string.h>
+                                                                             
+ 　　　　　size_t strftime(char *s,　　　　　　　　　　　　　　　　　<time.h>
+                           size_t maxsize,                                   
+　　　　　　　　　　　　   const *format,                                    
+　　　　　　　　　　　　   const struct tm *timeptr);                        
+                                                                             
+ 　　　　　size_t strlen (const char *s);　　　　　　　　 　　　   <string.h>
+                                                                             
+ 　　　　　char * strlwr (char *strptr);　　　　　　　　　　　　   <string.h>
+                                                                             
+ 　　　　　char * strncat(char *s1,　　　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　 const char *s2,                                    
+ 　　　　　　　　　　　　 size_t n);                                         
+                                                                             
+ 　　　　　char * _strncat(char *s1,　　　　　　　　　　 　　　　　<string.h>
+ 　　　　　　　　　　　　　const char *s2,                                   
+ 　　　　　　　　　　　　　size_t n);                                        
+                                                                             
+ 　　　　　　 int strncmp(const char *s1,　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　 const char *s2,                                    
+ 　　　　　　　　　　　　 size_t n);                                         
+                                                                             
+ 　　　　　char * strncpy(char *s1,　　　　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　 const char *s2,                                    
+ 　　　　　　　　　　　　 size_t n);                                         
+                                                                             
+ 　　　　　　 int _strnicmp (const char *s1,　　　　 　　　　　　　<string.h>
+ 　　　　　　　　　　　　　　const char *s2,                                 
+ 　　　　　　　　　　　　　　size_t kount);                                  
+                                                                             
+ 　　　　　char * _strnset (char *strpty,　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　　 int c,                                           
+ 　　　　　　　　　　　　　 size_t kount);                                   
+                                                                             
+ 　　　　　char * strpbrk(const char *s1,　　　　　　　　　　　　　<string.h>
+ 　　　　　　　　　　　　 const char *s2);                                   
+                                                                             
+ 　　　　　char * strrchr (const char *s,　　　　　　　　　　　　　<string.h>
+ 　　　　　　 　　　　　　int c);                                            
+                                                                             
+ 　　　　　char * _strrev (char *strptr);　　　　　　　　　　　　　<string.h>
+                                                                             
+ 　　　　　char * _strset (char *strptr,　　　　　　　　　　　　 　<string.h>
+ 　　　　　　　　　 　　　int c);                                            
+                                                                             
+ 　　　　size_t strspn(const char *s1,　　　　　　　　　　　　　   <string.h>
+ 　　　　　　　　　　　const char *s2);                                      
+                                                                             
+ 　　　　　char * strstr(const char *s1,　　　　　　 　　　　　　　<string.h>
+ 　　　　　　　　　　　　const char *s2);                                    
+                                                                             
+ 　　　　　char * _strtime(char *sptr);　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　double strtod(const char *nptr,　　　　　　　　　　　 　<stdlib.h>
+ 　　　　　　　　　　　　char **endptr);                                     
+                                                                             
+ 　　　　　char * strtok(char *s1,　　　　　　　　　　　　　　 　　<string.h>
+ 　　　　　　　　　　　　const char *s2);                                    
+                                                                             
+ 　　　　　　long strtol(const char *nptr,　　　　　　　　　　 　　<stdlib.h>
+ 　　　　　　　　　　　　char **endptr ,                                     
+ 　　　　　　　　　　　　int base);                                          
+                                                                             
+ 　 unsigned long strtoul(const char *nptr,　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　char **endptr,                                      
+ 　　　　　　　　　　　　int base);                                          
+                                                                             
+ 　　　　　char * _strupr (char *strptr);　　　　　　　　　　　　　<string.h>
+                                                                             
+ 　　　　 size_t strxfrm(char *s1,　　　　　　　　　　　　　　　   <string.h>
+ 　　　　　　　　　　　 const char *s2,                                      
+ 　　　　　　　　　　　 size_t n);                                           
+                                                                             
+ 　　　void _swab (char *from_ptr,　　　　　　　　　　　　　　　   <stdlib.h>
+ 　　　　　　　　　char *to_ptr,                                             
+ 　　　　　　　　　int kount);                                               
+                                                                             
+ 　　　　　　 int system(const char *string);　　　　　　　　　　　<stdlib.h>
+                                                                             
+ 　　　　　double tan(double x);　　　　　　　　　　　　　　　　 　　<math.h>
+                                                                             
+ 　　　　　double tanh(double x);　　　　　　　　　　　　　　　　　　<math.h>
+                                                                             
+ 　　　　　　long _tell (int file_handle);　　　　　　　　　　　  　　 <io.h>
+                                                                             
+ 　　　　　　　　 __TIME__　　　　　　　　　　　　　　　　　　　  　intrinsic
+                                                                             
+ 　　　　time_t time(time_t *timer);　　　　　　　　　　　　　　  　 <time.h>
+                                                                             
+ 　　　　　　　　 time_t　　　　　　　　 　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　　　　 tm　　　　　　　　　　　　　　　　　 　　　　　　　<time.h>
+                                                                             
+ 　　　　　FILE * tmpfile(void);　　　　 　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　　　 TMP_MAX　　　　　　　　　　　　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　char * tmpnam(char *s);　　　　　　　　　　　　　 　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int tolower(int c);　　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　 int _tolower(int c);　　　　　　　　　　　 　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　 int toupper(int c);　　　　　　　　　　　　　　　　　 <ctype.h>
+                                                                             
+ 　　　　　　 int _toupper(int c);　　　　　　　　　　　　　　 　　 <ctype.h>
+                                                                             
+ 　　　　　　void _tzset (void)　　　　　　　　　　　　　　　　　　　<time.h>
+                                                                             
+ 　　　　　char * _ultoa (unsigned long value, 　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　 char *target,                                      
+ 　　　　　　　　　　　　 int radix);                                        
+                                                                             
+ 　　　　　　 int _umask (int permits);　　　　　　　　　　　　 <sys\types.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<sys\stat.h>
+ 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<io.h>
+                                                                             
+ 　　　　　　 int ungetc (int c, FILE *stream);　　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int _ungetch (int c);　　　　　　　　　　　　　　　　 <conio.h>
+                                                                             
+ 　　　　　　 int _unlink (const char *pathname);　　　　　　　　　 <stdio.h>
+                                                                             
+ 　　　　　　 int _utime (char *pathname);　 　　　　　　　　　 <sys\types.h>
+ 　　　　　　　　　　　　 struct utimbuf *newtime);　　　　　　 <sys\utime.h>
+                                                                             
+ 　　　　　　void va_arg(va_list ap, type_spec)　　　　　　　　　　<stdarg.h>
+                                                                             
+ 　　　　　　void va_end(va_list ap);　　　　　　　　　　　　　　　<stdarg.h>
+                                                                             
+ 　　　　　　　　　　　　 va_list　　　　　　　　　　　　　　　　　<stdarg.h>
+                                                                             
+ 　　　　　　void va_start(va_list ap, parmN);　　　 　　　　　　　<stdarg.h>
+                                                                             
+ 　　　　　　 int vfprintf(FILE *stream,　　　　　　　　 　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　const char *format,                               
+ 　　　　　　　　　　　　　va_list arg);                                     
+                                                                             
+ 　　　　　　 int vprintf(const char *format,　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　 va_list arg);                                      
+                                                                             
+ 　　　　　　 int vsprintf(char *s,　　　　　　　　　　　　　　　　 <stdio.h>
+ 　　　　　　　　　　　　　const char *format,                               
+ 　　　　　　　　　　　　　va_list arg);                                     
+                                                                             
+ 　　　　　　　　 wchar_t　　　　　　　　　　　　　　　　　　　　　<stddef.h>
+                                                                             
+ 　　　　size_t wcstombs(char *s,　　　　　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　　const wchar_t *pwcs,                              
+ 　　　　　　　　　　　　　size_t n);                                        
+                                                                             
+ 　　　　　　 int wctomb(char *s,　　　　　　　　　　　　　　　　　<stdlib.h>
+ 　　　　　　　　　　　　wchar_t wchat);                                     
+                                                                             
+ 　　　　　　int _write (int file_handle,　　　　　　　　　　　　　　　<io.h>
+ 　　　　　　　　　　　　 void *bufptr,                                      
+ 　　　　　　　　　　　　 unsigned int kount);                               
+                                                                             
+-----------------------------------------------------------------------------
+4.　fopenフラグ                                                              
+-----------------------------------------------------------------------------
+                                                                             
+ シーケンシャル                                                              
+  r　　　 読みだし用                                                         
+  w　　　 書き込み用                                                         
+  a　　　 書き込み用(ファイルの最後に追加する)                               
+                                                                             
+ ランダム                                                                    
+  r+　　　読みだし用                                                         
+  w+　　　書き込み用                                                         
+  a+　　　書き込み用(ファイルの最後に追加する)                               
+                                                                             
+ ストリームタイプ範囲指定                                                    
+  b　　　 バイナリストリーム                                                 
+  t　　　 テキストストリーム                                                 
+  u　　　 アンバッファーストリーム                                           
+                                                                             
+-----------------------------------------------------------------------------
+5.　fprintfオプション                                                        
+-----------------------------------------------------------------------------
+                                                                             
+ 変換仕様の形式:                                                             
+                                                                             
+   %[Flag_characters][Field_width][Precision][Size] Conversion_character     
+                                                                             
+   %は変換仕様の開始をします。                                               
+                                                                             
+ フラグ文字(Flag_characters)───0個以上                                    
+   -　　　 　　左詰めに                                                      
+   +　　　 　　符号を出力                                                    
+   blank　 　　値が負でなければ、符号部に空白を設定                          
+   #　　　 　　変換形式を使う                                                
+   0 　　　　　ゼロをパッドする                                              
+                                                                             
+ フィールド幅(Field_width)────オプション                                 
+   integer integerフィールド幅                                               
+   *　　　 変換される引数に先だってint引数幅形式、フィールドの幅形式を指定す 
+         る。                                                                
+                                                                             
+ 精度(Precision)───オプション                                             
+   .integer　　　　整数フィールド幅を使用                                    
+   .*　　　　　　　整数引数の前に出力幅を指定しフィールド幅を変換する        
+                                                                             
+ サイズキャラクタ(Size)───0個以上                                         
+   h　　　 short int.                                                        
+   l　　　 long int.                                                         
+   L　　　 long double.                                                      
+                                                                             
+ 変換文字(Conversion-character)───正確に1個                               
+   d,i　　　　　　 符号付き10進数                                            
+   o　　　　　　　 符号無し8進数                                             
+   u　　　　　　　 符号無し10進数                                            
+   x,X　　　　　　 符号無し16進数                                            
+   f　　　　　　　 double,(10進表記)                                         
+   e,E　　　　　　 double,(指数表記)                                         
+   g,G　　　　　　 gのときはf(10進表記)、GのときはE(指数表記)                
+   c　　　　　　　 文字                                                      
+   p　　　　　　　 ポインタ                                                  
+   s　　　　　　　 文字列(char * )                                           
+   n　　　　　　　 整数へのポインタ                                          
+   %　　　　　　　 %を出力                                                   
+                                                                             
+
