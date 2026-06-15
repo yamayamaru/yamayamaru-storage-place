@@ -1,0 +1,11 @@
+set macro source v {accel {Module}}
+set macro assembly v {accel {Module}}
+set macro all v {dis source;accel {Module}}
+set macro all ? {display watch; accel {new}}
+set macro all e {accelerate main data {Memory at}}
+set macro all i {accelerate main run {Trace into}}
+set macro all x {accelerate main run {next sequential}}
+set macro all { } {accelerate main run {step over}}
+set macro all g {accelerate main run {Execute to}}
+set macro all b {accelerate main break {New}}
+set macro all t {accelerate main break {Toggle}}

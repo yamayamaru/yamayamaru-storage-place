@@ -1,0 +1,31 @@
+set macro all F1 {help}
+set macro all F2 {accel main break {toggle}}
+set macro all F3 {accel main code {modules}}
+set macro all F4 {accel main run {Run to Cursor}}
+set macro all F5 {accel main window {Zoom}}
+set macro all F6 {accel main window {Next}}
+set macro all F7 {accel main run {Trace Into}}
+set macro all F8 {accel main run {Step Over}}
+set macro all F9 {accel main run {Go}}
+rem macro all F10 should activate/deactivate menus
+
+rem macro all ALT-F1 previous help topic
+set macro all ALT-F2 {accel main break {New}}
+set macro all ALT-F3 {Window Close}
+set macro all ALT-F4 {accel main undo {undo}}
+set macro all ALT-F5 {accel main window {Application}}
+rem macro all ALT-F6 is unclose a window
+set macro all ALT-F7 {Display Assembly; Trace/Assembly/Into}
+set macro all ALT-F8 {accel main run {Until Return}}
+set macro all ALT-F9 {accel main run {Execute to}}
+set macro all ALT-F10 {Window Popup}
+
+set macro all CTRL-F2 {accel main run {restart}}
+set macro all CTRL-F4 {Print}
+set macro all CTRL-F5 {print {Window Size HotKey not implemented}}
+set macro all CTRL-F7 {display watch; accel {new}}
+set macro all CTRL-LEFT {print {shift starting address up 1 not implemented}}
+set macro all CTRL-RIGHT {print {shift starting address down 1 not implemented}}
+set macro all SHIFT-F1 {print {Help not implemented}}
+set macro all SHIFT-F3 {print {Clip not implemented}}
+set macro all SHIFT-F4 {print {Paste not implemented}}
