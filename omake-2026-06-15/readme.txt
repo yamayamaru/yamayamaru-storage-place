@@ -1,1 +1,4 @@
 Watcom C/C++ Ver10.5Jのデバッグに必要なファイルをまとめてみました
+
+WDJ.HLPというファイルがWDでのデバッグのマニュアルになってます
+今のWindows11では読めませんがWindows3.1やWindows9x、Windows2000などの古いWindowsなら読めると思います
