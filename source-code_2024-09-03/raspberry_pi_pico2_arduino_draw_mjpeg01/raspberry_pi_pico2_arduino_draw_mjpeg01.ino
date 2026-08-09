@@ -17,11 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 
-// SDライブラリはSD by Arduini,SparkFunを使ってます(Ver1.3.0)
-// LCDをspi1で使いSDをspi0で使います
-// また、earlephilhowerのArduinoのArduinoで使う場合は
-// earlephilhowerのArduinoに付属するSDライブラリのSD.hを読み込まないように
-// earlephilhowerのArduinoに付属するSDライブラリのSD.hの名前を変更しました。
+// SDカードのライブラリはPico用Arduinoに付属しているものを使ってください
 #include "SD.h"
 
 #include "JPEGDecoder.h"
@@ -40,13 +36,17 @@
 #define SPI_PORT  spi1
 
 // SDカードではspi0を使います。CSはGP17、SCKはGP18、MOSIはGP19、MISOはGP16を使います
-
-#define SDCARD_SPI_Frequency   8000000
 #define SDCARD_SPI_CS   17
 #define SDCARD_SPI_MISO 16
 #define SDCARD_SPI_MOSI 19
 #define SDCARD_SPI_SCK  18
+#define SDCARD_SPI_PORT spi0
 
+#ifdef ARDUINO_ARCH_MBED
+  MbedSPI spi00 = MbedSPI(SDCARD_SPI_MISO, SDCARD_SPI_MOSI, SDCARD_SPI_SCK);
+#else
+  SPIClassRP2040 spi00 = SPIClassRP2040(SDCARD_SPI_PORT, SDCARD_SPI_MISO, -1, SDCARD_SPI_SCK, SDCARD_SPI_MOSI);
+#endif
 
 #define ILI9341_TFTWIDTH  240
 #define ILI9341_TFTHEIGHT 320
@@ -118,15 +118,11 @@ void setup() {
   spi.begin();
   initDMA();
 
-  SPI.setRX(SDCARD_SPI_MISO);
-  SPI.setTX(SDCARD_SPI_MOSI);
-  SPI.setSCK(SDCARD_SPI_SCK);
-
   tft_setup();
   setRotation(3);
   fillScreen(ILI9341_BLACK);
   delay(1000);
-  if (SD.begin(SDCARD_SPI_Frequency, SDCARD_SPI_CS)) {
+  if (SD.begin(SDCARD_SPI_CS, spi00)) {
     Serial.println("initialization done.");
     root = SD.open("/");
     printDirectory(root, 0);
