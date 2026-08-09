@@ -22,13 +22,9 @@ C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1
 Linuxの場合は下記にあります
 ~/.arduino15/packages/rp2040/hardware/rp2040/4.0.1
 
-
 pico専用ライブラリは下記にあります
 C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries
   
-このプログラムを動かす場合、Spark_funのSDライブラリ(Ver1.3.0)を使うので下記ヘッダーファイルは  
-一時的に名前を変更してください(名前を変更して一時的に読み込まなくする)  
-C:\Users\username\AppData\Local\Arduino15\packages\rp2040\hardware\rp2040\4.0.1\libraries\SD\src\SD.h
 
 今回はテスト用の動画も用意しました
 SDカードに書き込んで実行してください。
