@@ -2,7 +2,7 @@ https://i-satoh.hatenablog.com/entry/65438175
 ここのサイトのMotionJPEGの再生プログラムを参考にしてRaspberry Pi Picoで動画再生のテストをしてみました。
 Pimoroni Pico Plus2でも動作しました(DMAでは動作しませんでした)
 Raspberry Pi Pico及び、Pimoroni Pico Plus2用です。
-動作確認はしてないですがRaspberry Pi Pico2でも動作すると思います。
+Raspberry Pi Pico2でも動作します。
 
 ILI9341のLCD専用になってます。
 ILI9341はSPI接続です。
