@@ -1,6 +1,6 @@
 https://i-satoh.hatenablog.com/entry/65438175
 ここのサイトのMotionJPEGの再生プログラムを参考にしてRaspberry Pi Picoで動画再生のテストをしてみました。
-Pimoroni Pico Plus2でも動作しました(DMAでは動作しませんでした)
+Pimoroni Pico Plus2でも動作しました
 Raspberry Pi Pico及び、Pimoroni Pico Plus2用です。
 Raspberry Pi Pico2でも動作します。
 
