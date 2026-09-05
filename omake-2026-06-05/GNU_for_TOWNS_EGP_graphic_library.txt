@@ -1,0 +1,249 @@
+● TOWNS用GCCライブラリ ------ グラフイックBIOS編
+
+
+(1)EGB BIOSコール関数
+   ･ 頭に*が付いている以外は、High-Cのライブラリと互換｡ 互換ライブラリは
+     T-BIOSのコールと一対一対応している。関数の後の[数値]は，T-BIOSのファン
+     クション番号(AHレジスタに設定する値,16進)である。
+
+(setup operation)
+egb_s1.o
+	EGB_init( char *w, int size)  [00]
+		グラフィックBIOSの初期化
+	EGB_resolution( char *w, int page, int mode ) [01]
+		画面モードの設定
+	EGB_resolutionRAM( char *w, int page, pixel, width, height, char *ram )
+		仮想RAM画面モードの設定
+	EGB_displayStart( char *w, int mode, x, y ) [02]
+		表示開始位置の設定
+*	EGB_displayOffset( char *w, int sx,sy ) [02]
+		表示画面の画面枠内の移動
+*	EGB_screenOffset( char *w, int sx,sy ) [02]
+		VRAM中の表示領域の開始座標
+*	EGB_screenZoom( char *w, int wx,wy ) [02]
+		画面の拡大
+*	EGB_screenWidth( char *w, int wx,wy ) [02]
+		画面の大きさ設定
+	EGB_viewport( char *w, char *param ) [03]
+		ビューポート設定
+*	EGB_viewportRect( char *w, int sx,sy,ex,ey ) [03]
+		ビューポート設定
+	EGB_palette( char *w, int syncf, char *param ) [04]
+		パレットの設定
+*	EGB_setPalette( char *w, int num, int g, int r, ing b ) [04]
+		1つのパレット設定
+	EGB_writePage( char *w, int page ) [05]
+		書き込みページの設定
+	EGB_displayPage( char *w, int prior,page )  [06]
+		表示ページの設定
+
+egb_s2.o
+	EGB_color( char *w, int mode, int color ) [07]
+		描画色の設定(パレットコード)
+*	EGB_foreColor( char *w, int col ) [07]
+		前景色の設定(パレットコード)
+*	EGB_backColor( char *w, int col ) [07]
+		背景色の設定(パレットコード)
+*	EGB_paintColor( char *w, int col ) [07]
+		面塗り色の設定(パレットコード)
+*	EGB_transColor( char *w, int col ) [07]
+		透過色の設定(パレットコード)
+	EGB_colorIGRB( char *w, int mode, int col ) [08]
+		描画色の設定(IGRBコード)
+*	EGB_foreColorIGRB( char *w, int col ) [08]
+		前景色の設定(IGRBコード)
+*	EGB_backColorIGRB( char *w, int col ) [08]
+		背景色の設定(IGRBコード)
+*	EGB_paintColorIGRB( char *w, int col ) [08]
+		面塗り色の設定(IGRBコード)
+*	EGB_transColorIGRB( char *w, int col ) [08]
+		透過色の設定(IGRBコード)
+	EGB_pastel( char *w, int level ) [09]
+		Pastelモード描画の混色比
+	EGB_writeMode( int mode )  [0A]
+		描画モードの設定
+
+egb_s3.o
+	EGB_linePattern( char *w, int mode, pattern ) [0B]
+		線分パターンの設定
+	EGB_paintMode( char *w, int mode ) [0C]
+		ペイントモードの設定
+	EGB_hatchingPattern( char *w, int mode,x,y, char *pat ) [0D]
+		ハッチングパターン設定
+	EGB_tilePattern( char *w, int mode, x, y, char *pat ) [0E]
+		タイルパターン設定
+	EGB_maskRegion( char *w,char *pat ) [0F]
+		画面マスク領域の設定
+	EGB_mask( char *w, int mode ) [10]
+		マスクモードの設定
+	EGB_maskBit( char *w, int bit ) [14]
+		マスクビットの設定
+
+egb_s4.o
+	EGB_pen( char *w, int penmode ) [11]
+		描画ペンのモード設定
+	EGB_penSize( char *w, int pensize ) [12]
+		描画ペンの太さ設定
+	EGB_penStyle( char *w, char *pattern ) [13]
+		描画ペン形状定義
+
+egb_s5.o
+	EGB_textDirection( char *w, int dir ) [15]
+		文字方向の設定
+	EGB_textDisplayDirection( char *w, int dir ) [16]
+		文字表示方向の設定
+	EGB_textSpace( char *w, int space ) [17]
+		文字間空白の設定
+	EGB_textZoom( char *w, int mode, x, y ) [18]
+		文字拡大率の設定
+	EGB_fontStyle( char *w, int style) [19]
+		字体の設定
+*	EGB_textAttrib( char *w, int mx,my, style, dir,ddir,space ) [**]
+		文字属性の一括設定
+	EGB_superImpose( char *w, int mode ) [1A]
+		スーパーインポーズ
+	EGB_digitize( char *w, int mode) [1B]
+		ディジタイズ
+
+(block operation)
+egb_b1.o
+	EGB_clearScreen( char *w )  [20]
+		VRAM領域の消去
+	EGB_partClearScreen( char *w ) [21]
+		ビューポート領域の消去
+*	EGB_clearVRAM( int page ) [**]
+		VRAMのダイレクトゼロクリア
+
+egb_b2.o
+	EGB_getBlockColor( char *w, char *param ) [22]
+		矩形領域読みだし(色指定)
+	EGB_putBlockColor( char *w, int clip, char *param ) [23]
+		矩形領域書き込み(色指定)
+	EGB_getBlock( char *w, char *param ) [24]
+		矩形領域読みだし(フルカラー)
+	EGB_putBlock( char *w, int clip, char *param ) [25]
+		矩形領域書き込み(フルカラー)
+	EGB_getBlockZoom( char *w, char *param ) [26]
+		矩形領域読みだし(ズーム付)
+	EGB_putBlockZoom( char *w, int clip, char *param ) [27]
+		矩形領域書き込み(ズーム付)
+
+egb_b3.o
+*	EGB_getRectColor( char *w, char *buf,int sx,sy,ex,ey,color) [22]
+		矩形領域読込(色指定)
+*	EGB_putRectColor( char *w, int clip, char *buf, int sx,sy,ex,ey) [23]
+		矩形領域書き込み(色指定)
+*	EGB_getRect( char *w, char *buf, int sx,sy,ex,ey ) [24]
+		矩形領域読込(フルカラー)
+*	EGB_putRect( char *w, int clip, char *buf, int sx,sy,ex,ey ) [25]
+		矩形領域書き込み
+
+egb_b4.o
+	EGB_graphicCursor(int clip, char *param) [28]
+		グラフィックカーソル
+	EGB_maskData( char *w, int clip, char *param ) [29]
+		マスクデータの書き込み
+	EGB_scroll( char *w, int mode, dx, dy ) [2A]
+		全画面スクロール
+	EGB_partScroll( char *w, int mode, dx, dy, char *param ) [2B]
+		部分スクロール
+
+egb_b5.o
+	EGB_region( char *w, int *in,*work,*x,*y,*x2,*y2, char *poly ) [2C]
+		領域設定
+	EGB_copy( char *w, int mode, char *param, char *work ) [2D]
+		画面の複写
+	EGB_rotate( char *w,int mode, char *param,  char *work ) [2E]
+		画面の回転
+	EGB_resolve( char *w, char *work ) [2F]
+		画面のぼかし
+
+ (grahics operation)
+egb_g1.o
+	EGB_pset( char *w, char *parm ) [40]
+		ポイント
+	EGB_connect( char *w, char *param) [41]
+		連続線分
+	EGB_unConnect( char *w, char *param ) [42]
+		不連続線分
+	EGB_polygon( char *w, char *param ) [43]
+		ポリゴン
+	EGB_rectangle( char *w, char *param ) [46]
+		矩形
+	EGB_circle( char *w, char *param ) [47]	
+		円
+
+egb_g2.o
+	EGB_rotatePolygon( char *w, char *param ) [44]
+		回転多角形
+	EGB_triangle( char *w, char *param ) [45]
+		三角形
+	EGB_arc( char *w, char *param ) [48]
+		円弧
+	EGB_fan( char *w, char *param ) [49]
+		扇形
+	EGB_ellipse( char *w, char *param ) [4A]
+		楕円
+	EGB_ellipticArc( char *w, char *param ) [4B]
+		楕円弧
+	EGB_ellipticFan( char *w, char *param ) [4C]
+		楕扇形
+	EGB_bow( char *w, char *param ) [50]
+		弓形(通過3点指定)
+	EGB_semiBow( char *w, char *param ) [51]
+		弓形(半径指定)
+
+egb_g3.o
+	EGB_paint( char *w, char *param ) [4D]
+		ペイント(境界色指定)
+	EGB_closePaint( char *w, char *param ) [4E]
+		ペイント(色変更)
+	EGB_point( char *w, int mode, int x,y , int *result) [4F]
+		ポイント色を得る
+
+egb_g4.o
+*	EGB_singlePset( char *w, int x,y ) [40]
+		一点描画
+*	EGB_singleLine( char *w, int sx,sy,ex,ey ) [41]
+		一本線描画
+*	EGB_box( char *w, int sx,sy,ex,ey ) [46]
+		四角を描く
+*	EGB_maru( char *w, int x,y,r )  [47]
+		まるを描く
+
+ (font operation)
+egb_f1.o
+	EGB_sjisString( char *w, char *param ) [60]
+		漢字文字列
+	EGB_connectSjisString( char *w, char *param ) [61]
+		追加漢字文字列
+	EGB_asciiString( char *w, int font, char *param ) [62]
+		JIS8ビット文字列
+	EGB_connectAsciiString( char *w, int font, char *param ) [63]
+		追加JIS文字列
+	EGB_jisString( char *w, char *param ) [64]
+		JISコード文字列
+	EGB_connectJisString( char *w, char *param ) [65]
+		追加JISコード文字列
+	EGB_anyChar( char *w, int wx,wy,  char *pattern ) [66]
+		任意文字表示
+
+egb_f2.o
+*	EGB_putSjis( char *w, int x,y,  char *str ) [60]
+		文字列の表示
+*	EGB_putSjisAdd( char *w, char *str ) [61]
+		文字列の追加表示
+
+
+(2)グラフィック回りの関数
+
+escreen.o
+
+  void screenterm( char *w )
+
+    画面をMS-DOS互換モードにするルーチンです。プログラムをMS-DOSから起動する
+  場合に、最後に呼び出してください。このルーチンで画面を設定すると、通常の
+  MS-DOSの画面に戻ることができます。
+
+
+
