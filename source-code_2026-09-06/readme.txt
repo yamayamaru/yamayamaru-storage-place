@@ -73,4 +73,25 @@ run386 -nocrt invader
 
 これらのプログラムの使用に当たってはご自分の責任において使用してください
 これらのプログラムで発生したいかなる損害、データの消失、金銭等の責任は一切負いません。
+
+
+
+
+追記
+FMT_DOS.ROMはうんづのところのmkosrom.exeを使って
+FM TOWNS用のMSDOS Ver3.1から作ったものです
+FM TOWNSエミュレータの津軽やうんづで
+津軽の互換ROMセットと使うことができます
+(FMT_DOS.ROMを差し替えて使います。
+ただし、差し替えるとHDDからしか起動できなくなるため、
+TOWNSシステムソフトウェアV2.1が必須になります)
+http://ysflight.in.coocan.jp/FM/towns/FreeTOWNS/ROMS.zip
+
+今のところこのROMイメージを使わないで互換BIOSだけを使うと
+OpenWatcom C Ver2.0でprintf()、sprintf(), fprintf()などを使うとプログラムがハングします
+MSDOS 3.1から作ったFMT_DOS.ROMを差し替えるとprintf()、sprintf(), fprintf()を使っても
+作成したプログラムがハングしなくなります
+OpenWatcom C Ver2.0で作成したプログラムを津軽で動作させるときに
+プログラムによっては80387をオンにしてるとハングする場合があるのでそのときは80387をオフにしてください
+FM TOWNS用のgccであるTOWNS-gppもこのROMイメージを使わないで互換BIOSだけを使うとうまく動作しないようです
 
