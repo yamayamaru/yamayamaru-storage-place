@@ -30,6 +30,7 @@ LinuxのCkermitとのファイル転送
 
 sudo apt-get install ckermit
 
+受信
 Ckermit側はこんな感じ
 $ kermit
 
