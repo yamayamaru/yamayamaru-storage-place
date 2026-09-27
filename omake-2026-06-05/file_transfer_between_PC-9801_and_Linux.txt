@@ -10,7 +10,7 @@ MS-Kermitとプロンプトが出ます
 
 受信は下記のコマンドを打ちます
 set speed 9600
-set recieve packet-length 1000
+set receive packet-length 1000
 set file type binary
 receive
 
