@@ -85,3 +85,7 @@ C-kermit> set flow-control rts/cts
 
 set file type binary
 は送信側で設定が必要
+
+送信が止まってしまう場合は下記のように送信側のパケットの長さを調整してください
+set send packet-length 90
+
