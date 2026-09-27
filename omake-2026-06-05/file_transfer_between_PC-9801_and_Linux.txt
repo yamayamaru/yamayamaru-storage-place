@@ -21,7 +21,10 @@ exitで終了
 send filename
 ディレクトリ移動はcd、ディレクトリ表示はdirです
 
+送信が止まってしまう場合は下記のように送信側のパケットの長さを調整
+set send packet-length 90
 
+WindowsのTeraTermとのファイル転送もできました
 
 
 
