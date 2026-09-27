@@ -1,0 +1,86 @@
+http://www.columbia.edu/kermit/ftp/archives/msvp98b1.lzh
+
+
+
+ファイル転送方法
+
+MSVP98.EXEを起動
+
+MS-Kermitとプロンプトが出ます
+
+受信は下記のコマンドを打ちます
+set speed 9600
+set recieve packet-length 1000
+set file type binary
+receive
+
+ファイル転送が始まります
+exitで終了
+
+送信は下記になります
+send filename
+ディレクトリ移動はcd、ディレクトリ表示はdirです
+
+
+
+
+
+
+LinuxのCkermitとのファイル転送
+
+sudo apt-get install ckermit
+
+Ckermit側はこんな感じ
+$ kermit
+
+C-Kermit> set LINE /dev/ttyUSB0
+C-kermit> set SPEED 9600
+C-kermit> set parity none
+C-kermit> set carrier-watch off
+C-kermit> SET PREFIXING ALL
+C-kermit> SET STREAMING OFF
+C-kermit> set file type binary
+C-kermit> receive
+
+先にCkermitの方をレシーブ状態にしておくこと
+次のような画面が出てからmskermitでsendする
+C-Kermit 9.0.305 OPEN SOURCE: Alpha.02, 19 Sep 2020, raspberrypi [172.16.64.12]
+
+   Current Directory: /home/pi/kermit-test
+Communication Device: /dev/ttyUSB0
+ Communication Speed: 9600
+              Parity: none
+         RTT/Timeout: 02 / 06
+           RECEIVING: MSVP98.EXE => msvp98.exe
+           File Type: TEXT (no translation)
+           File Size: 172584
+        Percent Done: 3   /-
+                          ...10...20...30...40...50...60...70...80...90..100
+ Estimated Time Left: 00:05:02
+  Transfer Rate, CPS: 551
+        Window Slots: 1 of 1
+         Packet Type: D
+        Packet Count: 7
+       Packet Length: 2001
+         Error Count: 0
+          Last Error:
+        Last Message:
+
+X to cancel file, Z to cancel group, <CR> to resend last packet,
+E to send Error packet, ^C to quit immediately, ^L to refresh screen.
+
+送信：
+C-Kermit> set LINE /dev/ttyUSB0
+C-kermit> set SPEED 9600
+C-kermit> set parity none
+C-kermit> set carrier-watch off
+C-kermit> SET PREFIXING ALL
+C-kermit> SET STREAMING OFF
+C-kermit> send hogehoge.dat
+
+高速通信するときはお互いフローコントロールをオンにする
+C-kermit> set flow-control rts/cts
+
+
+set file type binary
+は送信側で設定が必要
