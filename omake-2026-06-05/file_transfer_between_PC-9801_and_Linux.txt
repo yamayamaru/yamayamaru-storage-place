@@ -25,6 +25,7 @@ send filename
 set send packet-length 90
 
 WindowsのTeraTermとのファイル転送もできました
+PC9801は機種によっては19200bpsや38400bpsでもファイル転送可能なようです
 
 
 
@@ -91,4 +92,155 @@ set file type binary
 
 送信が止まってしまう場合は下記のように送信側のパケットの長さを調整してください
 set send packet-length 90
+
+
+
+
+実際に試した例
+(770KBの画像ファイルの転送で試して成功しました)
+
+
+Linux(ubuntu)からPC98
+
+MSVP98を実行
+
+受信：PC98
+set speed 9600
+set parity none
+set file type binary
+set send packet-length 990
+set receive packet-length 1000
+set flow-control rts/cts
+
+receive
+
+
+
+送信：
+
+kermitを実行
+
+C-Kermit> set LINE /dev/ttyUSB0
+C-kermit> set SPEED 9600
+C-kermit> set parity none
+C-kermit> set carrier-watch off
+C-kermit> SET PREFIXING ALL
+C-kermit> SET STREAMING OFF
+C-kermit> set file type binary
+C-kermit> set send packet-length 990
+C-kermit> set receive packet-length 1000
+C-kermit> set flow-control rts/cts
+
+C-kermit> send hogehoge.dat
+
+
+
+
+
+
+
+PC98からLinux(ubuntu)
+
+受信：
+kermitを実行
+
+C-Kermit> set LINE /dev/ttyUSB0
+C-kermit> set SPEED 9600
+C-kermit> set parity none
+C-kermit> set carrier-watch off
+C-kermit> SET PREFIXING ALL
+C-kermit> SET STREAMING OFF
+C-kermit> set file type binary
+C-kermit> set send packet-length 990
+C-kermit> set receive packet-length 1000
+C-kermit> set flow-control rts/cts
+
+receive
+
+
+
+送信：PC98
+
+MSVP98を実行
+
+set speed 9600
+set parity none
+set file type binary
+set send packet-length 990
+set receive packet-length 1000
+set flow-control rts/cts
+
+send hogehoge.dat
+
+
+
+
+
+Windows(TeraTermからPC98)
+
+
+TeraTermの設定
+
+TeraTermのフリーコントロールは設定→シリアルポートの画面で
+・スピード 9600
+・データ    8bit
+・パリティ  none
+・ストップビット 1 bit
+・フロー制御 RTS/CTS
+
+を設定し新しいウインドウで接続を押す
+
+
+受信：PC98
+
+MSVP98を実行
+
+set speed 9600
+set parity none
+set file type binary
+set send packet-length 90
+set receive packet-length 1000
+set flow-control rts/cts
+
+receive
+
+
+
+PC98を受信状態にしてから
+Teratermのファイル→転送→Kermit→送信を選択
+ファイルを選択する画面が開くのでファイルを選択して開くを押す
+
+
+
+
+
+Windows(PC98からTeraTerm)
+
+
+TeraTermの設定
+
+TeraTermのフリーコントロールは設定→シリアルポートの画面で
+・スピード 9600
+・データ    8bit
+・パリティ  none
+・ストップビット 1 bit
+・フロー制御 RTS/CTS
+
+を設定し新しいウインドウで接続を押す
+
+Teratermのファイル→転送→Kermit→受信を選択
+受信待機状態になる
+
+
+
+
+送信：PC98
+set speed 9600
+set parity none
+set file type binary
+set send packet-length 90                  ←ここ注意
+set receive packet-length 1000
+set flow-control rts/cts
+
+send hogehoge.dat
 
