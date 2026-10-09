@@ -64,12 +64,75 @@ MIDI入力可能なバージョンはsocket_to_serial3になります
 
 
 
+
+
 互換BIOSをそのまま使うとEUP Playerでファイル選択が正常にできないです
 うんづのところのMKOSROMでMSDOS Ver3.1から作成したFMT_DOS.ROMを
 互換BIOSのROMの中のFMT_DOS.ROMと差し替えることによりファイル選択が正常にできるようになります
 ただし、MSDOS Ver3.1から作成したFMT_DOS.ROMを使うと今のところ、HDDからしか起動しなくなるようです
 なのでもともとの互換BIOSを用途によって使い分けてください
 うんづのところのMKOSROMでMSDOS Ver3.1から作成したFMT_DOS.ROMも一緒に置いておきます
+
+
+
+
+
+追記 2026/10/10
+
+津軽のMIDIの出力先を変更するのに
+MIDIデバイスIDを調べるツールとして下記のソースコードを置いておきます
+
+win_midireset.cpp
+
+コンパイル方法
+(コンパイルにはVisual Studio CommunityやVisual Studio Build Toolsが必要です)
+
+Visual Studioのx64 Native Tools Command Promptを開きます
+
+ソースコードを任意の場所に置いてcdコマンドでそのディレクトリに移動します
+
+cl /O2 win_midireset.cpp
+
+これでコンパイル可能です
+
+GS Resetと書かれているボタンの左側にあるドロップダウンリストをクリックすると
+MIDIデバイス一覧がでますが、その左側にある番号がMIDIのデバイスIDになります
+この数値で下記のMIDI_MAPPERの部分を書き換えることでMIDIの出力先を変更することができます
+
+
+
+
+津軽のMIDI出力先変更方法
+
+津軽ではMIDI演奏に対応してます
+しかし、MIDIのデバイスIDが0に固定されているため、Microsoft GS Wavetable Synth以外でならすには津軽のソースコードの変更が必要です
+
+TOWNSEMU\src\osdependent\midi\windowsにあるmidi_implement.cppの21行目あたりにある
+midiOutOpen()関数の2番目の引数のMIDI_MAPPERを使いたいMIDIデバイスIDに変更する必要があります
+	if(MMSYSERR_NOERROR==midiOutOpen(
+	    &hMidi,
+	    MIDI_MAPPER,
+	    NULL, // No callback
+	    NULL, // Not needed because no callback
+	    CALLBACK_NULL))
+この部分を
+	if(MMSYSERR_NOERROR==midiOutOpen(
+	    &hMidi,
+	    1,
+	    NULL, // No callback
+	    NULL, // Not needed because no callback
+	    CALLBACK_NULL))
+
+ここでは仮に1としてます
+
+コンパイルはVisual Studio CommunityやVisual Studio Build Toolsをインストールすることで自分でビルドすることが可能です
+
+https://github.com/captainys/TOWNSEMU
+
+津軽のビルド方法はここに書かれてます
+https://github.com/captainys/TOWNSEMU#build-instruction
+
+
 
 
 
