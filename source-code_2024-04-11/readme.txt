@@ -134,6 +134,22 @@ https://github.com/captainys/TOWNSEMU#build-instruction
 
 
 
+EUPプレイヤーはRS-MIDIの出力に対応してます
+コマンドラインでは
+run386 d:\T_TOOL\EUP_PLAY.EXP -port RS
+
+でRS-MIDI状態で起動します
+また、EUPプレイヤーを起動してから左上の方のMIDI OUTPORTでRSをクリックしても
+RS-MIDIに出力されるようになります
+
+
+
+FM TOWNS用のWindows3.1にはRS-MIDI用のドライバが入っているので
+それをコントロールパネル→ドライバから追加ボタンを押してインストールすることでRS-MIDIが使えるようになります
+RS-MIDIのドライバは設定で「MIDIで使用」、「通信で使用」と切り替えられるので
+MIDIを使うときは「MIDIで使用」にしておきます
+
+
 
 
 これらのプログラムの使用に当たってはご自分の責任において使用してください
