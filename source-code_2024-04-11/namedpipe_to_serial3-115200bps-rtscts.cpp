@@ -87,7 +87,7 @@ int serial01(){
     GetCommState(hComPort, &dcb);              // 現在の設定値を読み込み
     dcb.DCBlength = sizeof(DCB);               // DCBのサイズ
     dcb.BaudRate = 115200;                      // ボーレート:115200bps
-    //dcb.BaudRate = 921600;                      // ボーレート:921600bps
+    //dcb.BaudRate = 460800;                      // ボーレート:460800bps
     dcb.ByteSize = 8;                          // データサイズ:8bit
     dcb.fBinary = TRUE;                        // バイナリモード:通常TRUE
     dcb.fParity = FALSE;                       // パリティビット:パリティビットなし
