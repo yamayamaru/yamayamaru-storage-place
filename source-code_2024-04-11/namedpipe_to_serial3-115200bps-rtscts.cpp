@@ -1,5 +1,5 @@
 //
-//    FM TOWNSエミュレータの津軽でTCP/IPに飛ばしたRS232Cデータを受けてRS232Cに流すプログラム
+//    NekoProject21/wからPIPEに飛ばしたRS232Cデータを受けてRS232Cに流すプログラム
 //
 #include <windows.h>
 #include <stdio.h>
@@ -157,14 +157,6 @@ int serial01(){
     }
 
 
-
-
-
-
-
-
-
-
     hPipe = 0;
 
     //接続
@@ -230,7 +222,7 @@ int serial01(){
 
 unsigned int _stdcall ConsoleToSerial(void *data) {
 
-    char buffer[512 + 1], buffer2[512 + 1];
+    char buffer[512 + 10], buffer2[512 + 10];
     char crlfbuf[3] = { 0x0d, 0x0a, 0x00 };
     int SendSize;
     DWORD writeSize, readSize;
@@ -278,7 +270,7 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
         if (ret_peek_named_pipe) {
           pipe_errorcount01 = 0;
           if (bytesAvailable > 0) 
-            if (ReadFile(hPipe01, buffer, sizeof(buffer) - 1, &bytesRead, NULL)) {
+            if (ReadFile(hPipe01, buffer, sizeof(buffer) - 10, &bytesRead, NULL)) {
                 if (bytesRead > 0) {
                     write_num = 0;
                     rcv_data_size += bytesRead;
@@ -310,7 +302,7 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
         }
 
         // serialからの1文字読み込み
-        ReadFile(hComPort, buffer2, sizeof(buffer2) - 1, &readSize, 0); // シリアルポートに対する読み込み
+        ReadFile(hComPort, buffer2, sizeof(buffer2) - 10, &readSize, 0); // シリアルポートに対する読み込み
         numrcv2 = readSize;
         if (numrcv2 > 0) {
             rcv_data_size2 += numrcv2;
