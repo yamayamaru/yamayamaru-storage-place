@@ -1,5 +1,5 @@
 //
-//    FM TOWNSƒGƒ~ƒ…ƒŒ[ƒ^‚Ì’ÃŒy‚ÅTCP/IP‚É”ò‚Î‚µ‚½RS232Cƒf[ƒ^‚ğó‚¯‚ÄRS232C‚É—¬‚·ƒvƒƒOƒ‰ƒ€
+//    FM TOWNSã‚¨ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ã®æ´¥è»½ã§TCP/IPã«é£›ã°ã—ãŸRS232Cãƒ‡ãƒ¼ã‚¿ã‚’å—ã‘ã¦RS232Cã«æµã™ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
 //
 #include <windows.h>
 #include <stdio.h>
@@ -9,8 +9,8 @@
 
 char *named_pipe_name;
 
-HANDLE hComPort;                               // COMƒ|[ƒg‚Ìƒnƒ“ƒhƒ‹‚ğ“ü‚ê‚é•Ï”
-TCHAR *tchar01;                                // COMƒ|[ƒg‚Ìƒ|[ƒg–¼‚Ì•¶š—ñ‚ğ“ü‚ê‚é•Ï”
+HANDLE hComPort;                               // COMãƒãƒ¼ãƒˆã®ãƒãƒ³ãƒ‰ãƒ«ã‚’å…¥ã‚Œã‚‹å¤‰æ•°
+TCHAR *tchar01;                                // COMãƒãƒ¼ãƒˆã®ãƒãƒ¼ãƒˆåã®æ–‡å­—åˆ—ã‚’å…¥ã‚Œã‚‹å¤‰æ•°
 
 HANDLE hPipe;
 
@@ -26,133 +26,134 @@ struct param01 {
 };
 
 int serial01(){
-    // 1.COMƒ|[ƒg‚ğŠJ‚­
-    hComPort = CreateFile(                     //ƒtƒ@ƒCƒ‹‚Æ‚µ‚Äƒ|[ƒg‚ğŠJ‚­
-             tchar01,                          // ƒ|[ƒg–¼‚ğw‚·ƒoƒbƒtƒ@‚Ö‚Ìƒ|ƒCƒ“ƒ^:COM??‚ğŠJ‚­
-             GENERIC_READ | GENERIC_WRITE,     // ƒAƒNƒZƒXƒ‚[ƒh:“Ç‚İ‘‚«—¼•û‚·‚é
-             0,                                //ƒ|[ƒg‚Ì‹¤—L•û–@‚ğw’è:ƒIƒuƒWƒFƒNƒg‚Í‹¤—L‚µ‚È‚¢
-             NULL,                             //ƒZƒLƒ…ƒŠƒeƒB‘®«:ƒnƒ“ƒhƒ‹‚ğqƒvƒƒZƒX‚ÖŒp³‚µ‚È‚¢
-             OPEN_EXISTING,                    //ƒ|[ƒg‚ğŠJ‚«•û‚ğw’è:Šù‘¶‚Ìƒ|[ƒg‚ğŠJ‚­
-             0,                                //ƒ|[ƒg‚Ì‘®«‚ğw’è:“¯Šú  ”ñ“¯Šú‚É‚µ‚½‚¢‚Æ‚«‚ÍFILE_FLAG_OVERLAPPED
-             NULL                              // ƒeƒ“ƒvƒŒ[ƒgƒtƒ@ƒCƒ‹‚Ö‚Ìƒnƒ“ƒhƒ‹:NULL‚Å‚¢‚¢
+    // 1.COMãƒãƒ¼ãƒˆã‚’é–‹ã
+    hComPort = CreateFile(                     //ãƒ•ã‚¡ã‚¤ãƒ«ã¨ã—ã¦ãƒãƒ¼ãƒˆã‚’é–‹ã
+             tchar01,                          // ãƒãƒ¼ãƒˆåã‚’æŒ‡ã™ãƒãƒƒãƒ•ã‚¡ã¸ã®ãƒã‚¤ãƒ³ã‚¿:COM??ã‚’é–‹ã
+             GENERIC_READ | GENERIC_WRITE,     // ã‚¢ã‚¯ã‚»ã‚¹ãƒ¢ãƒ¼ãƒ‰:èª­ã¿æ›¸ãä¸¡æ–¹ã™ã‚‹
+             0,                                //ãƒãƒ¼ãƒˆã®å…±æœ‰æ–¹æ³•ã‚’æŒ‡å®š:ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¯å…±æœ‰ã—ãªã„
+             NULL,                             //ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£å±æ€§:ãƒãƒ³ãƒ‰ãƒ«ã‚’å­ãƒ—ãƒ­ã‚»ã‚¹ã¸ç¶™æ‰¿ã—ãªã„
+             OPEN_EXISTING,                    //ãƒãƒ¼ãƒˆã‚’é–‹ãæ–¹ã‚’æŒ‡å®š:æ—¢å­˜ã®ãƒãƒ¼ãƒˆã‚’é–‹ã
+             0,                                //ãƒãƒ¼ãƒˆã®å±æ€§ã‚’æŒ‡å®š:åŒæœŸ  éåŒæœŸã«ã—ãŸã„ã¨ãã¯FILE_FLAG_OVERLAPPED
+             NULL                              // ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã¸ã®ãƒãƒ³ãƒ‰ãƒ«:NULLã§ã„ã„
      );
-    if (hComPort == INVALID_HANDLE_VALUE){               //ƒ|[ƒg‚Ìæ“¾‚É¸”s
-        fprintf(stderr, "w’èCOMƒ|[ƒg‚ªŠJ‚¯‚Ü‚¹‚ñ.\n\r");
-        CloseHandle(hComPort);                              //ƒ|[ƒg‚ğ•Â‚¶‚é
+    if (hComPort == INVALID_HANDLE_VALUE){               //ãƒãƒ¼ãƒˆã®å–å¾—ã«å¤±æ•—
+        fprintf(stderr, "æŒ‡å®šCOMãƒãƒ¼ãƒˆãŒé–‹ã‘ã¾ã›ã‚“.\n\r");
+        CloseHandle(hComPort);                              //ãƒãƒ¼ãƒˆã‚’é–‰ã˜ã‚‹
         return 0;
     }
     else{
-        fprintf(stderr, "COMƒ|[ƒg‚Í³í‚ÉŠJ‚¯‚Ü‚µ‚½.\n\r");
+        fprintf(stderr, "COMãƒãƒ¼ãƒˆã¯æ­£å¸¸ã«é–‹ã‘ã¾ã—ãŸ.\n\r");
     }
-    // ƒ|[ƒg‚ğƒtƒ@ƒCƒ‹‚Æ‚İ‚È‚µCreateFile()ŠÖ”‚ğ—p‚¢‚ÄŠJ‚«‚Ü‚·B
-    // ¸”s‚·‚é‚ÆINVALID_HANDLE_VALUE‚ğ•Ô‚µ‚Ü‚·B
-    // ƒ|[ƒg‚Ì‘®«‚Í”ñ“¯ŠúiFILE_FLAG_OVERLAPPEDj‚É‚µ‚½•û‚ª‚¢‚¢‚ç‚µ‚¢‚Å‚·‚ªãè‚­‚¢‚©‚È‚©‚Á‚½‚Ì‚Å“¯Šú’ÊM‚É‚µ‚Ä‚ ‚è‚Ü‚·B
-    // 2.‘—óMƒoƒbƒtƒ@‚Ìİ’è
-    // SetupComm()ŠÖ”‚ğ—p‚¢‚Ä‘—óMƒoƒbƒtƒ@‚Ìİ’è‚ğ‚µ‚Ü‚·B
-    int check;                                  //ƒGƒ‰[ƒ`ƒFƒbƒN—p‚Ì•Ï”
+    // ãƒãƒ¼ãƒˆã‚’ãƒ•ã‚¡ã‚¤ãƒ«ã¨ã¿ãªã—CreateFile()é–¢æ•°ã‚’ç”¨ã„ã¦é–‹ãã¾ã™ã€‚
+    // å¤±æ•—ã™ã‚‹ã¨INVALID_HANDLE_VALUEã‚’è¿”ã—ã¾ã™ã€‚
+    // ãƒãƒ¼ãƒˆã®å±æ€§ã¯éåŒæœŸï¼ˆFILE_FLAG_OVERLAPPEDï¼‰ã«ã—ãŸæ–¹ãŒã„ã„ã‚‰ã—ã„ã§ã™ãŒä¸Šæ‰‹ãã„ã‹ãªã‹ã£ãŸã®ã§åŒæœŸé€šä¿¡ã«ã—ã¦ã‚ã‚Šã¾ã™ã€‚
+    // 2.é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®è¨­å®š
+    // SetupComm()é–¢æ•°ã‚’ç”¨ã„ã¦é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®è¨­å®šã‚’ã—ã¾ã™ã€‚
+    int check;                                  //ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯ç”¨ã®å¤‰æ•°
     check = SetupComm(
-          hComPort,                             //COMƒ|[ƒg‚Ìƒnƒ“ƒhƒ‰
-          1024,                                 //óMƒoƒbƒtƒ@ƒTƒCƒY:1024byte
-          1024                                  //‘—Mƒoƒbƒtƒ@:1024byte
+          hComPort,                             //COMãƒãƒ¼ãƒˆã®ãƒãƒ³ãƒ‰ãƒ©
+          1024,                                 //å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚º:1024byte
+          1024                                  //é€ä¿¡ãƒãƒƒãƒ•ã‚¡:1024byte
      );
     if (check == FALSE){
-        fprintf(stderr, "‘—óMƒoƒbƒtƒ@‚Ìİ’è‚ª‚Å‚«‚Ü‚¹‚ñ.\r\n");
+        fprintf(stderr, "é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®è¨­å®šãŒã§ãã¾ã›ã‚“.\r\n");
         CloseHandle(hComPort);
         return 0;
     }
     else{
-        fprintf(stderr, "‘—óMƒoƒbƒtƒ@‚Ìİ’è‚ªŠ®—¹‚µ‚Ü‚µ‚½.\r\n");
+        fprintf(stderr, "é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®è¨­å®šãŒå®Œäº†ã—ã¾ã—ãŸ.\r\n");
     }
 
 
-    // 3.‘—óMƒoƒbƒtƒ@‚Ì‰Šú‰»
-    // PurgeComm()ŠÖ”‚ğ—p‚¢‚Äo“ü—Í‚·‚×‚Ä‚Ìƒoƒbƒtƒ@‚ğƒNƒŠƒA‚µ‚Ü‚·B
+    // 3.é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ–
+    // PurgeComm()é–¢æ•°ã‚’ç”¨ã„ã¦å‡ºå…¥åŠ›ã™ã¹ã¦ã®ãƒãƒƒãƒ•ã‚¡ã‚’ã‚¯ãƒªã‚¢ã—ã¾ã™ã€‚
     check = PurgeComm(
-          hComPort,                                                       // COMƒ|[ƒg‚Ìƒnƒ“ƒhƒ‰
-          PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR   // o“ü—Íƒoƒbƒtƒ@‚ğ‚·‚×‚ÄƒNƒŠƒA
+          hComPort,                                                       // COMãƒãƒ¼ãƒˆã®ãƒãƒ³ãƒ‰ãƒ©
+          PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR   // å‡ºå…¥åŠ›ãƒãƒƒãƒ•ã‚¡ã‚’ã™ã¹ã¦ã‚¯ãƒªã‚¢
     );
     if (check == FALSE){
-        fprintf(stderr, "‘—óMƒoƒbƒtƒ@‚Ì‰Šú‰»‚ª‚Å‚«‚Ü‚¹‚ñ.\r\n");
+        fprintf(stderr, "é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ–ãŒã§ãã¾ã›ã‚“.\r\n");
         CloseHandle(hComPort);
         return 0;
     } else{
-         fprintf(stderr, "‘—óMƒoƒbƒtƒ@‚Ì‰Šú‰»‚ªŠ®—¹‚µ‚Ü‚µ‚½.\r\n");
+         fprintf(stderr, "é€å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ–ãŒå®Œäº†ã—ã¾ã—ãŸ.\r\n");
     }
 
-    // 4.COMƒ|[ƒg\¬î•ñ‚Ì‰Šú‰»
-    // DCB\‘¢‘Ì‚Å\¬î•ñ‚ğİ’è‚µ‚Ü‚·
-    // ƒ{[ƒŒ[ƒg‚âƒf[ƒ^ƒTƒCƒYAƒpƒŠƒeƒBƒrƒbƒgAƒXƒgƒbƒvƒrƒbƒg‚È‚Ç‚Íƒ}ƒCƒRƒ“‘¤‚Æ‚ ‚í‚¹‚Ä‚­‚¾‚³‚¢B
-    // ‘‚«Š·‚¦‚½Œã‚ÉSetCommState()ŠÖ”‚ÅÄİ’è‚ğs‚¢‚Ü‚·
-    DCB dcb;                                   // \¬î•ñ‚ğ‹L˜^‚·‚é\‘¢‘Ì‚Ì¶¬
-    GetCommState(hComPort, &dcb);              // Œ»İ‚Ìİ’è’l‚ğ“Ç‚İ‚İ
-    dcb.DCBlength = sizeof(DCB);               // DCB‚ÌƒTƒCƒY
-    dcb.BaudRate = 115200;                      // ƒ{[ƒŒ[ƒg:38400bps
-    dcb.ByteSize = 8;                          // ƒf[ƒ^ƒTƒCƒY:8bit
-    dcb.fBinary = TRUE;                        // ƒoƒCƒiƒŠƒ‚[ƒh:’ÊíTRUE
-    dcb.fParity = FALSE;                       // ƒpƒŠƒeƒBƒrƒbƒg:ƒpƒŠƒeƒBƒrƒbƒg‚È‚µ
-    dcb.Parity = NOPARITY;                     // ƒpƒŠƒeƒBƒrƒbƒg: NOPARITY(ƒpƒŠƒeƒB‚È‚µ)
-    dcb.StopBits = ONESTOPBIT;                 // ƒXƒgƒbƒvƒrƒbƒg:1bit
+    // 4.COMãƒãƒ¼ãƒˆæ§‹æˆæƒ…å ±ã®åˆæœŸåŒ–
+    // DCBæ§‹é€ ä½“ã§æ§‹æˆæƒ…å ±ã‚’è¨­å®šã—ã¾ã™
+    // ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‚„ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚ºã€ãƒ‘ãƒªãƒ†ã‚£ãƒ“ãƒƒãƒˆã€ã‚¹ãƒˆãƒƒãƒ—ãƒ“ãƒƒãƒˆãªã©ã¯ãƒã‚¤ã‚³ãƒ³å´ã¨ã‚ã‚ã›ã¦ãã ã•ã„ã€‚
+    // æ›¸ãæ›ãˆãŸå¾Œã«SetCommState()é–¢æ•°ã§å†è¨­å®šã‚’è¡Œã„ã¾ã™
+    DCB dcb;                                   // æ§‹æˆæƒ…å ±ã‚’è¨˜éŒ²ã™ã‚‹æ§‹é€ ä½“ã®ç”Ÿæˆ
+    GetCommState(hComPort, &dcb);              // ç¾åœ¨ã®è¨­å®šå€¤ã‚’èª­ã¿è¾¼ã¿
+    dcb.DCBlength = sizeof(DCB);               // DCBã®ã‚µã‚¤ã‚º
+    dcb.BaudRate = 115200;                      // ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆ:115200bps
+    //dcb.BaudRate = 921600;                      // ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆ:921600bps
+    dcb.ByteSize = 8;                          // ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º:8bit
+    dcb.fBinary = TRUE;                        // ãƒã‚¤ãƒŠãƒªãƒ¢ãƒ¼ãƒ‰:é€šå¸¸TRUE
+    dcb.fParity = FALSE;                       // ãƒ‘ãƒªãƒ†ã‚£ãƒ“ãƒƒãƒˆ:ãƒ‘ãƒªãƒ†ã‚£ãƒ“ãƒƒãƒˆãªã—
+    dcb.Parity = NOPARITY;                     // ãƒ‘ãƒªãƒ†ã‚£ãƒ“ãƒƒãƒˆ: NOPARITY(ãƒ‘ãƒªãƒ†ã‚£ãªã—)
+    dcb.StopBits = ONESTOPBIT;                 // ã‚¹ãƒˆãƒƒãƒ—ãƒ“ãƒƒãƒˆ:1bit
    
-    dcb.fOutxCtsFlow = TRUE ;                  // CTSƒtƒ[§Œä:ƒtƒ[§Œä‚È‚µ
-    dcb.fOutxDsrFlow = FALSE;                  // DSRƒn[ƒhƒEƒFƒAƒtƒ[§ŒäFg—p‚µ‚È‚¢
-    dcb.fDtrControl = DTR_CONTROL_DISABLE;     // DTR—LŒø/–³Œø:DTR–³Œø
-    dcb.fRtsControl = RTS_CONTROL_ENABLE;     // RTSƒtƒ[§Œä:RTS§Œä‚È‚µ
-   // dcb.fOutxCtsFlow = TRUE;                 // CTSƒtƒ[§Œä:ƒtƒ[§Œä‚ ‚è
-   // dcb.fOutxDsrFlow = TRUE;                 // DSRƒn[ƒhƒEƒFƒAƒtƒ[§ŒäFg—p‚·‚é
-   // dcb.fDtrControl = DTR_CONTROL_ENABLE;    // DTR—LŒø/–³Œø:DTR—LŒø
-   // dcb.fRtsControl = RTS_CONTROL_ENABLE;    // RTSƒtƒ[§Œä:RTS§Œä‚ ‚è
+    dcb.fOutxCtsFlow = TRUE ;                  // CTSãƒ•ãƒ­ãƒ¼åˆ¶å¾¡:ãƒ•ãƒ­ãƒ¼åˆ¶å¾¡ãªã—
+    dcb.fOutxDsrFlow = FALSE;                  // DSRãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢ãƒ•ãƒ­ãƒ¼åˆ¶å¾¡ï¼šä½¿ç”¨ã—ãªã„
+    dcb.fDtrControl = DTR_CONTROL_DISABLE;     // DTRæœ‰åŠ¹/ç„¡åŠ¹:DTRç„¡åŠ¹
+    dcb.fRtsControl = RTS_CONTROL_ENABLE;     // RTSãƒ•ãƒ­ãƒ¼åˆ¶å¾¡:RTSåˆ¶å¾¡ãªã—
+   // dcb.fOutxCtsFlow = TRUE;                 // CTSãƒ•ãƒ­ãƒ¼åˆ¶å¾¡:ãƒ•ãƒ­ãƒ¼åˆ¶å¾¡ã‚ã‚Š
+   // dcb.fOutxDsrFlow = TRUE;                 // DSRãƒãƒ¼ãƒ‰ã‚¦ã‚§ã‚¢ãƒ•ãƒ­ãƒ¼åˆ¶å¾¡ï¼šä½¿ç”¨ã™ã‚‹
+   // dcb.fDtrControl = DTR_CONTROL_ENABLE;    // DTRæœ‰åŠ¹/ç„¡åŠ¹:DTRæœ‰åŠ¹
+   // dcb.fRtsControl = RTS_CONTROL_ENABLE;    // RTSãƒ•ãƒ­ãƒ¼åˆ¶å¾¡:RTSåˆ¶å¾¡ã‚ã‚Š
    
-    dcb.fOutX = FALSE;                         // ‘—MXON/XOFF§Œä‚Ì—L–³:‚È‚µ
-    dcb.fInX = FALSE;                          // óMXON/XOFF§Œä‚Ì—L–³:‚È‚µ
-    dcb.fTXContinueOnXoff = TRUE;              // óMƒoƒbƒtƒ@[–”t•XOFFóMŒã‚ÌŒp‘±‘—M‰Â”Û:‘—M‰Â
-    dcb.XonLim = 512;                          // XON‚ª‘—‚ç‚ê‚é‚Ü‚Å‚ÉŠi”[‚Å‚«‚éÅ¬ƒoƒCƒg”:512
-    dcb.XoffLim = 512;                         // XOFF‚ª‘—‚ç‚ê‚é‚Ü‚Å‚ÉŠi”[‚Å‚«‚éÅ¬ƒoƒCƒg”:512
-    dcb.XonChar = 0x11;                        // ‘—MXON•¶š ( ‘—M‰ÂFƒrƒWƒB‰ğœ ) ‚Ìw’è:XON•¶š‚Æ‚µ‚Ä11H ( ƒfƒoƒCƒX§Œä‚PFDC1 )
-    dcb.XoffChar = 0x13;                       // XOFF•¶ši‘—M•s‰ÂFƒrƒW[’Êj‚Ìw’è:XOFF•¶š‚Æ‚µ‚Ä13H ( ƒfƒoƒCƒX§Œä3FDC3 )
+    dcb.fOutX = FALSE;                         // é€ä¿¡æ™‚XON/XOFFåˆ¶å¾¡ã®æœ‰ç„¡:ãªã—
+    dcb.fInX = FALSE;                          // å—ä¿¡æ™‚XON/XOFFåˆ¶å¾¡ã®æœ‰ç„¡:ãªã—
+    dcb.fTXContinueOnXoff = TRUE;              // å—ä¿¡ãƒãƒƒãƒ•ã‚¡ãƒ¼æº€æ¯ï¼†XOFFå—ä¿¡å¾Œã®ç¶™ç¶šé€ä¿¡å¯å¦:é€ä¿¡å¯
+    dcb.XonLim = 512;                          // XONãŒé€ã‚‰ã‚Œã‚‹ã¾ã§ã«æ ¼ç´ã§ãã‚‹æœ€å°ãƒã‚¤ãƒˆæ•°:512
+    dcb.XoffLim = 512;                         // XOFFãŒé€ã‚‰ã‚Œã‚‹ã¾ã§ã«æ ¼ç´ã§ãã‚‹æœ€å°ãƒã‚¤ãƒˆæ•°:512
+    dcb.XonChar = 0x11;                        // é€ä¿¡æ™‚XONæ–‡å­— ( é€ä¿¡å¯ï¼šãƒ“ã‚¸ã‚£è§£é™¤ ) ã®æŒ‡å®š:XONæ–‡å­—ã¨ã—ã¦11H ( ãƒ‡ãƒã‚¤ã‚¹åˆ¶å¾¡ï¼‘ï¼šDC1 )
+    dcb.XoffChar = 0x13;                       // XOFFæ–‡å­—ï¼ˆé€ä¿¡ä¸å¯ï¼šãƒ“ã‚¸ãƒ¼é€šå‘Šï¼‰ã®æŒ‡å®š:XOFFæ–‡å­—ã¨ã—ã¦13H ( ãƒ‡ãƒã‚¤ã‚¹åˆ¶å¾¡3ï¼šDC3 )
    
-    dcb.fNull = FALSE;                          // NULLƒoƒCƒg‚Ì”jŠü:”jŠü‚µ‚È‚¢
-    dcb.fAbortOnError = TRUE;                  // ƒGƒ‰[‚Ì“Ç‚İ‘‚«‘€ìI—¹:I—¹‚·‚é
-    dcb.fErrorChar = FALSE;                    // ƒpƒŠƒeƒBƒGƒ‰[”­¶‚ÌƒLƒƒƒ‰ƒNƒ^iErrorCharj’uŠ·:‚È‚µ
-    dcb.ErrorChar = 0x00;                      // ƒpƒŠƒeƒBƒGƒ‰[”­¶‚Ì’uŠ·ƒLƒƒƒ‰ƒNƒ^
-    dcb.EofChar = 0x03;                        // ƒf[ƒ^I—¹’Ê’mƒLƒƒƒ‰ƒNƒ^:ˆê”Ê‚É0x03(ETX)‚ª‚æ‚­g‚í‚ê‚Ü‚·B
-    dcb.EvtChar = 0x02;                        // ƒCƒxƒ“ƒg’Ê’mƒLƒƒƒ‰ƒNƒ^:ˆê”Ê‚É0x02(STX)‚ª‚æ‚­g‚í‚ê‚Ü‚·
+    dcb.fNull = FALSE;                          // NULLãƒã‚¤ãƒˆã®ç ´æ£„:ç ´æ£„ã—ãªã„
+    dcb.fAbortOnError = TRUE;                  // ã‚¨ãƒ©ãƒ¼æ™‚ã®èª­ã¿æ›¸ãæ“ä½œçµ‚äº†:çµ‚äº†ã™ã‚‹
+    dcb.fErrorChar = FALSE;                    // ãƒ‘ãƒªãƒ†ã‚£ã‚¨ãƒ©ãƒ¼ç™ºç”Ÿæ™‚ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ï¼ˆErrorCharï¼‰ç½®æ›:ãªã—
+    dcb.ErrorChar = 0x00;                      // ãƒ‘ãƒªãƒ†ã‚£ã‚¨ãƒ©ãƒ¼ç™ºç”Ÿæ™‚ã®ç½®æ›ã‚­ãƒ£ãƒ©ã‚¯ã‚¿
+    dcb.EofChar = 0x03;                        // ãƒ‡ãƒ¼ã‚¿çµ‚äº†é€šçŸ¥ã‚­ãƒ£ãƒ©ã‚¯ã‚¿:ä¸€èˆ¬ã«0x03(ETX)ãŒã‚ˆãä½¿ã‚ã‚Œã¾ã™ã€‚
+    dcb.EvtChar = 0x02;                        // ã‚¤ãƒ™ãƒ³ãƒˆé€šçŸ¥ã‚­ãƒ£ãƒ©ã‚¯ã‚¿:ä¸€èˆ¬ã«0x02(STX)ãŒã‚ˆãä½¿ã‚ã‚Œã¾ã™
    
-    check = SetCommState(hComPort, &dcb);      // İ’è’l‚Ì‘‚«‚İ
-    if (check == FALSE){//ƒGƒ‰[ƒ`ƒFƒbƒN
-        fprintf(stderr, "COMƒ|[ƒg\¬î•ñ‚Ì•ÏX‚É¸”s‚µ‚Ü‚µ‚½.\r\n");
+    check = SetCommState(hComPort, &dcb);      // è¨­å®šå€¤ã®æ›¸ãè¾¼ã¿
+    if (check == FALSE){//ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯
+        fprintf(stderr, "COMãƒãƒ¼ãƒˆæ§‹æˆæƒ…å ±ã®å¤‰æ›´ã«å¤±æ•—ã—ã¾ã—ãŸ.\r\n");
         CloseHandle(hComPort);
         return 0;
     } else{
-         fprintf(stderr, "COMƒ|[ƒg\¬î•ñ‚ğ•ÏX‚µ‚Ü‚µ‚½.\r\n");
+         fprintf(stderr, "COMãƒãƒ¼ãƒˆæ§‹æˆæƒ…å ±ã‚’å¤‰æ›´ã—ã¾ã—ãŸ.\r\n");
     }
 
 
-    // 5.ƒ^ƒCƒ€ƒAƒEƒgŠÔ‚Ìİ’è
-    // \¬î•ñ‚Ìİ’è‚Æ—‚½è‡‚Å‚·
-    // COMMTIMEOUTS\‘¢‘Ì‚ğg‚¢AGetCommTimeouts()ŠÖ”‚ÅŠî–{î•ñ‚ğæ“¾‚µA
-    // •ÏX‚µ‚½‚Ì‚¿SetCommTimeouts()ŠÖ”‚Å‘‚«Š·‚¦‚Ä‚¢‚Ü‚·
-    // Še’l‚Í‚æ‚­’m‚è‚Ü‚¹‚ñ‚ª‚±‚ñ‚ÈŠ´‚¶‚ª‘½‚¢‚Å‚·B
+    // 5.ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆæ™‚é–“ã®è¨­å®š
+    // æ§‹æˆæƒ…å ±ã®è¨­å®šã¨ä¼¼ãŸæ‰‹é †ã§ã™
+    // COMMTIMEOUTSæ§‹é€ ä½“ã‚’ä½¿ã„ã€GetCommTimeouts()é–¢æ•°ã§åŸºæœ¬æƒ…å ±ã‚’å–å¾—ã—ã€
+    // å¤‰æ›´ã—ãŸã®ã¡SetCommTimeouts()é–¢æ•°ã§æ›¸ãæ›ãˆã¦ã„ã¾ã™
+    // å„å€¤ã¯ã‚ˆãçŸ¥ã‚Šã¾ã›ã‚“ãŒã“ã‚“ãªæ„Ÿã˜ãŒå¤šã„ã§ã™ã€‚
 
-    COMMTIMEOUTS TimeOut;                            // COMMTIMEOUTS\‘¢‘Ì‚Ì•Ï”‚ğéŒ¾
-    GetCommTimeouts(hComPort, &TimeOut);             // ƒ^ƒCƒ€ƒAƒEƒg‚Ìİ’èó‘Ô‚ğæ“¾
+    COMMTIMEOUTS TimeOut;                            // COMMTIMEOUTSæ§‹é€ ä½“ã®å¤‰æ•°ã‚’å®£è¨€
+    GetCommTimeouts(hComPort, &TimeOut);             // ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆã®è¨­å®šçŠ¶æ…‹ã‚’å–å¾—
    
-    //(óMƒg[ƒ^ƒ‹ƒ^ƒCƒ€ƒAƒEƒg) = ReadTotalTimeoutMultiplier ~ (óM—\’èƒoƒCƒg”) + ReadTotalTimeoutConstant
-    TimeOut.ReadTotalTimeoutMultiplier = 0;          // “Ç‚Ì‚P•¶š‚ ‚½‚è‚ÌŠÔ:ƒ^ƒCƒ€ƒAƒEƒg‚È‚µ
-    TimeOut.ReadTotalTimeoutConstant = 1;         // “ÇƒGƒ‰[ŒŸo—p‚Ìƒ^ƒCƒ€ƒAƒEƒgŠÔ
+    //(å—ä¿¡ãƒˆãƒ¼ã‚¿ãƒ«ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ) = ReadTotalTimeoutMultiplier Ã— (å—ä¿¡äºˆå®šãƒã‚¤ãƒˆæ•°) + ReadTotalTimeoutConstant
+    TimeOut.ReadTotalTimeoutMultiplier = 0;          // èª­è¾¼ã®ï¼‘æ–‡å­—ã‚ãŸã‚Šã®æ™‚é–“:ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãªã—
+    TimeOut.ReadTotalTimeoutConstant = 1;         // èª­è¾¼ã‚¨ãƒ©ãƒ¼æ¤œå‡ºç”¨ã®ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆæ™‚é–“
 
-    //(‘—Mƒg[ƒ^ƒ‹ƒ^ƒCƒ€ƒAƒEƒg) = WriteTotalTimeoutMultiplier ~(‘—M—\’èƒoƒCƒg”) + WriteTotalTimeoutConstant
-    TimeOut.WriteTotalTimeoutMultiplier = 0;         // ‘‚«‚İ‚P•¶š‚ ‚½‚è‚Ì‘Ò‚¿ŠÔ:ƒ^ƒCƒ€ƒAƒEƒg‚È‚µ
-    TimeOut.WriteTotalTimeoutConstant = 1000;        // ‘‚«‚İƒGƒ‰[ŒŸo—p‚Ìƒ^ƒCƒ€ƒAƒEƒgŠÔ
+    //(é€ä¿¡ãƒˆãƒ¼ã‚¿ãƒ«ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ) = WriteTotalTimeoutMultiplier Ã—(é€ä¿¡äºˆå®šãƒã‚¤ãƒˆæ•°) + WriteTotalTimeoutConstant
+    TimeOut.WriteTotalTimeoutMultiplier = 0;         // æ›¸ãè¾¼ã¿ï¼‘æ–‡å­—ã‚ãŸã‚Šã®å¾…ã¡æ™‚é–“:ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãªã—
+    TimeOut.WriteTotalTimeoutConstant = 1000;        // æ›¸ãè¾¼ã¿ã‚¨ãƒ©ãƒ¼æ¤œå‡ºç”¨ã®ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆæ™‚é–“
    
-    check = SetCommTimeouts(hComPort, &TimeOut);     // ƒ^ƒCƒ€ƒAƒEƒgİ’è‚Ì‘‚«Š·‚¦
+    check = SetCommTimeouts(hComPort, &TimeOut);     // ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆè¨­å®šã®æ›¸ãæ›ãˆ
 
-    if (check == FALSE){//ƒGƒ‰[ƒ`ƒFƒbƒN
-        fprintf(stderr, "ƒ^ƒCƒ€ƒAƒEƒg‚Ìİ’è‚É¸”s‚µ‚Ü‚µ‚½.\r\n");
+    if (check == FALSE){//ã‚¨ãƒ©ãƒ¼ãƒã‚§ãƒƒã‚¯
+        fprintf(stderr, "ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆã®è¨­å®šã«å¤±æ•—ã—ã¾ã—ãŸ.\r\n");
         CloseHandle(hComPort);
         return 0;
     }
     else{
-         fprintf(stderr, "ƒ^ƒCƒ€ƒAƒEƒg‚Ìİ’è‚É¬Œ÷‚µ‚Ü‚µ‚½.\r\n");
+         fprintf(stderr, "ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆã®è¨­å®šã«æˆåŠŸã—ã¾ã—ãŸ.\r\n");
     }
 
 
@@ -166,10 +167,10 @@ int serial01(){
 
     hPipe = 0;
 
-    //Ú‘±
+    //æ¥ç¶š
     endflag01 = 0;
     execflag01 = 0;
-    while(1){   //ƒ‹[ƒv‚Å‰ñ‚·‚±‚Æ‚É‚æ‚Á‚Ä‰½“x‚Å‚àƒNƒ‰ƒCƒAƒ“ƒg‚©‚ç‚Â‚È‚®‚±‚Æ‚ª‚Å‚«‚é
+    while(1){   //ãƒ«ãƒ¼ãƒ—ã§å›ã™ã“ã¨ã«ã‚ˆã£ã¦ä½•åº¦ã§ã‚‚ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‹ã‚‰ã¤ãªãã“ã¨ãŒã§ãã‚‹
         unsigned int _stdcall ConsoleToSerial(void *data);
         HANDLE   hThread01 = NULL;
         struct   param01 *p01;
@@ -178,22 +179,22 @@ int serial01(){
             hPipe = CreateNamedPipe(
                 TEXT(named_pipe_name),
                 PIPE_ACCESS_DUPLEX,
-                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, // Ú‘±‘Ò‹@‚Í“¯Šú
+                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, // æ¥ç¶šå¾…æ©Ÿã¯åŒæœŸ
                 1, 1024, 1024, 0, NULL
             );
 
             if (hPipe == INVALID_HANDLE_VALUE) {
-                printf("namedpipe‚Ìƒnƒ“ƒhƒ‹‚ªæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½ : %s\n", named_pipe_name);
+                printf("namedpipeã®ãƒãƒ³ãƒ‰ãƒ«ãŒå–å¾—ã§ãã¾ã›ã‚“ã§ã—ãŸ : %s\n", named_pipe_name);
                 return 1;
             }
         }
 
-        printf("namedpipe:%s‚ÅÚ‘±‚ğ‘Ò‚Á‚Ä‚¢‚Ü‚·\nƒNƒ‰ƒCƒAƒ“ƒgƒvƒƒOƒ‰ƒ€‚ğ“®‚©‚µ‚Ä‚­‚¾‚³‚¢\n", named_pipe_name);
+        printf("namedpipe:%sã§æ¥ç¶šã‚’å¾…ã£ã¦ã„ã¾ã™\nã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚’å‹•ã‹ã—ã¦ãã ã•ã„\n", named_pipe_name);
 
         pipe_errorflag01 = 0;
         if (ConnectNamedPipe(hPipe, NULL) || GetLastError() == ERROR_PIPE_CONNECTED) {
 
-            printf("Ú‘±‚ğó‚¯‚Ü‚µ‚½\n");
+            printf("æ¥ç¶šã‚’å—ã‘ã¾ã—ãŸ\n");
 
             execflag01 = 1;
             p01 = (struct param01 *) malloc(sizeof(struct param01));
@@ -211,9 +212,9 @@ int serial01(){
         };
 
         if (hThread01 != NULL) {
-            // ƒXƒŒƒbƒhI—¹‘Ò‚¿
+            // ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†å¾…ã¡
             WaitForSingleObject(hThread01, INFINITE);
-            // ƒXƒŒƒbƒhíœ
+            // ã‚¹ãƒ¬ãƒƒãƒ‰å‰Šé™¤
             CloseHandle(hThread01);
             hThread01 = NULL;
         }
@@ -229,7 +230,7 @@ int serial01(){
 
 unsigned int _stdcall ConsoleToSerial(void *data) {
 
-    char buffer[512], buffer2[512];
+    char buffer[512 + 1], buffer2[512 + 1];
     char crlfbuf[3] = { 0x0d, 0x0a, 0x00 };
     int SendSize;
     DWORD writeSize, readSize;
@@ -241,7 +242,7 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
     int count, count1, count2, count21;
     int i;
     HANDLE hPipe01;
-    struct timeval t_val = {0, 0};    // 1/1000•b
+    struct timeval t_val = {0, 0};    // 1/1000ç§’
     BOOL ret_peek_named_pipe;
     DWORD bytesAvailable;
     DWORD bytesRead;
@@ -271,7 +272,7 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
 
         if (pipe_errorcount01 > 100) break;
 
-        // namedPipe‚©‚ç“ü—Í‚³‚ê‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN‚·‚é
+        // namedPipeã‹ã‚‰å…¥åŠ›ã•ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ã™ã‚‹
         bytesAvailable = 0;
         ret_peek_named_pipe = PeekNamedPipe(hPipe01, NULL, 0, NULL, &bytesAvailable, NULL);
         if (ret_peek_named_pipe) {
@@ -308,8 +309,8 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
             break;
         }
 
-        // serial‚©‚ç‚Ì1•¶š“Ç‚İ‚İ
-        ReadFile(hComPort, buffer2, 512, &readSize, 0); // ƒVƒŠƒAƒ‹ƒ|[ƒg‚É‘Î‚·‚é“Ç‚İ‚İ
+        // serialã‹ã‚‰ã®1æ–‡å­—èª­ã¿è¾¼ã¿
+        ReadFile(hComPort, buffer2, sizeof(buffer2) - 1, &readSize, 0); // ã‚·ãƒªã‚¢ãƒ«ãƒãƒ¼ãƒˆã«å¯¾ã™ã‚‹èª­ã¿è¾¼ã¿
         numrcv2 = readSize;
         if (numrcv2 > 0) {
             rcv_data_size2 += numrcv2;
@@ -323,7 +324,7 @@ unsigned int _stdcall ConsoleToSerial(void *data) {
         }
     }
     goto_label01:
-    printf("Ú‘±‚ğI—¹‚µ‚Ü‚µ‚½\n\n");
+    printf("æ¥ç¶šã‚’çµ‚äº†ã—ã¾ã—ãŸ\n\n");
     *(p01->pexecflag01) = 0;
     free(p01);
     _endthreadex(0);
@@ -426,7 +427,7 @@ int main(int argc, char **argv)
     } else if (!strcmp(char01, "39")) {
         tchar01 = _T("\\\\.\\COM39");
     } else {
-        fprintf(stderr, "com_port_number‚ª•s³‚Å‚·\n");
+        fprintf(stderr, "com_port_numberãŒä¸æ­£ã§ã™\n");
         exit(0);
     }
   
