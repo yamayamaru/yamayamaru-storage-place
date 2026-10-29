@@ -1,0 +1,6 @@
+system win386
+option quiet
+option map
+option stack=256k
+name hat05p_w
+file hat05p_w.obj
