@@ -10,6 +10,8 @@ binw\wccerrsj.hlp    C Error Messages
 binw\wpperrsj.hlp    C++ Error Messages
 binw\lguidej.hlp     Linker Guide
 binw\toolsj.hlp      Tools Guide
+binw\win31mwh.hlp    Windows 3.1 Multimedia Reference
+binw\win31wh.hlp     Windows 3.1 API Reference
+binw\win31whj.hlp    Windows 3.1 API Reference (Japanese)
 
-
-helpƒtƒ@ƒCƒ‹‚ÍWindows XP‚Æ‚»‚êˆÈ‘O‚ÌWindows‚Å•\¦‰Â”\‚Å‚·
+helpãƒ•ã‚¡ã‚¤ãƒ«ã¯Windows XPã¨ãã‚Œä»¥å‰ã®Windowsã§è¡¨ç¤ºå¯èƒ½ã§ã™
