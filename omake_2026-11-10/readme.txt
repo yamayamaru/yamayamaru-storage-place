@@ -100,6 +100,9 @@ FM TOWNSエミュレータ津軽での実行にあたってclangで作成した�
 また、FM TOWNS用のMSDOS Ver3.1とTOWNS OSからunzのところのmkosromで生成した
 FMT_DOS.ROMで津軽用の互換ROMのFMT_DOS.ROMを上書きしないと実行できないかもしれません
 
+FM TOWNS用のMSDOS Ver3.1とTOWNS OSからunzのところのmkosromで生成したFMT_DOS.ROMを使うとHDDイメージからしか起動できないので
+別途TownsシステムソフトウェアのディスクからTOSNS OSをHDDイメージにインストールする必要があります
+なのでTownsシステムソフトウェアが必要になります
 
 
 これらのプログラムの使用に当たってはご自分の責任において使用してください
