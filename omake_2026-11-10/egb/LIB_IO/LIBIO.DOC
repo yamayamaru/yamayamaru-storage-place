@@ -1,0 +1,105 @@
+● "libt.a"  GNU-C TOWNSライブラリ
+
+                     暫定版リファレンス        1990/10/12 
+                                               by Waku Factory          
+
+
+3.VRAMアクセス関数
+~~~~~~~~~~~~~~~~~~
+
+vram_1.o
+	VRAM_putPixelW( int pos, color ) VRAMへのワード書き込み 
+	VRAM_getPixelW( int pos )  VRAMデータのワード読込
+	VRAM_putPixelB( int pos, color ) VRAMへのバイト書き込み 
+	VRAM_getPixelB( int pos )  VRAMデータのバイト読込
+
+   VRAMのアドレス指定による，アクセス関数。
+   2ページモードでのセレクタ0x104を使用｡
+ 
+vram_2.o
+	VRAM_putPixelW2( int pos, color ) VRAMへのワード書き込み 
+	VRAM_getPixelW2( int pos )  VRAMデータのワード読込
+	VRAM_putPixelB2( int pos, color ) VRAMへのバイト書き込み 
+	VRAM_getPixelB2( int pos )  VRAMデータのバイト読込
+
+   VRAMのアドレス指定による，アクセス関数。
+   単ページモードでのセレクタ0x10Cを使用｡
+
+vram_3.o
+	VRAM_clear( int page ) VRAMのゼロクリア
+
+   ページ指定による，全VRAM領域のゼロクリア｡ 単ページの画面モードの場合は
+ page=0,1の2回呼べば全面クリアされる。
+
+
+4.その他グラフィックまわりの関数
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+5.リアルモード呼出し
+~~~~~~~~~~~~~~~~~~~~
+intdos.o
+
+  レジスタの構造体は"register.h"中で定義されている。
+  
+ int intdos( union REGS *cregs, union REGS *rregs ) 
+ 
+ 	cregs : DOSに渡すレジスタ値
+ 	rregs : DOSから帰るレジスタ値
+ 	
+    DOSの INT 21hシステムコールを発行する。
+    
+ int intreal(int num, union REGS *cregs, union REGS *rregs, 
+		struct SREGS *sregs ) 
+
+        num : INT番号
+        sregs : リアル側に渡すセグメントレジスタ
+    
+    INT XXHを発行して，リアルモードのBIOS等を呼び出す。
+    DOS-ExtenderのINT 21h AX=2511hを使用｡
+    
+ int segread( struct SREGS *seg ) load segment regs
+
+    現在のセグメントレジスタの値を得る。
+    
+ int nativetoreal( char *native,int len, int *seg, int *ofs )
+   
+     native : プロテクトモードアドレス
+     len : アドレスの示す先のデータのサイズ
+     seg,ofs :  リアルモードのセグメントとオフセット
+     
+   プロテクトモードのアドレスから，リアルモードのfarアドレスに変換する。
+   DOS-ExtenderのINT 21h AX=250fhを使用。
+    
+
+6.I/O操作関数
+~~~~~~~~~~~~~
+ioport.o
+
+  int INPB( int addr )
+  int INPW( int addr )
+  void OUTPB( int addr, int data ) 
+  void OUTPW( int addr, int data )
+
+    禁断のハードウェアアクセス関数です。説明不要でしょう。
+
+
+  void CRTC( int reg, int data ) 
+
+    さらに893なCRTCのレジスタを設定する関数です。reg にレジスタ番号､ data に
+  16ビットのデータをセットします。
+
+  
+  int INKEY()
+
+    キーポートのデータを読み取る関数。これはキーのマトリクスアドレスを返すも
+  ので、アスキーコードではないことに注意｡
+
+
+  void LAMP( int data )
+
+    旧TOWNSユーザのみその恩恵にあずかれる、デバッグランプ(またの名をレベルメー
+  タとも言う)を点灯する関数｡ パラメータの下位4ビットが有効｡
+
+
+ 

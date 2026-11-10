@@ -1,0 +1,27 @@
+
+OBJS = egb_b1.o \
+egb_b2.o \
+egb_b3.o \
+egb_b4.o \
+egb_b5.o \
+egb_f1.o \
+egb_f2.o \
+egb_g1.o \
+egb_g2.o \
+egb_g3.o \
+egb_g4.o \
+egb_s1.o \
+egb_s2.o \
+egb_s3.o \
+egb_s4.o \
+egb_s5.o \
+escreen.o
+
+all : $(OBJS)
+
+%.o : %.s
+	gcc -c -v $<
+
+%.o : %.c
+	gcc -c -v $< 
+

@@ -1,0 +1,11 @@
+
+OBJS = ioport.o intdos.o vram_1.o vram_2.o vram_3.o
+
+all : $(OBJS)
+
+%.o : %.s
+	gcc -v -o $<
+
+%.o : %.c
+	gcc -v -o $<
+
