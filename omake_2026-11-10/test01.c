@@ -109,13 +109,13 @@ void mandel(double xcorner, double ycorner, double length, int xdot, int ydot, i
           }
           xx = xx + xgap;
         }
-        putchar('\r\n');
+        printf("\r\n");
         yy = yy + ygap;
         xx = xcorner;
     }
     printf("\033[0m");
-    putchar('\r\n');
-    putchar('\r\n');
+    printf("\r\n");
+    printf("\r\n");
 
 }
 
