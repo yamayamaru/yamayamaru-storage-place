@@ -27,6 +27,11 @@ run386 -nocrt f:\tgcc\usr\bin\genexp3 hat05.bin hat05.exp
 
 f:\tgcc\usr\binはgenexp3.expへのパスです。ご自分の環境に合わせて変更してください)
 
+津軽で互換BIOSのみの環境でTOWNSメニューからgenexp3.expを実行したい場合はrun386から始まる上記を
+hat05.batという名前でテキストファイルに書き込み保存します
+TOWNSメニュー上からhat05.batをダブルクリックすることでgenexp3.expでhat05.binをhat05.expに変換可能です
+
+
 
 
 test02.cの場合はgenexp3.expを実行する場合、-minreal、-maxrealの指定が必要です
@@ -36,7 +41,4 @@ run386 -nocrt f:\tgcc\usr\bin\genexp3 test02.bin test02.exp -minreal 512 -maxrea
 f:\tgcc\usr\binはgenexp3.expへのパスです。ご自分の環境に合わせて変更してください)
 -minrealや-maxrealはコンベンショナルメモリのMSDOS領域のメモリ確保する場合に指定が必要です
 パラグラフ(16バイト)単位での指定で512を指定すると8192バイトまで確保可能になります
-
-津軽で互換BIOSのみの環境でTOWNSメニューからgenexp3.expを実行したい場合はrun386から始まる上記を
-test02.batという名前でテキストファイルに書き込み保存します
-TOWNSメニュー上からtest02.batをダブルクリックすることでgenexp3.expでtest02.binをtest02.expに変換可能です
+test02.expはTOWNS OSのコンソールでの実行専用です
