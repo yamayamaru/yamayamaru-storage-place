@@ -85,10 +85,16 @@ $ /home/ubuntu/2.43.1usr/bin/objdump -b a.out-i386 -d test01.elf > test01.elf.tx
 
 
 このtest01.binをFM TOWNSエミュレータ津軽に持っていき、TOWNS-gccのGENEXP3.EXPを実行します
+GENEXP3.EXPのみ使えればいいのでTOWNS-gccを使えるようにインストールする必要はありません
 
-run386 -nocrt d:\tgcc\usr\bin\genexp3 test01.bin test01.exp
+run386 -nocrt f:\tgcc\usr\bin\genexp3 test01.bin test01.exp
 
 (f:\tgcc\usr\binはgenexp3.expへのパスです。ご自分の環境に合わせて変更してください)
+
+test01.cはTOWNS OSのコマンドラインから実行するために作られたものなので
+TOWNSメニューから実行したい場合はegbフォルダにあるhat05.cを試してください
+
+
 
 TOWNS-gcc
 https://anikun.kutami.jp/towns-gcc/environment.php
@@ -103,6 +109,7 @@ FMT_DOS.ROMで津軽用の互換ROMのFMT_DOS.ROMを上書きしないと実行�
 FM TOWNS用のMSDOS Ver3.1とTOWNS OSからunzのところのmkosromで生成したFMT_DOS.ROMを使うとHDDイメージからしか起動できないので
 別途TownsシステムソフトウェアのディスクからTOSNS OSをHDDイメージにインストールする必要があります
 なのでTownsシステムソフトウェアが必要になります
+
 
 
 これらのプログラムの使用に当たってはご自分の責任において使用してください
