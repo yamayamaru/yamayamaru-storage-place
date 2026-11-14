@@ -32,6 +32,9 @@ hat05.batという名前でテキストファイルに書き込み保存しま�
 TOWNSメニュー上からhat05.batをダブルクリックすることでgenexp3.expでhat05.binをhat05.expに変換可能です
 
 
+GENEXP3.EXPは下記URLのLZHファイルの中のBINBIN.LZHの中にGENEXP3.EXPがあります
+https://anikun.kutami.jp/towns-gcc/gcc/tgp245_1.lzh
+
 
 
 test02.cの場合はgenexp3.expを実行する場合、-minreal、-maxrealの指定が必要です
