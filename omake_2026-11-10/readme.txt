@@ -95,10 +95,10 @@ test01.cはTOWNS OSのコマンドラインから実行するために作られ�
 TOWNSメニューから実行したい場合はegbフォルダにあるhat05.cを試してください
 
 
-
 TOWNS-gcc
 https://anikun.kutami.jp/towns-gcc/environment.php
-
+GENEXP3.EXPは下記URLのLZHファイルの中のBINBIN.LZHの中にGENEXP3.EXPがあります
+https://anikun.kutami.jp/towns-gcc/gcc/tgp245_1.lzh
 
 注意
 
